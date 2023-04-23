@@ -77,7 +77,9 @@ int main (void)
   MATRIX->CCFG_SYSIO |= CCFG_SYSIO_SYSIO4;  // PB4 function selected (EXT2_INT1 connected on PB4)
 
   //--- Initialize the console UART ---------------------
+  ConsoleUART_TxInit_V71();
   InitConsoleTx(CONSOLE_TX);
+  ConsoleUART_RxInit_V71();
   InitConsoleRx(CONSOLE_RX);
 
   //--- Demo start --------------------------------------

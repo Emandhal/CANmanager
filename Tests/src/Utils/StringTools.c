@@ -19,6 +19,99 @@ extern "C" {
 
 
 
+//**********************************************************************************************************************************************************
+//=============================================================================
+// Convert a string to int
+//=============================================================================
+int32_t StringToInt(char** pStr)
+{
+  if (**pStr == '\0') return 0;                  // Empty string? return 0
+  bool Sign = (**pStr == '-');                   // Minus character? Save it
+  if (Sign || (**pStr == '+')) ++(*pStr);        // Minus character or Plus character? Go to next one
+  if (**pStr == '\0') return 0;                  // Empty string? return 0
+  int32_t Result = 0;
+
+  //--- Extract value ---
+  while (true)
+  {
+    if ((uint_fast8_t)(**pStr - '0') > 9) break; // If pStr[0] = '\0' or other char, the result should be > 9 then break the while...
+    Result *= 10;                                // Multiply the int part by 10
+    Result += (int32_t)(**pStr - '0');           // Add the unit value
+    ++(*pStr);                                   // Next char
+  }
+  if (Sign) Result = -Result;                    // If negative value, then set negative IntPart as result
+  return Result;                                 // Return the new position
+}
+
+
+//=============================================================================
+// Hex string to value
+//=============================================================================
+uint32_t HexStringToUint(char** pStr)
+{
+  if (**pStr == '\0') return 0;           // Empty string? return error value
+  uint32_t Result = 0;
+
+  //--- Extract uint32 from hex string ---
+  while (**pStr != 0)
+  {
+    uint32_t CurChar = (uint32_t)(**pStr);
+    if ((CurChar - 0x30) <= 9u)           // Char in '0'..'9'?
+    {
+      Result <<= 4;
+      Result += (CurChar - 0x30);         // 0x30 for '0'
+    }
+    else
+    {
+      CurChar &= 0xDF;                    // Transform 'a'..'f' into 'A'..'F'
+      if ((CurChar - 0x41) <= 5u)         // Char in 'A'..'F'?
+      {
+        Result <<= 4;
+        Result += (CurChar - 0x41) + 10u; // 0x41 for 'A' and add 10 to the value
+      }
+      else break;
+    }
+    ++(*pStr);
+  }
+  return Result;
+}
+
+
+//=============================================================================
+// Bin string to value
+//=============================================================================
+uint32_t BinStringToUint(char** pStr)
+{
+  if (**pStr == '\0') return 0;           // Empty string? return error value
+  uint32_t Result = 0;
+
+  //--- Extract uint32 from hex string ---
+  while (**pStr != 0)
+  {
+    uint32_t CurChar = (uint32_t)(**pStr);
+    if ((CurChar - 0x30) <= 1u)           // Char in '0'..'1'?
+    {
+      Result <<= 1;
+      Result += (CurChar - 0x30);         // 0x30 for '0'
+    }
+    else break;
+    ++(*pStr);
+  }
+  return Result;
+}
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
 //=============================================================================
 // Convert a uint32_t to String
 //=============================================================================
@@ -193,7 +286,6 @@ char* HexString_ToUint32ByRef(const char* srcString, uint32_t* result)
     }
     pChar++;
   }
-
   return pChar;                             // Return the new position
 }
 
@@ -206,6 +298,49 @@ uint32_t HexString_ToUint32(const char* srcString)
 {
   uint32_t Result = 0;
   (void)HexString_ToUint32ByRef(srcString, &Result);
+  return Result;
+}
+
+
+
+//=============================================================================
+// Convert a binary string to uint32 by reference
+//=============================================================================
+char* BinString_ToUint32ByRef(const char* srcString, uint32_t* result)
+{
+  char* pChar = (char*)srcString;
+  *result = 0;
+
+  //--- Check start with '0x' ---
+  if (pChar[0] == '0')
+  {
+    if (pChar[1] == 'b') pChar += 2;      // Start with "0b"? Pass these chars
+  }
+
+  //--- Extract uint32 from bin string ---
+  while (true)
+  {
+    uint32_t CurChar = (uint32_t)(*pChar);
+    if ((uint32_t)(CurChar - 0x30) <= 1u) // Char in '0'..'1' ? If CurChar = '\0', the result should be > 1 then don't fall here...
+    {
+      *result <<= 1;
+      *result += CurChar - 0x30;
+    }
+    else break;
+    pChar++;
+  }
+  return pChar;                           // Return the new position
+}
+
+
+
+//=============================================================================
+// Convert a binary string to uint32
+//=============================================================================
+uint32_t BinString_ToUint32(const char* srcString)
+{
+  uint32_t Result = 0;
+  (void)BinString_ToUint32ByRef(srcString, &Result);
   return Result;
 }
 

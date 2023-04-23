@@ -15,17 +15,12 @@
 
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
+#include "Console.h"
 //-----------------------------------------------------------------------------
-/// @cond 0
-/**INDENT-OFF**/
 #ifdef __cplusplus
-extern "C" {
+  extern "C" {
 #endif
-/**INDENT-ON**/
-/// @endcond
 //-----------------------------------------------------------------------------
-
-
 
 //! Log Title, use it instead of LOG!
 #define LOGTITLE(format, ...)           LOG(CONSOLE_TX, lsTitle, format, ##__VA_ARGS__)
@@ -48,130 +43,141 @@ extern "C" {
 //! Binary dump of memory
 #define BINDUMP(context, src, size)     __BinDump(CONSOLE_TX, context, src, size)
 
+//-----------------------------------------------------------------------------
+
 
 
 
 
 //**********************************************************************************************************************************************************
+//********************************************************************************************************************
+// UART of V71
+//********************************************************************************************************************
 
+//! @brief Console UART Tx initialization for the ATSAMV71
+void ConsoleUART_TxInit_V71(void);
 
-
-
-
-//! Define the console transmission buffer size, must be determined according to the max length of a string and the UART speed
-#define CONSOLE_TX_BUFFER_SIZE  100
-
-//! The actual console transmission buffer
-char ConsoleTxBuffer[CONSOLE_TX_BUFFER_SIZE];
-
-//! The console transmission configuration
-extern ConsoleTx Console_Tx_Conf;
-
-//! Define to simplify the naming at the functions calling
-#define CONSOLE_TX  &Console_Tx_Conf
-
-
-
-
-
-//! Command buffer size
-#define COMMAND_BUFFER_SIZE   10
-
-/*! @brief Command Input buffer
+/*! @brief UART transmit char function interface of the ATSAMV71
  *
- * This structure contains infos concerning the input data for the received command
+ * This function will be called to try to transmit data over the UART
+ * This function only try to transmit and it is not intend to transmit all the data. To transmit all the data, repeat calling this function until size == 0
+ * @param[in] *pIntDev Is the UART interface container structure used for the UART transmit
+ * @param[in] *data Is the data array to send to the UART transmiter through the transmit FIFO
+ * @param[in] size Is the count of data to send to the UART transmitter through the transmit FIFO
+ * @param[out] *actuallySent Is the count of data actually sent to the transmit FIFO
+ * @return Returns an #eERRORRESULT value enum
  */
-typedef struct
+eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallySent);
+
+//-----------------------------------------------------------------------------
+
+
+//! @brief Console UART Rx initialization for the ATSAMV71
+void ConsoleUART_RxInit_V71(void);
+
+/*! @brief UART receive char function interface of the ATSAMV71
+ *
+ * @param[in] *pIntDev Is the UART interface container structure used for the UART receive
+ * @param[out] *data Is where the data will be stored
+ * @param[in] size Is the count of data that the data buffer can hold
+ * @param[out] *actuallyReceived Is the count of data actually received from the received FIFO
+ * @param[out] *lastCharError Is the last char received error. Set to UART_NO_ERROR (0) if no errors
+ * @return Returns an #eERRORRESULT value enum
+ */
+eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallyReceived, uint8_t *lastCharError);
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//**********************************************************************************************************************************************************
+//********************************************************************************************************************
+// Console Transmit API
+//********************************************************************************************************************
+
+#define CONSOLE_TX_BUFFER_SIZE    200         //!< Define the console transmission buffer size, must be determined according to the max length of a string and the UART speed
+char ConsoleTxBuffer[CONSOLE_TX_BUFFER_SIZE]; //!< The actual console transmission buffer
+
+extern ConsoleTx Console_TxConf;    //!< The console transmission configuration
+#define CONSOLE_TX  &Console_TxConf //!< Define to simplify the naming at the functions calling
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//**********************************************************************************************************************************************************
+//********************************************************************************************************************
+// Console Receive API
+//********************************************************************************************************************
+
+#ifdef CONSOLE_RX_USE_COMMAND_RECALL
+#  define CONSOLE_RX_COMMAND_BUFFER_SIZE    400              //!< Define the console command recall buffer size, this set the character count of commands that can be recall
+char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
+#endif
+
+extern ConsoleRx Console_RxConf;    //!< The console reception configuration
+#define CONSOLE_RX  &Console_RxConf //!< Define to simplify the naming at the functions calling
+
+//-----------------------------------------------------------------------------
+
+/*! @brief Specific command function
+ * @param[in] *pCmd Is the command string first char (NULL terminated string)
+ * @param[in] size Is the char count of the command string pCmd
+ * @return Returns an #eERRORRESULT value enum
+ */
+typedef eERRORRESULT (*RxCommand_Func)(const uint8_t* pCmd, size_t size);
+
+/*! Console command hash + function tuple
+ * @details The first member of each supported commands is a hash of a specific string.
+ * This string is the first parameter of the string (ie. from index 0 to the first space or null character
+ * The second is the function that will be called if the hash match
+ */
+typedef struct ConsoleCommand
 {
-	volatile uint32_t BufPos;         //!< Position in the buffer
-	char Buffer[COMMAND_BUFFER_SIZE]; //!< Raw buffer with the frame to be processed
-	volatile bool ToProcess;          //!< Indicate that the frame in buffer should be processed or not
-} CommandInputBuf;
-
-//! The current Command Input buffer
-extern CommandInputBuf CommandInput;
+  uint32_t Hash;                   //!< Hash of the first parameter of the command
+  RxCommand_Func fnCommandProcess; //!< This function will be called when the hash will match
+} ConsoleCommand;
 
 
+
+/*! @brief Process received command Callback
+ *
+ * @param[in] *pCmd Is the command string first char (NULL terminated string)
+ * @param[in] size Is the char count of the command string pCmd
+ */
+//void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size);
 
 //-----------------------------------------------------------------------------
 
 
-
-/*! @brief Console Tx interface configuration for the ATSAMV71
+/*! @brief Process GPIO command
+ * @details Commands that can be parsed are the following:
+ * GPIO <action> <PORT/Pin>[ <value>]
+ * Where:
+ *  - <action> can be:
+ *    - RD, READ: Read <PORT/Pin>
+ *    - WR, WRITE: Write <value> to <PORT/Pin>
+ *    - SET: Set bitset of <value> to <PORT/Pin>
+ *    - CLR, CLEAR: Clear bitset of <value> to <PORT/Pin>
+ *    - TG, TOGGLE: Toggle the value of <PORT/Pin>
+ *  - <PORT/Pin> can be:
+ *    - PORTx: where 'x' can be any of the ports name of the MCU
+ *    - Rxy: where 'x' can be any of the ports name and 'y' the number of the pin of the MCU (ex: RA0)
+ *  - <value> is the value to apply in case of Write, Set, or Clear. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value will be 0
  *
- * This function will be called at API initialization to configure the interface driver (UART)
- * @param[in] *pApi Is the pointed structure of the API that call this function
+ * @param[in] *pCmd Is the command string first char (NULL terminated string)
+ * @param[in] size Is the char count of the command string pCmd
+ * @return Returns an #eERRORRESULT value enum
  */
-void ConsoleTx_InterfaceInit_V71(ConsoleTx *pApi);
-
-
-
-/*! @brief Console send char to UART for the ATSAMV71
- *
- * This function will be called when a character have to be send through interface
- * @param[in] *pApi Is the pointed structure of the API that call this function
- * @param[in] charToSend Is the char to send through the interface
- * @return If the char have been send or not
- */
-bool ConsoleTx_SendChar_V71(ConsoleTx *pApi, char charToSend);
-
-
-
-
-
-//**********************************************************************************************************************************************************
-
-
-
-
-
-//! Define the console reception buffer size, must be determined according to the max length of a string that will be received
-#define CONSOLE_RX_BUFFER_SIZE  100
-
-//! The actual console reception buffer
-char ConsoleRxBuffer[CONSOLE_RX_BUFFER_SIZE];
-
-//! The console reception configuration
-extern ConsoleRx Console_Rx_Conf;
-
-//! Define to simplify the naming at the functions calling
-#define CONSOLE_RX  &Console_Rx_Conf
-
-
+eERRORRESULT ProcessGPIOcommand(const uint8_t* pCmd, size_t size);
 
 //-----------------------------------------------------------------------------
-
-
-
-/*! @brief Console Rx interface configuration for the ATSAMV71
- *
- * This function will be called at API initialization to configure the interface driver (UART)
- * @param[in] *pApi Is the pointed structure of the API that call this function
- */
-void ConsoleRx_InterfaceInit_V71(ConsoleRx *pApi);
-
-
-
-/*! @brief Console get char from UART of the ATSAMV71
- *
- * This function will be called when a character have to be get from the interface
- * @param[in] *pApi Is the pointed structure of the API that call this function
- * @param[out] *charToSend Is the char received from the interface
- * @return If the char have been send or not
- */
-bool ConsoleRx_GetChar_V71(ConsoleRx *pApi, char *charReceived);
-
-
-
-
-
-//-----------------------------------------------------------------------------
-/// @cond 0
-/**INDENT-OFF**/
 #ifdef __cplusplus
 }
 #endif
-/**INDENT-ON**/
-/// @endcond
 //-----------------------------------------------------------------------------
 #endif /* CONSOLE_V71INTERFACESYNC_H_INC */

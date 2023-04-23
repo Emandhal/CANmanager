@@ -473,6 +473,8 @@
       <Value>printf=iprintf</Value>
       <Value>BOARD=SAMV71_XPLAINED_ULTRA</Value>
       <Value>USE_ERRORS_STRING</Value>
+      <Value>USE_CONSOLE_TX</Value>
+      <Value>USE_CONSOLE_RX</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -670,6 +672,12 @@
     <Compile Include="..\ErrorsDef.h">
       <SubType>compile</SubType>
       <Link>src\ErrorsDef.h</Link>
+    </Compile>
+    <Compile Include="src\Interface\GPIO_Interface.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\UART_Interface.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TimerTicks.c">
       <SubType>compile</SubType>

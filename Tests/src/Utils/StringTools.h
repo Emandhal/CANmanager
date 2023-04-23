@@ -22,6 +22,34 @@ extern "C" {
 
 
 
+//**********************************************************************************************************************************************************
+
+/*! @brief Convert a string to int float
+ * This function will stop parsing at first char not in '0'..'9'
+ * @param[in/out] **pStr Is the string to parse (the original pointer will be advanced) and returns the new position in the string, or the end of the string
+ * @return Returns the value extracted from string
+ */
+int32_t StringToInt(char** pStr);
+
+/*! @brief Hex string to value
+ * This function will stop parsing at first char not in '0'..'9', 'a'..'f', 'A'..'F'
+ * @param[in/out] **pStr Is the string to parse (the original pointer will be advanced) and returns the new position in the string, or the end of the string
+ * @return Returns the value extracted
+ */
+uint32_t HexStringToUint(char** pStr);
+
+/*! @brief Bin string to value
+ * This function will stop parsing at first char not in '0'..'1'
+ * @param[in/out] **pStr Is the string to parse (the original pointer will be advanced) and returns the new position in the string, or the end of the string
+ * @return Returns the value extracted
+ */
+uint32_t BinStringToUint(char** pStr);
+
+//-----------------------------------------------------------------------------
+
+
+
+//**********************************************************************************************************************************************************
 /*! @brief Convert a uint32_t to String
  *
  * @param[in] num The decimal number to be converted
@@ -29,7 +57,6 @@ extern "C" {
  * @return Length of the buffer
  */
 uint32_t Uint32_ToStr(uint32_t num, char* buff);
-
 
 /*! @brief Convert a string to int32 by reference
  *
@@ -39,7 +66,6 @@ uint32_t Uint32_ToStr(uint32_t num, char* buff);
  * @return The new char* position
  */
 char* String_ToInt32ByRef(char* buff, int32_t* result);
-
 
 /*! @brief Convert a String to int32
  *
@@ -95,11 +121,30 @@ uint32_t HexString_ToUint32(const char* srcString);
 /*! @brief Convert an hexadecimal string to uint32 by reference
  *
  * If too many char are present, the result may be uncertain. If a wrong character is found, the result is the value found and the value returned is a pointer to the wrong character
- * @param[in] *buff Buffer of char where the string int32 is stored with a null terminal
+ * @param[in] *srcString Is the hexadecimal string to convert
  * @param[out] *result Is the result of the conversion
  * @return The new char* position
  */
 char* HexString_ToUint32ByRef(const char* srcString, uint32_t* result);
+
+
+/*! @brief Convert a binary string to uint32
+ *
+ * If too many char are present, the result may be uncertain. If a wrong character is found, the function stops
+ * @param *srcString Is the binary string to convert
+ * @return Returns the 32-bit unsigned int converted
+ */
+uint32_t BinString_ToUint32(const char* srcString);
+
+
+/*! @brief Convert a binary string to uint32 by reference
+ *
+ * If too many char are present, the result may be uncertain. If a wrong character is found, the result is the value found and the value returned is a pointer to the wrong character
+ * @param[in] *srcString Is the binary string to convert
+ * @param[out] *result Is the result of the conversion
+ * @return The new char* position
+ */
+char* BinString_ToUint32ByRef(const char* srcString, uint32_t* result);
 
 
 /*! @brief Convert an hexadecimal string to uint
