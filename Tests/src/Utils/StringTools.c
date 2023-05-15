@@ -7,12 +7,66 @@
  ******************************************************************************/
 
 //-----------------------------------------------------------------------------
+#include <ctype.h>
 #include "StringTools.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 #include <cstdint>
 extern "C" {
 #endif
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//**********************************************************************************************************************************************************
+//=============================================================================
+// Compare 2 ANSI strings by only the size of the str2
+//=============================================================================
+int32_t strscmp(const char* pStr1, const char* pStr2)
+{
+  int32_t Result = 0;
+
+  if (!pStr1 || !pStr2) return INT32_MIN; // Check NULL strings
+  while (*pStr1 || *pStr2)
+  {
+    Result = tolower((int32_t)(*pStr1)) - tolower((int32_t)(*pStr2));
+    if (Result != 0) break;
+    ++pStr1;
+    ++pStr2;
+  }
+  if (*pStr2 == 0) return 0;
+  return Result;
+}
+
+
+//=============================================================================
+// Compare 2 ANSI strings by only the size of the Str2 and update Str1 pointer only if strings are identical
+//=============================================================================
+int32_t strtcmp(const char** pStr1, const char* pStr2)
+{
+  const char** pStr = pStr1;
+  int32_t Result = 0;
+  size_t CharsCompared = 0;
+
+  if (!(*pStr1) || !pStr1 || !pStr2) return INT32_MAX; // Check NULL strings
+  while (**pStr || *pStr2)
+  {
+    Result = tolower((int32_t)(**pStr)) - tolower((int32_t)(*pStr2));
+    if (Result != 0) break;
+    ++CharsCompared;
+    ++(*pStr);
+    ++pStr2;
+  }
+  if (*pStr2 == 0)
+  {
+    (*pStr1) += CharsCompared;
+    return 0;
+  }    
+  return Result;
+}
+
 //-----------------------------------------------------------------------------
 
 

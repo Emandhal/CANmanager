@@ -12,6 +12,8 @@
 *******************************************************************************/
 
 //-----------------------------------------------------------------------------
+#include <string.h>
+#include <strings.h>
 #include "Console.h"
 #include "Console_V71Interface.h"
 #include "StringTools.h"
@@ -277,6 +279,21 @@ void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size)
 
 //-----------------------------------------------------------------------------
 
+const ConsoleAction GPIOactionsList[] =
+{
+  { "RD"    , Action_Read  , },
+  { "READ"  , Action_Read  , },
+  { "WR"    , Action_Write , },
+  { "WRITE" , Action_Write , },
+  { "SET"   , Action_Set   , },
+  { "CLR"   , Action_Clear , },
+  { "CLEAR" , Action_Clear , },
+  { "TG"    , Action_Toggle, },
+  { "TOGGLE", Action_Toggle, },
+  { "DIR"   , Action_Dir   , },
+};
+
+#define GPIO_ACTION_LIST_COUNT  ( sizeof(GPIOactionsList) / sizeof(GPIOactionsList[0]) )
 
 //=============================================================================
 // Process GPIO command
@@ -292,36 +309,120 @@ eERRORRESULT ProcessGPIOcommand(const uint8_t* pCmd, size_t size)
   if ((Index != 5) || (*pCmd == 0)) return ERR__PARSE_ERROR;  // Check the good position of the parse
   ++pCmd;
 
-  if ((pCmd[0] >= '0') && (pCmd[0] <= '9'))                          // Is a digit?
+  //--- Parse arguments ---
+  eConsoleActions Action = Action_None;
+  eGPIO_PortPin PORTpin = No_PORTpin;
+  uint32_t PinNum = 0;
+  while (*pCmd != 0)
   {
-    switch (pCmd[1])
+    if ((pCmd[0] >= '0') && (pCmd[0] <= '9'))                          // Is a digit?
     {
-      case 'x':
-        pCmd += 2;                                                   // Start with "0x"? Pass these chars
-        Value = HexStringToUint((char**)&pCmd);                      // Extract data
-        if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-        break;
+      switch (pCmd[1])
+      {
+        case 'x':
+        case 'X':
+          pCmd += 2;                                                   // Start with "0x"? Pass these chars
+          Value = HexStringToUint((char**)&pCmd);                      // Extract data
+          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
+          break;
 
-      case 'b':
-        pCmd += 2;                                                   // Start with "0b"? Pass these chars
-        Value = BinStringToUint((char**)&pCmd);                      // Extract data
-        if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-        break;
+        case 'b':
+        case 'B':
+          pCmd += 2;                                                   // Start with "0b"? Pass these chars
+          Value = BinStringToUint((char**)&pCmd);                      // Extract data
+          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
+          break;
 
-      default:
-        Value = StringToInt((char**)&pCmd);                          // Extract data
-        if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-        break;
+        default:
+          Value = StringToInt((char**)&pCmd);                          // Extract data
+          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
+          break;
+      }
+      if (*pCmd != 0) ++pCmd;
     }
-  }
-  else                                                               // Is a string
-  {
-    
-    
+    else                                                               // Is a string
+    {
+      if (CONSOLE_LOWERCASE(pCmd[0]) == 'p')                           // Starts with 'P'
+      {
+        //--- Get PORT/Pin ---
+        if ((strtcmp((const char**)&pCmd, "PORT") == 0) || (strtcmp((const char**)&pCmd, "PIO") == 0)) // Is a port
+        {
+          char PortName = CONSOLE_UPPERCASE(*pCmd);
+          if ((PortName >= 'A') && (PortName <= 'E'))
+            PORTpin = (eGPIO_PortPin)(PortName - 'A' + (char)PORTA);
+          ++pCmd;
+        }
+        if (PORTpin == No_PORTpin) // Not a port? Check pin
+        {
+          char PortName = CONSOLE_UPPERCASE(pCmd[1]);
+          if ((PortName >= 'A') && (PortName <= 'E'))
+            PORTpin = (eGPIO_PortPin)(PortName - 'A' + (char)PA);
+          pCmd += 2;
+          PinNum = StringToInt((char**)&pCmd);                         // Extract data
+          if (*pCmd != 0) ++pCmd;
+        }
+      }
+      else
+      {
+        //--- Search string action ---
+        for (size_t zIdx = 0; zIdx < GPIO_ACTION_LIST_COUNT; ++zIdx)
+        {
+          if (strscmp((char*)pCmd, GPIOactionsList[zIdx].Str) == 0)
+          {
+            Action = GPIOactionsList[zIdx].Action;
+            pCmd += strlen(GPIOactionsList[zIdx].Str);
+            break;
+          }
+        }
+      }
+    }
   }
 
   //--- Set GPIO command ---
-  
+  if (PORTpin == No_PORTpin) return ERR__PARSE_ERROR;
+  uint32_t Result = 0;
+  switch (Action)
+  {
+    default:
+    case Action_None: return ERR__PARSE_ERROR;
+
+    case Action_Read:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           Result = ioport_get_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu);
+      else Result = ioport_get_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum));
+      LOGINFO("Direction: 0x%x", (unsigned int)Result);
+      break;
+
+    case Action_Write:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, Value);
+      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), Value);
+      break;
+
+    case Action_Set:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, IOPORT_PIN_LEVEL_HIGH);
+      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), IOPORT_PIN_LEVEL_HIGH);
+      break;
+
+    case Action_Clear:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, IOPORT_PIN_LEVEL_LOW);
+      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), IOPORT_PIN_LEVEL_LOW);
+      break;
+
+    case Action_Toggle:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           ioport_toggle_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu);
+      else ioport_toggle_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum));
+      break;
+
+    case Action_Dir:
+      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
+           ioport_set_port_dir(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, Value);
+      else ioport_set_pin_dir(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), Value);
+      break;
+  }
   return ERR_OK;
 }
 

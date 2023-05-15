@@ -132,8 +132,12 @@ typedef enum
   ERRCONTEXT__ENUM_MAX_16BITS = 0xFFFF, // Here to force 16-bit enum
 } eERRORCONTEXTS;
 
+#define X(eName, val, str) +1
+#define ERRCONTEXT__CONTEXTS_COUNT  ( 0 CONTEXTS_TABLE )
+#undef X
 
 //------------------------------------------------------------------------------
+
 
 //! Errors context string table
 #ifdef USE_ERRORS_STRING
@@ -292,6 +296,12 @@ typedef enum
 #undef X
   ERR__ERRORS_MAX, // Keep last
 } eERRORRESULT;
+
+#define X(eName, val, str) +1
+#define ERR__ERRORS_COUNT  ( 0 ERRORS_TABLE )
+#undef X
+
+//------------------------------------------------------------------------------
 
 
 #ifdef USE_ERRORS_STRING

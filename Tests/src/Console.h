@@ -130,7 +130,10 @@ inline uint32_t CharToDigit(const char aChar)
 //-----------------------------------------------------------------------------
 
 //! Macro to get the lower case of a char
-#define LowerCase(x)  (((((int_fast8_t)(x)) - 'A') < 26) ? (x) + 32 : (x))
+#define CONSOLE_LOWERCASE(x)  (char)( (((int_fast8_t)(x) - 'A') < 26) ? (x) + 32 : (x) )
+
+//! Macro to get the upper case of a char
+#define CONSOLE_UPPERCASE(x)  (char)( (((int_fast8_t)(x) - 'a') < 26) ? (x) - 32 : (x) )
 
 //-----------------------------------------------------------------------------
 
@@ -426,6 +429,48 @@ eERRORRESULT ProcessReceivedCharFromConsole(ConsoleRx* pApi);
  * @return Returns an #eERRORRESULT value enum
  */
 void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size) CONSOLE_WEAK;
+
+//-----------------------------------------------------------------------------
+
+
+/*! @brief Specific command function
+ * @param[in] *pCmd Is the command string first char (NULL terminated string)
+ * @param[in] size Is the char count of the command string pCmd
+ * @return Returns an #eERRORRESULT value enum
+ */
+typedef eERRORRESULT (*RxCommand_Func)(const uint8_t* pCmd, size_t size);
+
+/*! Console command hash + function tuple
+ * @details The first member of each supported commands is a hash of a specific string.
+ * This string is the first parameter of the string (ie. from index 0 to the first space or null character
+ * The second is the function that will be called if the hash match
+ */
+typedef struct ConsoleCommand
+{
+  uint32_t Hash;                   //!< Hash of the first parameter of the command
+  RxCommand_Func fnCommandProcess; //!< This function will be called when the hash will match
+} ConsoleCommand;
+
+//-----------------------------------------------------------------------------
+
+//! Console interfaces actions enumerator
+typedef enum
+{
+  Action_None,   //!< No console action
+  Action_Read,   //!< Console action read
+  Action_Write,  //!< Console action write
+  Action_Set,    //!< Console action set
+  Action_Clear,  //!< Console action clear
+  Action_Toggle, //!< Console action toggle
+  Action_Dir,    //!< Console action direction
+} eConsoleActions;
+
+//! Console string + action tuple
+typedef struct ConsoleAction
+{
+  const char* const Str;  //!< Console interface action string
+  eConsoleActions Action; //!< Console interface action
+} ConsoleAction;
 
 //-----------------------------------------------------------------------------
 //! @}

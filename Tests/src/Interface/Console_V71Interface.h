@@ -124,32 +124,23 @@ extern ConsoleRx Console_RxConf;    //!< The console reception configuration
 
 //-----------------------------------------------------------------------------
 
-/*! @brief Specific command function
- * @param[in] *pCmd Is the command string first char (NULL terminated string)
- * @param[in] size Is the char count of the command string pCmd
- * @return Returns an #eERRORRESULT value enum
- */
-typedef eERRORRESULT (*RxCommand_Func)(const uint8_t* pCmd, size_t size);
-
-/*! Console command hash + function tuple
- * @details The first member of each supported commands is a hash of a specific string.
- * This string is the first parameter of the string (ie. from index 0 to the first space or null character
- * The second is the function that will be called if the hash match
- */
-typedef struct ConsoleCommand
+//! GPIO PORT/pin enumerator
+typedef enum
 {
-  uint32_t Hash;                   //!< Hash of the first parameter of the command
-  RxCommand_Func fnCommandProcess; //!< This function will be called when the hash will match
-} ConsoleCommand;
-
-
-
-/*! @brief Process received command Callback
- *
- * @param[in] *pCmd Is the command string first char (NULL terminated string)
- * @param[in] size Is the char count of the command string pCmd
- */
-//void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size);
+  No_PORTpin, //!< No PORT/pin selected
+  PORTA,      //!< Port A
+  PORTB,      //!< Port B
+  PORTC,      //!< Port C
+  PORTD,      //!< Port D
+  PORTE,      //!< Port E
+  PORTF,      //!< Port F
+  PA,         //!< Pin on port A
+  PB,         //!< Pin on port B
+  PC,         //!< Pin on port C
+  PD,         //!< Pin on port D
+  PE,         //!< Pin on port E
+  PF,         //!< Pin on port F
+} eGPIO_PortPin;
 
 //-----------------------------------------------------------------------------
 

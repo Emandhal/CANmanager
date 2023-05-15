@@ -24,6 +24,26 @@ extern "C" {
 
 //**********************************************************************************************************************************************************
 
+/*! @brief Compare 2 ANSI strings by only the size of the str2
+ * @param[in] *pStr1 Is the string to compare
+ * @param[in] *pStr2 Is the string to compare. It is also the max size to compare
+ * @return Returns the value extracted from string
+ */
+int32_t strscmp(const char* str1, const char* str2);
+
+/*! @brief Compare 2 ANSI strings by only the size of the str2 and update Str1 pointer only if strings are identical
+ * @param[in] *pStr1 Is the string to compare (the original pointer will be advanced) and returns the new position in the string, or the end of the string
+ * @param[in] *pStr2 Is the string to compare. It is also the max size to compare
+ * @return Returns the value extracted from string
+ */
+int32_t strtcmp(const char** str1, const char* str2);
+
+//-----------------------------------------------------------------------------
+
+
+
+//**********************************************************************************************************************************************************
+
 /*! @brief Convert a string to int float
  * This function will stop parsing at first char not in '0'..'9'
  * @param[in/out] **pStr Is the string to parse (the original pointer will be advanced) and returns the new position in the string, or the end of the string
