@@ -75,6 +75,9 @@ int main (void)
   ioport_set_pin_sense_mode(GPIO_PUSH_BUTTON_2, GPIO_PUSH_BUTTON_2_SENSE);
   MATRIX->CCFG_SYSIO |= CCFG_SYSIO_SYSIO12; // PB12 function selected (Button2 is connected on PB12)
   MATRIX->CCFG_SYSIO |= CCFG_SYSIO_SYSIO4;  // PB4 function selected (EXT2_INT1 connected on PB4)
+  SystemAndStatusLED_Init();
+  SetSystemLEDblinkMode(BLINK_10Hz);
+  SetStatusLEDblinkMode(BLINK_OFF);
 
   //--- Initialize the console UART ---------------------
   ConsoleUART_TxInit_V71();
@@ -94,6 +97,7 @@ int main (void)
 
   //--- Log ---------------------------------------------
 	LOGTRACE("Initialization complete");
+	SetSystemLEDblinkMode(BLINK_STAY_ON);
 
   //=== The main loop ===================================
   while(1)

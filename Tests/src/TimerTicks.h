@@ -38,24 +38,26 @@
 #include "ErrorsDef.h"
 //------------------------------------------------------------------------------
 #ifdef __cplusplus
-#include "stdafx.h"
+#  include "stdafx.h"
 
-#if !defined(LOCK)
-#  define LOCK(name)    Locker_##name.Lock()
-#  define UNLOCK(name)  Locker_##name.UnLock()
-#endif
-extern SIMULATION_Mutex Locker_Ticks;  //!< Mutex for the access of timer ticks
-extern SIMULATION_Mutex Locker_SysLED; //!< Mutex for the access of System and Status LEDs state
+#  if !defined(LOCK)
+#    define LOCK(name)    Locker_##name.Lock()
+#    define UNLOCK(name)  Locker_##name.UnLock()
+#  endif
+  extern SIMULATION_Mutex Locker_Ticks;  //!< Mutex for the access of timer ticks
+  extern SIMULATION_Mutex Locker_SysLED; //!< Mutex for the access of System and Status LEDs state
 
-extern "C" {
+#  define TIMERTICKS_WEAK  __attribute__((weak))
+  extern "C" {
 #else
+#  define TIMERTICKS_WEAK  __attribute__((weak))
 #  define LOCK(name)
 #  define UNLOCK(name)
 #endif
 //------------------------------------------------------------------------------
 
 #define COUNT_1ms_IN_TIMER_TICKS    (  TIMER_TICKS_PER_SECONDS / 1000 )
-#define COUNT_10ms_TIMER_TICKS      (  TIMER_TICKS_PER_SECONDS /  100 )
+#define COUNT_10ms_IN_TIMER_TICKS   (  TIMER_TICKS_PER_SECONDS /  100 )
 #define COUNT_20ms_IN_TIMER_TICKS   (  TIMER_TICKS_PER_SECONDS /   50 )
 #define COUNT_100ms_IN_TIMER_TICKS  (  TIMER_TICKS_PER_SECONDS /   10 )
 #define COUNT_200ms_IN_TIMER_TICKS  (  TIMER_TICKS_PER_SECONDS /    5 )
@@ -69,8 +71,8 @@ extern "C" {
 //! Calculate the timer refresh millisecond count
 #if COUNT_1ms_IN_TIMER_TICKS != 0
 #  define TICK_TO_ADD_FOR_MS  ( COUNT_1ms_IN_TIMER_TICKS )
-#elif COUNT_10ms_TIMER_TICKS != 0
-#  define TICK_TO_ADD_FOR_MS  ( COUNT_10ms_TIMER_TICKS )
+#elif COUNT_10ms_IN_TIMER_TICKS != 0
+#  define TICK_TO_ADD_FOR_MS  ( COUNT_10ms_IN_TIMER_TICKS )
 #elif COUNT_20ms_IN_TIMER_TICKS != 0
 #  define TICK_TO_ADD_FOR_MS  ( COUNT_20ms_IN_TIMER_TICKS )
 #elif COUNT_100ms_IN_TIMER_TICKS != 0
@@ -89,30 +91,6 @@ extern "C" {
 
 //------------------------------------------------------------------------------
 
-#define COUNT_BLINK_10Hz_IN_TIMER_TICKS  ( TIMER_TICKS_PER_SECONDS / 10 ) //!< Invert the pin state of the system and status LEDs 10 times per second
-#define COUNT_BLINK_2Hz_IN_TIMER_TICKS   ( TIMER_TICKS_PER_SECONDS /  2 ) //!< Invert the pin state of the system and status LEDs  2 times per second
-#define COUNT_BLINK_1Hz_IN_TIMER_TICKS   ( TIMER_TICKS_PER_SECONDS /  1 ) //!< Invert the pin state of the system and status LEDs each second
-
-//! Enumerate System and Status LEDs blink speed
-typedef enum
-{
-  BLINK_OFF         = 0,
-#if COUNT_BLINK_10Hz_IN_TIMER_TICKS != 0
-  BLINK_10Hz        = 1,
-#endif
-#if COUNT_BLINK_2Hz_IN_TIMER_TICKS != 0
-  BLINK_2Hz         = 2,
-#endif
-  BLINK_1Hz         = 3,
-  BLINK_STAY_ON        ,
-  BLINK_USER_MANAGEMENT, //!< Set this if the user will change its state in the program (No automatic management by TimerTicks)
-} eLEDBlinkMode;
-
-extern eLEDBlinkMode SystemLEDBlinkMode;
-extern eLEDBlinkMode StatusLEDBlinkMode;
-
-//------------------------------------------------------------------------------
-
 //! @brief Timer ticks interface procedure type when there is no parameter
 typedef void(*TTT_NoParam_Proc)(void);
 
@@ -126,7 +104,7 @@ typedef struct TimerTickWatchdogConfig
   uint32_t WatchdogProcessFrequency;  //!< Processing frequency of the watchdog when a restart is called
   //--- Interface call functions ---
   TTT_NoParam_Proc fnWatchdogRestart; //!< This procedure will be called in the Sleep_ms() procedure
-  TTT_NoParam_Proc fnWatchDogProcess; //!< This procedure will be called at a frequency defined by the variable 
+  TTT_NoParam_Proc fnWatchDogProcess; //!< This procedure will be called at a frequency defined by the variable
 } TimerTickWatchdogConfig;
 
 extern TimerTickWatchdogConfig TimerTickWatchdog_Conf; //!< Timer ticks watchdog interface that needs to be declared and filled by the application
@@ -149,6 +127,9 @@ extern TimerTickWatchdogConfig TimerTickWatchdog_Conf; //!< Timer ticks watchdog
  */
 eERRORRESULT TimerTicks_Init(void);
 
+//! @brief Process in SystemTick interrupt
+void TimerTicks_ProcessIT(void);
+
 /*! @brief Get current millisecond
  *
  * The maximum time before exceeding the uint32 and crash the system is: 49 day, 17h, 2min, 47s and 295ms
@@ -156,13 +137,14 @@ eERRORRESULT TimerTicks_Init(void);
  */
 uint32_t GetCurrentMs(void);
 
-/*! @brief Sleep x millisecond
+/*! @brief Wait x millisecond (active wait)
  *
- * @warning This function is not accurate, the range of sleep is: mSec < Sleep < mSec+1, and depend to the timer refresh
+ * @warning This function is not accurate, the range of wait is: mSec < Sleep < mSec+1, and depend to the timer refresh
  * @param mSec Is the number of millisecond to wait
  */
-void Sleep_ms(uint16_t mSec);
+void Wait_ms(uint16_t mSec);
 
+//------------------------------------------------------------------------------
 
 #if COUNT_1ms_IN_TIMER_TICKS != 0
 /*! @brief Is there a 1ms tick?
@@ -172,7 +154,7 @@ void Sleep_ms(uint16_t mSec);
 bool ThereIs1msTick(void);
 #endif
 
-#if COUNT_10ms_TIMER_TICKS != 0
+#if COUNT_10ms_IN_TIMER_TICKS != 0
 /*! @brief Is there a 10ms tick?
  *
  * @return If there is a 10ms tick pending
@@ -243,9 +225,38 @@ bool ThereIs2sTick(void);
 //********************************************************************************************************************
 // LEDs management
 //********************************************************************************************************************
+#if (defined(SYSLED_Low) && defined(SYSLED_Invert) && defined(SYSLED_High)) || (defined(STATUSLED_Low) && defined(STATUSLED_Invert) && defined(STATUSLED_High))
+
+#define COUNT_BLINK_10Hz_IN_TIMER_TICKS  ( TIMER_TICKS_PER_SECONDS / 10 ) //!< Invert the pin state of the system and status LEDs 10 times per second
+#define COUNT_BLINK_2Hz_IN_TIMER_TICKS   ( TIMER_TICKS_PER_SECONDS /  2 ) //!< Invert the pin state of the system and status LEDs  2 times per second
+#define COUNT_BLINK_1Hz_IN_TIMER_TICKS   ( TIMER_TICKS_PER_SECONDS /  1 ) //!< Invert the pin state of the system and status LEDs each second
+
+//! Enumerate System and Status LEDs blink speed
+typedef enum
+{
+  BLINK_OFF         = 0,
+#if COUNT_BLINK_10Hz_IN_TIMER_TICKS != 0
+  BLINK_10Hz        = 1,
+#endif
+#if COUNT_BLINK_2Hz_IN_TIMER_TICKS != 0
+  BLINK_2Hz         = 2,
+#endif
+  BLINK_1Hz         = 3,
+  BLINK_STAY_ON        ,
+  BLINK_USER_MANAGEMENT, //!< Set this if the user will change its state in the program (No automatic management by TimerTicks)
+} eLEDBlinkMode;
+
+//------------------------------------------------------------------------------
+
+
 //! @brief Initialize the system and status LEDs management
 void SystemAndStatusLED_Init(void);
+#endif
 
+//-----------------------------------------------------------------------------
+
+
+#if defined(SYSLED_Low) && defined(SYSLED_Invert) && defined(SYSLED_High)
 /*! @brief Set system LED blink mode
  *
  * @param[in] blinkMode Is the new blink mode
@@ -257,7 +268,12 @@ void SetSystemLEDblinkMode(eLEDBlinkMode blinkMode);
  * @param[in] ticks Is the count of ticks to add to the blink
  */
 void RefreshSystemLEDstate(uint32_t ticks);
+#endif
 
+//-----------------------------------------------------------------------------
+
+
+#if defined(STATUSLED_Low) && defined(STATUSLED_Invert) && defined(STATUSLED_High)
 /*! @brief Set status LED blink mode
  *
  * @param[in] blinkMode Is the new blink mode
@@ -269,6 +285,60 @@ void SetStatusLEDblinkMode(eLEDBlinkMode blinkMode);
  * @param[in] ticks Is the count of ticks to add to the blink
  */
 void RefreshStatusLEDState(uint32_t ticks);
+#endif
+
+//------------------------------------------------------------------------------
+
+
+
+//********************************************************************************************************************
+// User Buttons management
+//********************************************************************************************************************
+
+//! Button state enumerator
+typedef enum
+{
+  BUTTON_UNDEF  = -1,
+  BUTTON_PUSHED =  0,
+  BUTTON_RELEASED,
+} ButtonState;
+
+//! User Button event enumerator
+typedef enum
+{
+  BUTTON_PUSHED_EVENT,
+  BUTTON_RELEASED_EVENT,
+  BUTTON_BOTH_EVENT,
+} ButtonEvent;
+
+//------------------------------------------------------------------------------
+
+
+#if defined(USER_BUTTON1_GetState)
+/*! @brief Initialize the User Button 1 debounce management
+ * param[in] debounceTicksCount Count of timer ticks of the debounce action (maximum 32)
+ * param[in] buttonEvent Button event to generate
+ */
+void UserButton1_Init(uint32_t debounceTicksCount, ButtonEvent buttonEvent);
+
+/*! This function is called when the User Button 1 get the event expected
+ * @param[in] buttonEvent Is the button event triggered
+ */
+void UserButton1_Event(ButtonEvent buttonEvent) TIMERTICKS_WEAK;
+#endif
+
+#if defined(USER_BUTTON2_GetState)
+/*! @brief Initialize the User Button 2 debounce management
+ * param[in] debounceTicksCount Count of timer ticks of the debounce action (maximum 32)
+ * param[in] buttonEvent Button event to generate
+ */
+void UserButton2_Init(uint32_t debounceTicksCount, ButtonEvent buttonEvent);
+
+/*! This function is called when the User Button 2 get the event expected
+ * @param[in] buttonEvent Is the button event triggered
+ */
+void UserButton2_Event(ButtonEvent buttonEvent) TIMERTICKS_WEAK;
+#endif
 
 //------------------------------------------------------------------------------
 #ifdef __cplusplus
