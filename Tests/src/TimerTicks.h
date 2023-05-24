@@ -1,8 +1,8 @@
 /*!*****************************************************************************
  * @file    TimerTicks.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.0
- * @date    08/02/2020
+ * @version 1.1.0
+ * @date    21/05/2023
  * @brief   Timer ticks and System LED management
  ******************************************************************************/
 /* @page License
@@ -27,6 +27,11 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *****************************************************************************/
+
+/* Revision history:
+ * 1.1.0    Add User Button debounce
+ * 1.0.0    Release version
+ *****************************************************************************/
 #ifndef __TIMERTICKS_H_INCLUDED
 #define __TIMERTICKS_H_INCLUDED
 //=============================================================================
@@ -41,11 +46,11 @@
 #  include "stdafx.h"
 
 #  if !defined(LOCK)
-#    define LOCK(name)    Locker_##name.Lock()
-#    define UNLOCK(name)  Locker_##name.UnLock()
+#    define LOCK(name)     Locker_##name.Lock()
+#    define UNLOCK(name)   Locker_##name.UnLock()
 #  endif
-  extern SIMULATION_Mutex Locker_Ticks;  //!< Mutex for the access of timer ticks
-  extern SIMULATION_Mutex Locker_SysLED; //!< Mutex for the access of System and Status LEDs state
+  extern SIMULATION_Mutex  Locker_Ticks;  //!< Mutex for the access of timer ticks
+  extern SIMULATION_Mutex  Locker_SysLED; //!< Mutex for the access of System and Status LEDs state
 
 #  define TIMERTICKS_WEAK  __attribute__((weak))
   extern "C" {

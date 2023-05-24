@@ -95,7 +95,7 @@ static volatile uint32_t msTickCount = 0;
 
 
 
- 
+
 
 //********************************************************************************************************************
 // Timer ticks management
@@ -150,7 +150,7 @@ eERRORRESULT TimerTicks_Init(void)
 //=============================================================================
 // [INTERRUPT] Process in SystemTick interrupt
 //=============================================================================
-void TimerTicks_ProcessIT(void)
+void __attribute__ ((optimize("Ofast"))) TimerTicks_ProcessIT(void)
 {
 #if defined(SYSLED_Low) && defined(SYSLED_Invert) && defined(SYSLED_High)
   RefreshSystemLEDstate(TICK_TO_ADD_FOR_MS);
@@ -166,8 +166,8 @@ void TimerTicks_ProcessIT(void)
   UserButton1_DebounceTicksInt &= UserButton1_DebounceTicksMask;
   //--- Get new status of the User Button 1 ---
   ButtonState UserButton1_NewState = BUTTON_UNDEF;
-  if (UserButton1_DebounceTicksInt ==                             0) UserButton1_NewState = BUTTON_RELEASED;
   if (UserButton1_DebounceTicksInt == UserButton1_DebounceTicksMask) UserButton1_NewState = BUTTON_PUSHED;
+  if (UserButton1_DebounceTicksInt ==                             0) UserButton1_NewState = BUTTON_RELEASED;
   //--- Test User Button 1 status ---
   if ((UserButton1_NewState != BUTTON_UNDEF) && (UserButton1_NewState != UserButton1_LastState))
   {
@@ -206,7 +206,7 @@ void TimerTicks_ProcessIT(void)
     if (TimerTickWatchdog_Conf.fnWatchDogProcess != NULL) TimerTickWatchdog_Conf.fnWatchDogProcess();
   }
 #endif
-    
+
   //--- 1ms ticks ---
 #if COUNT_1ms_IN_TIMER_TICKS != 0
   Tick1ms++;
@@ -487,7 +487,7 @@ uint32_t GetCurrentMs(void)
 // Wait x millisecond
 //=============================================================================
 void Wait_ms(uint16_t mSec)
-{ // This procedure is not accurate, the range of wait is: mSec < Sleep < mSec+1, and depend to the timer refresh    
+{ // This procedure is not accurate, the range of wait is: mSec < Sleep < mSec+1, and depend to the timer refresh
   uint32_t StartTime = msTickCount;
   while (TIMERTICKS_TIME_DIFF(StartTime, msTickCount) < mSec)
   {
@@ -550,7 +550,7 @@ void SetSystemLEDblinkMode(eLEDBlinkMode blinkMode)
 //=============================================================================
 // Refresh system LED state
 //=============================================================================
-void RefreshSystemLEDstate(uint32_t ticks)
+void __attribute__ ((optimize("Ofast"))) RefreshSystemLEDstate(uint32_t ticks)
 {
   TickBlinkSystemLED += ticks;
 
@@ -624,7 +624,7 @@ void SetStatusLEDblinkMode(eLEDBlinkMode blinkMode)
 //=============================================================================
 // Refresh status LED state
 //=============================================================================
-void RefreshStatusLEDState(uint32_t ticks)
+void __attribute__ ((optimize("Ofast"))) RefreshStatusLEDState(uint32_t ticks)
 {
   TickBlinkStatusLED += ticks;
 
@@ -692,7 +692,7 @@ void UserButton1_Init(uint32_t debounceTicksCount, ButtonEvent buttonEvent)
   //--- Set User Button 1 configuration ---
   USER_BUTTON1_As_Input;
   UserButton1_DebounceTicksInt  = 0;
-  UserButton1_DebounceTicksMask = ((1 << debounceTicksCount) - 1);
+  UserButton1_DebounceTicksMask = (uint32_t)((1ull << debounceTicksCount) - 1);
   UserButton1_LastState         = (USER_BUTTON1_GetState ? BUTTON_PUSHED : BUTTON_RELEASED);
   UserButton1_EventStatus       = buttonEvent;
 }
