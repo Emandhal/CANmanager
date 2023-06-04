@@ -1,14 +1,40 @@
-/*******************************************************************************
-    File name:    Console_V71InterfaceSync.h
-    Author:       FMA
-    Version:      1.0
-    Date (d/m/y): 28/04/2020
-    Description:  Console interface for the Console Transmit
-                  This unit interface the Console API with the current hardware
-                  This interface implements the synchronous use of the API on a SAMV71
-                  and is also specific with the SAMV71 Xplained Ultra board
-    History :
+/*!*****************************************************************************
+ * @file    Console_V71InterfaceSync.h
+ * @author  Fabien 'Emandhal' MAILLY
+ * @version 1.1.0
+ * @date    04/06/2023
+ * @brief   Console interface for the Console Transmit and Receive
+ *          This unit interface the Console API with the current hardware
+ *          This interface implements the synchronous use of the API on a SAMV71
+ *          and is also specific with the SAMV71 Xplained Ultra board
 *******************************************************************************/
+/* @page License
+ *
+ * Copyright (c) 2020-2023 Fabien MAILLY
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS,
+ * IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *****************************************************************************/
+
+/* Revision history:
+ * 1.1.0    Adapt the interface to new console library
+ * 1.0.0    Release version
+ *****************************************************************************/
 #ifndef CONSOLE_V71INTERFACESYNC_H_INC
 #define CONSOLE_V71INTERFACESYNC_H_INC
 //=============================================================================
@@ -22,27 +48,53 @@
 #endif
 //-----------------------------------------------------------------------------
 
-//! Log Title, use it instead of LOG!
-#define LOGTITLE(format, ...)           LOG(CONSOLE_TX, lsTitle, format, ##__VA_ARGS__)
-//! Log Fatal, use it instead of LOG!
-#define LOGFATAL(format, ...)           LOG(CONSOLE_TX, lsFatal, format, ##__VA_ARGS__)
-//! Log Error, use it instead of LOG!
-#define LOGERROR(format, ...)           LOG(CONSOLE_TX, lsError, format, ##__VA_ARGS__)
-//! Log Warning, use it instead of LOG!
-#define LOGWARN(format, ...)            LOG(CONSOLE_TX, lsWarning, format, ##__VA_ARGS__)
-//! Log Information, use it instead of LOG!
-#define LOGINFO(format, ...)            LOG(CONSOLE_TX, lsInfo, format, ##__VA_ARGS__)
-//! Log Trace, use it instead of LOG!
-#define LOGTRACE(format, ...)           LOG(CONSOLE_TX, lsTrace, format, ##__VA_ARGS__)
-//! Log Debug, use it instead of LOG!
-#	define LOGDEBUG(format, ...)          LOG(CONSOLE_TX, lsDebug, format, ##__VA_ARGS__)
-//! Log Special, use it instead of LOG!
-#	define LOGSPECIAL(format, ...)        LOG(CONSOLE_TX, lsSpecial, format, ##__VA_ARGS__)
-//! Hexadecimal dump of memory
-#define HEXDUMP(context, src, size)     __HexDump(CONSOLE_TX, context, src, size)
-//! Binary dump of memory
-#define BINDUMP(context, src, size)     __BinDump(CONSOLE_TX, context, src, size)
+#ifdef USE_CONSOLE_TX
 
+//! Log Title, use it instead of LOG!
+#  define LOGTITLE(format, ...)           LOG(CONSOLE_TX, lsTitle, format, ##__VA_ARGS__)
+//! Log Fatal, use it instead of LOG!
+#  define LOGFATAL(format, ...)           LOG(CONSOLE_TX, lsFatal, format, ##__VA_ARGS__)
+//! Log Error, use it instead of LOG!
+#  define LOGERROR(format, ...)           LOG(CONSOLE_TX, lsError, format, ##__VA_ARGS__)
+//! Log Warning, use it instead of LOG!
+#  define LOGWARN(format, ...)            LOG(CONSOLE_TX, lsWarning, format, ##__VA_ARGS__)
+//! Log Information, use it instead of LOG!
+#  define LOGINFO(format, ...)            LOG(CONSOLE_TX, lsInfo, format, ##__VA_ARGS__)
+//! Log Trace, use it instead of LOG!
+#  define LOGTRACE(format, ...)           LOG(CONSOLE_TX, lsTrace, format, ##__VA_ARGS__)
+//! Log Debug, use it instead of LOG!
+#  define LOGDEBUG(format, ...)           LOG(CONSOLE_TX, lsDebug, format, ##__VA_ARGS__)
+//! Log Special, use it instead of LOG!
+#  define LOGSPECIAL(format, ...)         LOG(CONSOLE_TX, lsSpecial, format, ##__VA_ARGS__)
+//! Hexadecimal dump of memory
+#  define HEXDUMP(context, src, size)     __HexDump(CONSOLE_TX, context, src, size)
+//! Binary dump of memory
+#  define BINDUMP(context, src, size)     __BinDump(CONSOLE_TX, context, src, size)
+
+#else
+
+//! Log Title, use it instead of LOG!
+#  define LOGTITLE(format, ...)
+//! Log Fatal, use it instead of LOG!
+#  define LOGFATAL(format, ...)
+//! Log Error, use it instead of LOG!
+#  define LOGERROR(format, ...)
+//! Log Warning, use it instead of LOG!
+#  define LOGWARN(format, ...)
+//! Log Information, use it instead of LOG!
+#  define LOGINFO(format, ...)
+//! Log Trace, use it instead of LOG!
+#  define LOGTRACE(format, ...)
+//! Log Debug, use it instead of LOG!
+#  define LOGDEBUG(format, ...)
+//! Log Special, use it instead of LOG!
+#  define LOGSPECIAL(format, ...)
+//! Hexadecimal dump of memory
+#  define HEXDUMP(context, src, size)
+//! Binary dump of memory
+#  define BINDUMP(context, src, size)
+
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -96,13 +148,15 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
 //********************************************************************************************************************
 // Console Transmit API
 //********************************************************************************************************************
+#ifdef USE_CONSOLE_TX
 
-#define CONSOLE_TX_BUFFER_SIZE    200         //!< Define the console transmission buffer size, must be determined according to the max length of a string and the UART speed
-char ConsoleTxBuffer[CONSOLE_TX_BUFFER_SIZE]; //!< The actual console transmission buffer
+#  define CONSOLE_TX_BUFFER_SIZE    200          //!< Define the console transmission buffer size, must be determined according to the max length of a string and the UART speed
+   char ConsoleTxBuffer[CONSOLE_TX_BUFFER_SIZE]; //!< The actual console transmission buffer
 
-extern ConsoleTx Console_TxConf;    //!< The console transmission configuration
-#define CONSOLE_TX  &Console_TxConf //!< Define to simplify the naming at the functions calling
+   extern ConsoleTx Console_TxConf;   //!< The console transmission configuration
+#  define CONSOLE_TX  &Console_TxConf //!< Define to simplify the naming at the functions calling
 
+#endif // USE_CONSOLE_TX
 //-----------------------------------------------------------------------------
 
 
@@ -113,59 +167,17 @@ extern ConsoleTx Console_TxConf;    //!< The console transmission configuration
 //********************************************************************************************************************
 // Console Receive API
 //********************************************************************************************************************
+#ifdef USE_CONSOLE_RX
 
-#ifdef CONSOLE_RX_USE_COMMAND_RECALL
-#  define CONSOLE_RX_COMMAND_BUFFER_SIZE    400              //!< Define the console command recall buffer size, this set the character count of commands that can be recall
-char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
-#endif
+#  ifdef CONSOLE_RX_USE_COMMAND_RECALL
+#    define CONSOLE_RX_COMMAND_BUFFER_SIZE    400               //!< Define the console command recall buffer size, this set the character count of commands that can be recall
+   char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
+#  endif
 
-extern ConsoleRx Console_RxConf;    //!< The console reception configuration
-#define CONSOLE_RX  &Console_RxConf //!< Define to simplify the naming at the functions calling
+   extern ConsoleRx Console_RxConf;   //!< The console reception configuration
+#  define CONSOLE_RX  &Console_RxConf //!< Define to simplify the naming at the functions calling
 
-//-----------------------------------------------------------------------------
-
-//! GPIO PORT/pin enumerator
-typedef enum
-{
-  No_PORTpin, //!< No PORT/pin selected
-  PORTA,      //!< Port A
-  PORTB,      //!< Port B
-  PORTC,      //!< Port C
-  PORTD,      //!< Port D
-  PORTE,      //!< Port E
-  PORTF,      //!< Port F
-  PA,         //!< Pin on port A
-  PB,         //!< Pin on port B
-  PC,         //!< Pin on port C
-  PD,         //!< Pin on port D
-  PE,         //!< Pin on port E
-  PF,         //!< Pin on port F
-} eGPIO_PortPin;
-
-//-----------------------------------------------------------------------------
-
-
-/*! @brief Process GPIO command
- * @details Commands that can be parsed are the following:
- * GPIO <action> <PORT/Pin>[ <value>]
- * Where:
- *  - <action> can be:
- *    - RD, READ: Read <PORT/Pin>
- *    - WR, WRITE: Write <value> to <PORT/Pin>
- *    - SET: Set bitset of <value> to <PORT/Pin>
- *    - CLR, CLEAR: Clear bitset of <value> to <PORT/Pin>
- *    - TG, TOGGLE: Toggle the value of <PORT/Pin>
- *  - <PORT/Pin> can be:
- *    - PORTx: where 'x' can be any of the ports name of the MCU
- *    - Rxy: where 'x' can be any of the ports name and 'y' the number of the pin of the MCU (ex: RA0)
- *  - <value> is the value to apply in case of Write, Set, or Clear. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value will be 0
- *
- * @param[in] *pCmd Is the command string first char (NULL terminated string)
- * @param[in] size Is the char count of the command string pCmd
- * @return Returns an #eERRORRESULT value enum
- */
-eERRORRESULT ProcessGPIOcommand(const uint8_t* pCmd, size_t size);
-
+#endif // USE_CONSOLE_RX
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }

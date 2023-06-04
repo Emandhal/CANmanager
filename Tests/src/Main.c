@@ -23,10 +23,10 @@
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-#include <asf.h> // Use Atmel Software Framework (ASF)
 #include "string.h"
 #include "Main.h"
 #include "TimerTicks.h"
+#include "Interface/Console_V71Interface.h"
 //-----------------------------------------------------------------------------
 
 volatile uint32_t msCount; //!< Milli-seconds count from start of the system
@@ -80,10 +80,12 @@ int main (void)
   SetStatusLEDblinkMode(BLINK_OFF);
 
   //--- Initialize the console UART ---------------------
-  ConsoleUART_TxInit_V71();
+#ifdef USE_CONSOLE_TX
   InitConsoleTx(CONSOLE_TX);
-  ConsoleUART_RxInit_V71();
+#endif
+#ifdef USE_CONSOLE_RX
   InitConsoleRx(CONSOLE_RX);
+#endif
 
   //--- Demo start --------------------------------------
   printf("\r\n\r\n");
@@ -103,12 +105,14 @@ int main (void)
   while(1)
   {
     //--- Flush char by char console buffer ---
+#ifdef USE_CONSOLE_TX
     TrySendingNextCharToConsole(CONSOLE_TX);
+#endif
 
-    if (ThereIs1msTick())
-    {
-      
-    }
+    //--- Process console reception ---
+#ifdef USE_CONSOLE_RX
+    ConsoleRx_ProcessReceivedChars(CONSOLE_RX);
+#endif
 
     if (ThereIs10msTick())
     {
@@ -144,14 +148,6 @@ int main (void)
     {
 
     }
-
-
-    /*CiBDIAG0_Register Diag0;
-    CiBDIAG1_Register Diag1;
-    ErrorExt1 = MCP251XFD_GetBusDiagnostic(CANEXT1, &Diag0, &Diag1);
-    if (ErrorExt1 != ERR_OK) ShowDeviceError(CANEXT1, ErrorExt1); // Show device error
-    if (Diag0.CiBDIAG0 == 0xFFFFFFFF) LOGDEBUG("Oops0");
-    if (Diag1.CiBDIAG1 == 0xFFFFFFFF) LOGDEBUG("Oops1");*/
 
     nop();
   }

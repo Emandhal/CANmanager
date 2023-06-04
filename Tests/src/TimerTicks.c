@@ -8,6 +8,7 @@
 
 //-----------------------------------------------------------------------------
 #include "TimerTicks.h"
+#include "main.h"
 //-----------------------------------------------------------------------------
 
 #define UNIT_ERR_CONTEXT  ERRCONTEXT__TIMERTICKS // Error context of this unit
@@ -692,7 +693,7 @@ void UserButton1_Init(uint32_t debounceTicksCount, ButtonEvent buttonEvent)
   //--- Set User Button 1 configuration ---
   USER_BUTTON1_As_Input;
   UserButton1_DebounceTicksInt  = 0;
-  UserButton1_DebounceTicksMask = (uint32_t)((1ull << debounceTicksCount) - 1);
+  UserButton1_DebounceTicksMask = (uint32_t)(((uint64_t)1u << debounceTicksCount) - 1);
   UserButton1_LastState         = (USER_BUTTON1_GetState ? BUTTON_PUSHED : BUTTON_RELEASED);
   UserButton1_EventStatus       = buttonEvent;
 }

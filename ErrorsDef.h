@@ -55,7 +55,7 @@ extern "C" {
  * {
  *   // Do stuff
  *   if (a != b) return ERR_GENERATE(ERR__BAD_DATA); // This will combine the ERRCONTEXT__TIMERTICKS context with the ERR__BAD_DATA error
- *   return ERR_OK;                                  // This one have an optional a context
+ *   return ERR_NONE;                                // This one have an optional a context
  * }
  * @endcode
  *
@@ -97,13 +97,14 @@ extern "C" {
 #define ERR_ERROR_CONTEXT_Set(context)    (((uint32_t)(context) << ERR_ERROR_CONTEXT_Pos) & ERR_ERROR_CONTEXT_Mask)             //!< Set the context of the error
 #define ERR_ERROR_Get(error)              (eERRORRESULT)((uint32_t)(error) & ~ERR_ERROR_CONTEXT_Mask)                           //!< Get the error (ie. isolate the error from the context)
 #define ERR_ERROR_Set(error)              ((uint32_t)(error) & ~ERR_ERROR_CONTEXT_Mask)                                         //!< Set the error
-#define ERR_CONTEXTUALIZE(context,error)  ( (error) != ERR_OK ? (eERRORRESULT)(ERR_ERROR_CONTEXT_Set(context) | ERR_ERROR_Set(error)) : ERR_OK ) //!< Conbine the context and the error. Will be simplified at compile time if error is fixed
+#define ERR_CONTEXTUALIZE(context,error)  ( (error) != ERR_NONE ? (eERRORRESULT)(ERR_ERROR_CONTEXT_Set(context) | ERR_ERROR_Set(error)) : ERR_NONE ) //!< Combine the context and the error. Will be simplified at compile time if error is fixed
 #define ERR_GENERATE(error)               ERR_CONTEXTUALIZE(UNIT_ERR_CONTEXT,(error)) //!< UNIT_ERR_CONTEXT is set on the .c file and is specific to a .c file. It will contain an eERRORCONTEXTS
 
 //------------------------------------------------------------------------------
 
 
 
+//**********************************************************************************************************************************************************
 //********************************************************************************************************************
 // Contexts definitions
 //********************************************************************************************************************
@@ -138,7 +139,6 @@ typedef enum
 
 //------------------------------------------------------------------------------
 
-
 //! Errors context string table
 #ifdef USE_ERRORS_STRING
 //! Errors string table
@@ -154,13 +154,14 @@ static const char* const ERRCONTEXT_ContextStrings[] =
 
 
 
+//**********************************************************************************************************************************************************
 //********************************************************************************************************************
 // Errors definitions
 //********************************************************************************************************************
 // WARNING! Here after use the X-Macros. See on Internet how it works before modifying something
 #define ERRORS_TABLE                                                                              \
 /*  //--- Success ---                                                                           */\
-    X(ERR_OK                   , =   0, "Succeeded"                                             ) \
+    X(ERR_NONE                 , =   0, "Succeeded"                                             ) \
 /*  //--- General errors ---                                                                    */\
     X(ERR__NO_DEVICE_DETECTED  ,      , "No device detected"                                    ) \
     X(ERR__OUT_OF_RANGE        ,      , "Value out of range"                                    ) \
@@ -282,7 +283,9 @@ static const char* const ERRCONTEXT_ContextStrings[] =
 /*  // Test error                                                                               */\
     X(ERR__TEST_ERROR          , = 255, "Test error"                                            )
 
+#define ERR_OK  ERR_NONE //!< For backward compatibility
 
+//------------------------------------------------------------------------------
 
 //! Function's return error enumerator
 typedef enum
@@ -303,7 +306,6 @@ typedef enum
 
 //------------------------------------------------------------------------------
 
-
 #ifdef USE_ERRORS_STRING
 //! Errors string table
 static const char* const ERR_ErrorStrings[] =
@@ -313,8 +315,6 @@ static const char* const ERR_ErrorStrings[] =
 #undef X
 };
 #endif
-
-
 
 //------------------------------------------------------------------------------
 //! @}

@@ -1,22 +1,16 @@
-/*******************************************************************************
-    File name:    Console_V71InterfaceSync.h
-    Author:       FMA
-    Version:      1.0
-    Date (d/m/y): 28/04/2020
-    Description:  Console interface for the Console Transmit
-                  This unit interface the Console API with the current hardware
-                  This interface implements the synchronous use of the API on a SAMV71
-                  and is also specific with the SAMV71 Xplained Ultra board
-
-    History :
+/*!*****************************************************************************
+ * @file    Console_V71InterfaceSync.h
+ * @author  Fabien 'Emandhal' MAILLY
+ * @version 1.1.0
+ * @date    04/06/2023
+ * @brief   Console interface for the Console Transmit and Receive
+ *          This unit interface the Console API with the current hardware
+ *          This interface implements the synchronous use of the API on a SAMV71
+ *          and is also specific with the SAMV71 Xplained Ultra board
 *******************************************************************************/
 
 //-----------------------------------------------------------------------------
-#include <string.h>
-#include <strings.h>
-#include "Console.h"
 #include "Console_V71Interface.h"
-#include "StringTools.h"
 //-----------------------------------------------------------------------------
 #if !defined(__cplusplus)
 #  include <asf.h>
@@ -85,7 +79,7 @@ eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, uint8_t *data, size_t siz
 #endif
   Usart* pUART = (Usart*)(pIntDev->InterfaceDevice); // Get the V71 USART device of this UART port
   *actuallySent = 0;
-  if (size <= 0) return ERR_OK;
+  if (size <= 0) return ERR_NONE;
   if ((pUART->US_CSR & US_CSR_TXRDY  ) == 0) return ERR__NOT_READY; // Character is in the US_THR
   if ((pUART->US_CSR & US_CSR_TXEMPTY) == 0) return ERR__NOT_READY;
 //  if ((pUART->US_IMR & US_IMR_TXRDY) >  0) return ERR__NOT_READY; // TX Ready interrupt is set  // *** USE WITH INTERRUPT CHAR SEND. IN SEND WHILE IDLE (while(true) in the main()) COMMENT THIS LINE
@@ -93,7 +87,7 @@ eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, uint8_t *data, size_t siz
   pUART->US_THR = US_THR_TXCHR(*data);             // Send the char
   pUART->US_IER = (US_IER_TXRDY | US_IER_TXEMPTY); // Enable interrupts
   *actuallySent = 1;                               // Always 1 by 1 with this USART
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -136,13 +130,13 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
 #endif
   Usart* pUART = (Usart*)(pIntDev->InterfaceDevice); // Get the V71 USART device of this UART port
   *actuallyReceived = 0;
-  if (size <= 0) return ERR_OK;
+  if (size <= 0) return ERR_NONE;
   if ((pUART->US_CSR & US_CSR_RXRDY) == 0) return ERR__NO_DATA_AVAILABLE;
 
   *data = (char)(pUART->US_RHR & US_RHR_RXCHR_Msk); // Get the char
   *actuallyReceived = 1;                            // Always 1 by 1 with this USART
   *lastCharError = pUART->US_CSR & 0xE4;            // Get only Rx errors
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -154,18 +148,21 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
 void USART1_Handler(void)
 {
   //--- Transmission interrupts ---
+#ifdef USE_CONSOLE_TX
   if ((CONSOLE_UART->US_CSR & (US_CSR_TXRDY | US_CSR_TXEMPTY)) > 0) // Transmit interrupt rises
   {
     CONSOLE_UART->US_IDR = (US_IDR_TXRDY | US_IDR_TXEMPTY);         // Disable interrupts
     TrySendingNextCharToConsole(CONSOLE_TX);
   }
+#endif
 
   //--- Reception interrupts ---
+#ifdef USE_CONSOLE_RX
   if ((CONSOLE_UART->US_CSR & US_CSR_RXRDY) > 0)                    // Receive interrupt rises
   {
-//    char ReceivedChar;
-//    ConsoleRx_GetChar_V71(CONSOLE_RX, &ReceivedChar);
+    ConsoleRx_ReceiveChar(CONSOLE_RX);
   }
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -178,6 +175,7 @@ void USART1_Handler(void)
 //********************************************************************************************************************
 // Console Transmit API
 //********************************************************************************************************************
+#ifdef USE_CONSOLE_TX
 
 //! Console Tx configuration
 ConsoleTx Console_TxConf =
@@ -200,6 +198,7 @@ ConsoleTx Console_TxConf =
   CONSOLE_MEMBER(BufferSize) CONSOLE_TX_BUFFER_SIZE,
 };
 
+#endif // USE_CONSOLE_TX
 //-----------------------------------------------------------------------------
 
 
@@ -210,6 +209,7 @@ ConsoleTx Console_TxConf =
 //********************************************************************************************************************
 // Console Receive API
 //********************************************************************************************************************
+#ifdef USE_CONSOLE_RX
 
 //! Console Rx configuration
 ConsoleRx Console_RxConf =
@@ -238,194 +238,56 @@ ConsoleRx Console_RxConf =
 //-----------------------------------------------------------------------------
 
 
-//! @brief List of supported console receive commands
-const ConsoleCommand ConsoleCommandsList[] =
+#ifdef USE_CONSOLE_GPIO_COMMANDS
+//==============================================================================
+// Process GPIO command Callback
+//==============================================================================
+void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask)
 {
-  { CONSOLE_ROL5XOR_HASH('G','P','I','O','\0','\0','\0','\0'), ProcessGPIOcommand },
-};
-
-//=============================================================================
-// Process received command Callback
-//=============================================================================
-void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size)
-{
-  eERRORRESULT Error = ERR__NOT_SUPPORTED;
-  
-  //--- Generate hash of first parameter of the string ---
-  uint32_t Hash = CONSOLE_HASH_INITIAL_VAL;
-  bool EndCmd = false;
-  for (size_t idx = 0; idx < 8; ++idx)
-  {
-    EndCmd |= (idx >= size) || (pCmd[idx] == ' ') || (pCmd[idx] == CONSOLE_NULL);  // End of command only if space or null char, or index out of string
-    uint32_t newData = (EndCmd == false ? pCmd[idx] : 0);                          // If after end of command, force 0
-    newData = (((newData >= 'a') && (newData <= 'z')) ? (newData - 32) : newData); // Force uppercase
-    Hash = ((Hash >> 27) | (Hash << 5)) ^ newData;                                 // Do Rol 5 xor data
-  }
-
-  //--- Search into command list matching command and execute ---
-  for (size_t zIdx = 0; zIdx < (sizeof(ConsoleCommandsList) / sizeof(ConsoleCommandsList[0])); ++zIdx)
-  {
-    if (Hash == ConsoleCommandsList[zIdx].Hash)
-    {
-      Error = ConsoleCommandsList[zIdx].fnCommandProcess(pCmd, size); // Process command in associated function
-      if (Error == ERR_OK) break;                                     // Exit if command have been successfully processed, else give if to another hash
-    }    
-  }
-  if (Error == ERR__NOT_SUPPORTED)
-  {
-    LOGDEBUG("Unknown command (Key: %s; Hash: 0x%8X", pCmd, (unsigned int)Hash);
-  }
-}
-
-//-----------------------------------------------------------------------------
-
-const ConsoleAction GPIOactionsList[] =
-{
-  { "RD"    , Action_Read  , },
-  { "READ"  , Action_Read  , },
-  { "WR"    , Action_Write , },
-  { "WRITE" , Action_Write , },
-  { "SET"   , Action_Set   , },
-  { "CLR"   , Action_Clear , },
-  { "CLEAR" , Action_Clear , },
-  { "TG"    , Action_Toggle, },
-  { "TOGGLE", Action_Toggle, },
-  { "DIR"   , Action_Dir   , },
-};
-
-#define GPIO_ACTION_LIST_COUNT  ( sizeof(GPIOactionsList) / sizeof(GPIOactionsList[0]) )
-
-//=============================================================================
-// Process GPIO command
-//=============================================================================
-eERRORRESULT ProcessGPIOcommand(const uint8_t* pCmd, size_t size)
-{
-  if (size < 9) return ERR__PARSE_ERROR;
-  uint32_t Value = 0;
-
-  //--- Parse "GPIO" command ---
-  size_t Index = 0;
-  while ((*pCmd != ' ') && (*pCmd != 0)) { ++pCmd; ++Index; } // Search end of "GPIO" command
-  if ((Index != 5) || (*pCmd == 0)) return ERR__PARSE_ERROR;  // Check the good position of the parse
-  ++pCmd;
-
-  //--- Parse arguments ---
-  eConsoleActions Action = Action_None;
-  eGPIO_PortPin PORTpin = No_PORTpin;
-  uint32_t PinNum = 0;
-  while (*pCmd != 0)
-  {
-    if ((pCmd[0] >= '0') && (pCmd[0] <= '9'))                          // Is a digit?
-    {
-      switch (pCmd[1])
-      {
-        case 'x':
-        case 'X':
-          pCmd += 2;                                                   // Start with "0x"? Pass these chars
-          Value = HexStringToUint((char**)&pCmd);                      // Extract data
-          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-          break;
-
-        case 'b':
-        case 'B':
-          pCmd += 2;                                                   // Start with "0b"? Pass these chars
-          Value = BinStringToUint((char**)&pCmd);                      // Extract data
-          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-          break;
-
-        default:
-          Value = StringToInt((char**)&pCmd);                          // Extract data
-          if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR; // Check the good position of the parse
-          break;
-      }
-      if (*pCmd != 0) ++pCmd;
-    }
-    else                                                               // Is a string
-    {
-      if (CONSOLE_LOWERCASE(pCmd[0]) == 'p')                           // Starts with 'P'
-      {
-        //--- Get PORT/Pin ---
-        if ((strtcmp((const char**)&pCmd, "PORT") == 0) || (strtcmp((const char**)&pCmd, "PIO") == 0)) // Is a port
-        {
-          char PortName = CONSOLE_UPPERCASE(*pCmd);
-          if ((PortName >= 'A') && (PortName <= 'E'))
-            PORTpin = (eGPIO_PortPin)(PortName - 'A' + (char)PORTA);
-          ++pCmd;
-        }
-        if (PORTpin == No_PORTpin) // Not a port? Check pin
-        {
-          char PortName = CONSOLE_UPPERCASE(pCmd[1]);
-          if ((PortName >= 'A') && (PortName <= 'E'))
-            PORTpin = (eGPIO_PortPin)(PortName - 'A' + (char)PA);
-          pCmd += 2;
-          PinNum = StringToInt((char**)&pCmd);                         // Extract data
-          if (*pCmd != 0) ++pCmd;
-        }
-      }
-      else
-      {
-        //--- Search string action ---
-        for (size_t zIdx = 0; zIdx < GPIO_ACTION_LIST_COUNT; ++zIdx)
-        {
-          if (strscmp((char*)pCmd, GPIOactionsList[zIdx].Str) == 0)
-          {
-            Action = GPIOactionsList[zIdx].Action;
-            pCmd += strlen(GPIOactionsList[zIdx].Str);
-            break;
-          }
-        }
-      }
-    }
-  }
-
   //--- Set GPIO command ---
-  if (PORTpin == No_PORTpin) return ERR__PARSE_ERROR;
+  if (portPin == No_PORTpin) return;
   uint32_t Result = 0;
-  switch (Action)
+  switch (action)
   {
     default:
-    case Action_None: return ERR__PARSE_ERROR;
+    case Action_None:
+      break;
 
     case Action_Read:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           Result = ioport_get_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu);
-      else Result = ioport_get_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum));
-      LOGINFO("Direction: 0x%x", (unsigned int)Result);
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) Result = ioport_get_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask);
+      else Result = ioport_get_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum));
+      LOGINFO("GPIO Direction: 0x%x", (unsigned int)Result);
       break;
 
     case Action_Write:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, Value);
-      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), Value);
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, value);
+      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), value);
       break;
 
     case Action_Set:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, IOPORT_PIN_LEVEL_HIGH);
-      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), IOPORT_PIN_LEVEL_HIGH);
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, IOPORT_PIN_LEVEL_HIGH);
+      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), IOPORT_PIN_LEVEL_HIGH);
       break;
 
     case Action_Clear:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           ioport_set_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, IOPORT_PIN_LEVEL_LOW);
-      else ioport_set_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), IOPORT_PIN_LEVEL_LOW);
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, IOPORT_PIN_LEVEL_LOW);
+      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), IOPORT_PIN_LEVEL_LOW);
       break;
 
     case Action_Toggle:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           ioport_toggle_port_level(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu);
-      else ioport_toggle_pin_level(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum));
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_toggle_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask);
+      else ioport_toggle_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum));
       break;
 
     case Action_Dir:
-      if ((PORTpin >= PORTA) && (PORTpin <= PORTF))
-           ioport_set_port_dir(((uint32_t)PORTpin - (uint32_t)PORTA), 0xFFFFFFFFu, Value);
-      else ioport_set_pin_dir(((((uint32_t)PORTpin - (uint32_t)PA) * 32) + PinNum), Value);
+      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_dir(((uint32_t)portPin - (uint32_t)PORTA), mask, value);
+      else ioport_set_pin_dir(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), value);
       break;
   }
-  return ERR_OK;
 }
+#endif
 
+#endif // USE_CONSOLE_RX
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }

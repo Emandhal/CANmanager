@@ -39,10 +39,11 @@
 //=============================================================================
 
 //-----------------------------------------------------------------------------
+#include <stdio.h>
 #include "ErrorsDef.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
-extern "C" {
+   extern "C" {
 #  define UART_MEMBER(name)
 #else
 #  define UART_MEMBER(name)  .name =
@@ -92,7 +93,7 @@ typedef eERRORRESULT (*UARTreceive_Func)(UART_Interface *pIntDev, uint8_t *data,
 //! @brief UART interface container structure
 struct UART_Interface
 {
-  void *InterfaceDevice;             //!< This is the pointer that will be in the first parameter of all interface call functions
+  void* InterfaceDevice;             //!< This is the pointer that will be in the first parameter of all interface call functions
   UARTtransmit_Func fnUART_Transmit; //!< This function will be called when a driver/library needs to transmit data
   UARTreceive_Func fnUART_Receive;   //!< This function will be called when a driver/library needs to receive data
   uint8_t Channel;                   //!< UART channel of the interface device

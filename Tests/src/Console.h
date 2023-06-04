@@ -1,46 +1,92 @@
 /*!*****************************************************************************
  * @file    Console.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.0
- * @date    08/12/2017
+ * @version 1.1.0
+ * @date    04/06/2023
  * @brief   Some functions for RS-232 console communication
  ******************************************************************************/
+/* @page License
+ *
+ * Copyright (c) 2020-2023 Fabien MAILLY
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS,
+ * IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+ * EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *****************************************************************************/
+
+/* Revision history:
+ * 1.1.0    Add console Rx basic commands
+ * 1.0.0    Release version
+ *****************************************************************************/
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 //=============================================================================
 
 //-----------------------------------------------------------------------------
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include "UART_Interface.h"
-
+//-----------------------------------------------------------------------------
 #if !defined(__cplusplus)
-# include "asf.h"
+# include "main.h"
 #else
   extern "C" {
+  void SetConsoleColor(int text, int fond);
 #endif
 //-----------------------------------------------------------------------------
 
 #if !defined(__cplusplus)
-
-#  define CONSOLE_MEMBER(name)  .name =
-#  define CONSOLE_WEAK          __attribute__((weak))
-#  define __FORMATPRINTF23__    __attribute__((__format__(__printf__, 2, 3))) // 2: Format at second argument ; 3: args at third argument (...)
-#  define __FORMATPRINTF30__    __attribute__((__format__(__printf__, 3, 0))) // 3: Format at third  argument ; 0: for va_list
-#  define __FORMATPRINTF34__    __attribute__((__format__(__printf__, 3, 4))) // 3: Format at third  argument ; 4: args at fourth argument (...)
-#  define __FORMATPRINTF40__    __attribute__((__format__(__printf__, 4, 0))) // 4: Format at fourth argument ; 0: for va_list
-#  define vprintf               viprintf
-
+# define CONSOLE_MEMBER(name)  .name =
+# define CONSOLE_WEAK          __attribute__((weak))
+# define CONSOLE_EXTERN
+# define __FORMATPRINTF12__    __attribute__((__format__(__printf__, 1, 2))) // 1: Format at first argument  ; 2: args at second argument (...)
+# define __FORMATPRINTF20__    __attribute__((__format__(__printf__, 2, 0))) // 3: Format at second argument ; 0: for va_list
+# define __FORMATPRINTF23__    __attribute__((__format__(__printf__, 2, 3))) // 2: Format at second argument ; 3: args at third argument (...)
+# define __FORMATPRINTF30__    __attribute__((__format__(__printf__, 3, 0))) // 3: Format at third argument  ; 0: for va_list
+# define __FORMATPRINTF34__    __attribute__((__format__(__printf__, 3, 4))) // 3: Format at third  argument ; 4: args at fourth argument (...)
+# define __FORMATPRINTF40__    __attribute__((__format__(__printf__, 4, 0))) // 4: Format at fourth argument ; 0: for va_list
+# define vprintf               viprintf
 #else
-
-#  define CONSOLE_MEMBER(name)
-#  define CONSOLE_WEAK          __attribute__((weak))
-#  define __FORMATPRINTF23__
-#  define __FORMATPRINTF30__
-#  define __FORMATPRINTF34__
-#  define __FORMATPRINTF40__
-
+# define CONSOLE_MEMBER(name)
+# if defined(_MSC_VER)
+#   define CONSOLE_WEAK
+#   define CONSOLE_EXTERN      extern
+# else
+#   define CONSOLE_WEAK        __attribute__((weak))
+#   define CONSOLE_EXTERN
+# endif
+# define __FORMATPRINTF12__
+# define __FORMATPRINTF20__
+# define __FORMATPRINTF23__
+# define __FORMATPRINTF30__
+# define __FORMATPRINTF34__
+# define __FORMATPRINTF40__
 #endif
+
+//-----------------------------------------------------------------------------
+
+//! Macro to get the lower case of a char
+#define CONSOLE_LOWERCASE(aChar)  ( (((aChar) >= 'A') && ((aChar) <= 'Z')) ? ((aChar)+32) : (aChar) )
+
+//! Macro to get the upper case of a char
+#define CONSOLE_UPPERCASE(aChar)  ( (((aChar) >= 'a') && ((aChar) <= 'z')) ? ((aChar)-32) : (aChar) )
 
 //-----------------------------------------------------------------------------
 
@@ -129,27 +175,18 @@ inline uint32_t CharToDigit(const char aChar)
 
 //-----------------------------------------------------------------------------
 
-//! Macro to get the lower case of a char
-#define CONSOLE_LOWERCASE(x)  (char)( (((int_fast8_t)(x) - 'A') < 26) ? (x) + 32 : (x) )
-
-//! Macro to get the upper case of a char
-#define CONSOLE_UPPERCASE(x)  (char)( (((int_fast8_t)(x) - 'a') < 26) ? (x) - 32 : (x) )
-
-//-----------------------------------------------------------------------------
-
-
 //! Log type, sorted by severity.
 typedef enum
 {
-  lsTitle   = 0, //! Show a title
-  lsFatal   = 1, //! Fatal error! application will abort shortly
-  lsError   = 2, //! Error! the application may work improperly
-  lsWarning = 3, //! Warning! There's something wrong
-  lsInfo    = 4, //! For your information, the application is safe
-  lsTrace   = 5, //! Trace log only
-  lsDebug   = 6, //! For Debugging purpose. Emitted only when DEBUG is defined
-  lsSpecial = 7, //! For Debugging purpose. Emitted only when DEBUG is defined
-  lsLast_,       //! Special value. Do not use and keep this the last value
+  lsTitle,   //!< Show a title
+  lsFatal,   //!< Fatal error! application will abort shortly
+  lsError,   //!< Error! the application may work improperly
+  lsWarning, //!< Warning! There's something wrong
+  lsInfo,    //!< For your information, the application is safe
+  lsTrace,   //!< Trace log only
+  lsDebug,   //!< For Debugging purpose. Emitted only when DEBUG is defined
+  lsSpecial, //!< For Debugging purpose. Emitted only when DEBUG is defined
+  lsLast_,   //!< Special value. Do not use and keep this the last value
 } eSeverity;
 
 //! Windows console colors
@@ -184,7 +221,7 @@ typedef enum
  * @param[in] *context Context string (usually, the system name emitting the log).
  * @param[in] whiteText If the text after the time counter change to white
  * @param[in] *format Format string (printf format), followed by arguments.
- * @param[in] args Arguments of the formated string.
+ * @param[in] args Arguments for format specification
  */
 void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, const char* format, va_list args) __FORMATPRINTF40__;
 
@@ -193,11 +230,12 @@ void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, const char* for
  * @param[in] *pApi Is the Console transmit API to work with
  * @param[in] severity This is the log severity.
  * @param[in] *format Format string (printf format), followed by arguments.
- * @param[in] ... Arguments of the formated string.
+ * @param[in] ... Arguments for format specification
  */
 void LOG(ConsoleTx* pApi, eSeverity severity, const char* format, ...) __FORMATPRINTF34__;
 
 //-----------------------------------------------------------------------------
+
 
 #ifdef __cplusplus
 /*! @brief Set the Windows console color
@@ -211,7 +249,7 @@ void SetConsoleColor(eWinConsoleColor text, eWinConsoleColor background);
  *
  * @param[in] *pApi Is the Console transmit API to work with
  * @param[in] *format Format string (printf format), followed by arguments.
- * @param[in] ... Arguments of the formated string.
+ * @param[in] ... Arguments for format specification
  */
 void LOGSIM(ConsoleTx* pApi, const char* format, ...);
 #endif
@@ -241,32 +279,55 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
 //-----------------------------------------------------------------------------
 
 //! Log Title, use it instead of LOG!
-#define LOGTITLE_(api, format, ...)             LOG(api, lsTitle, format, ##__VA_ARGS__)
+#define LOGTITLE_(api, format, ...)            LOG(api, lsTitle, format, ##__VA_ARGS__)
 //! Log Fatal, use it instead of LOG!
-#define LOGFATAL_(api, format, ...)             LOG(api, lsFatal, format, ##__VA_ARGS__)
+#define LOGFATAL_(api, format, ...)            LOG(api, lsFatal, format, ##__VA_ARGS__)
 //! Log Error, use it instead of LOG!
-#define LOGERROR_(api, format, ...)             LOG(api, lsError, format, ##__VA_ARGS__)
+#define LOGERROR_(api, format, ...)            LOG(api, lsError, format, ##__VA_ARGS__)
 //! Log Warning, use it instead of LOG!
-#define LOGWARN_(api, format, ...)              LOG(api, lsWarning, format, ##__VA_ARGS__)
+#define LOGWARN_(api, format, ...)             LOG(api, lsWarning, format, ##__VA_ARGS__)
 //! Log Information, use it instead of LOG!
-#define LOGINFO_(api, format, ...)              LOG(api, lsInfo, format, ##__VA_ARGS__)
+#define LOGINFO_(api, format, ...)             LOG(api, lsInfo, format, ##__VA_ARGS__)
 //! Log Trace, use it instead of LOG!
-#define LOGTRACE_(api, format, ...)             LOG(api, lsTrace, format, ##__VA_ARGS__)
+#define LOGTRACE_(api, format, ...)            LOG(api, lsTrace, format, ##__VA_ARGS__)
 #if (defined(DEBUG) || defined(_DEBUG))
-  //! Log Debug, use it instead of LOG!
-  #define LOGDEBUG_(api, format, ...)           LOG(api, lsDebug, format, ##__VA_ARGS__)
-  //! Log Special, use it instead of LOG!
-  #define LOGSPECIAL_(api, format, ...)         LOG(api, lsSpecial, format, ##__VA_ARGS__)
-  //! Hexadecimal dump of memory
-  #define HEXDUMP_(api, context, src, size)     __HexDump(api, context, src, size)
-  //! Binary dump of memory
-  #define BINDUMP_(api, context, src, size)     __BinDump(api, context, src, size)
+    //! Log Debug, use it instead of LOG!
+#   define LOGDEBUG_(api, format, ...)         LOG(api, lsDebug, format, ##__VA_ARGS__)
+    //! Log Special, use it instead of LOG!
+#   define LOGSPECIAL_(api, format, ...)       LOG(api, lsSpecial, format, ##__VA_ARGS__)
+    //! Hexadecimal dump of memory
+#   define HEXDUMP_(api, context, src, size)   __HexDump(api, context, src, size)
+    //! Binary dump of memory
+#   define BINDUMP_(api, context, src, size)   __BinDump(api, context, src, size)
 #else
-  #define LOGDEBUG_(api, format, ...)           do{}while(false)
-  #define LOGSPECIAL_(api, format, ...)         do{}while(false)
-  #define HEXDUMP_(api, context, src, size)     do{}while(false)
-  #define BINDUMP_(api, context, src, size)     do{}while(false)
+#   define LOGDEBUG_(api, format, ...)         do{}while(false)
+#   define LOGSPECIAL_(api, format, ...)       do{}while(false)
+#   define HEXDUMP_(api, context, src, size)   do{}while(false)
+#   define BINDUMP_(api, context, src, size)   do{}while(false)
 #endif
+
+#else /* USE_CONSOLE_TX */
+
+//! Log Title, use it instead of LOG!
+#define LOGTITLE_(api, format, ...)            do{}while(false)
+//! Log Fatal, use it instead of LOG!
+#define LOGFATAL_(api, format, ...)            do{}while(false)
+//! Log Error, use it instead of LOG!
+#define LOGERROR_(api, format, ...)            do{}while(false)
+//! Log Warning, use it instead of LOG!
+#define LOGWARN_(api, format, ...)             do{}while(false)
+//! Log Information, use it instead of LOG!
+#define LOGINFO_(api, format, ...)             do{}while(false)
+//! Log Trace, use it instead of LOG!
+#define LOGTRACE_(api, format, ...)            do{}while(false)
+//! Log Debug, use it instead of LOG!
+#define LOGDEBUG_(api, format, ...)            do{}while(false)
+//! Log Special, use it instead of LOG!
+#define LOGSPECIAL_(api, format, ...)          do{}while(false)
+//! Hexadecimal dump of memory
+#define HEXDUMP_(api, context, src, size)      do{}while(false)
+//! Binary dump of memory
+#define BINDUMP_(api, context, src, size)      do{}while(false)
 
 //-----------------------------------------------------------------------------
 #endif /* USE_CONSOLE_TX */
@@ -284,9 +345,8 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
  */
 //! @addtogroup ConsoleHash
 //! @{
-#define CONSOLE_HASH_INITIAL_VAL              ( 0x00000000u )                                                          //!< Initial value of the ROL5 XOR hash
-#define CONSOLE_UPPER_CASE(aChar)             ( (((aChar) >= 'a') && ((aChar) <= 'z')) ? ((aChar) - 32) : (aChar) )    //!< Uppercase the char in argument, else let it untouch
-#define CONSOLE_ROL5_XOR_CHAR(value,newData)  ( (((value) >> 27) | ((value) << 5)) ^ (newData) )                       //!< Perform a Rol 5 of hash following a xor of the char of the string
+#define CONSOLE_HASH_INITIAL_VAL              ( 0x00000000u )                                                            //!< Initial value of the ROL5 XOR hash
+#define CONSOLE_ROL5_XOR_CHAR(value,newData)  ( newData > 0 ? ((((value) >> 27) | ((value) << 5)) ^ (newData)) : value ) //!< Perform a Rol 5 of hash following a xor of the char of the string
 
 /*! @brief Get the ROL5 XOR hash of a maximum 8-char string
  * @warning Use this macro only on constant value of n to use the compiler simplification, else create a function with the code in details
@@ -309,14 +369,14 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
                                                                                         CONSOLE_ROL5_XOR_CHAR(                                                      \
                                                                                         CONSOLE_ROL5_XOR_CHAR(                                                      \
                                                                                         CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(CONSOLE_HASH_INITIAL_VAL, CONSOLE_UPPER_CASE(char1)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char2)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char3)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char4)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char5)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char6)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char7)), \
-                                                                                                                                        CONSOLE_UPPER_CASE(char8)) )
+                                                                                        CONSOLE_ROL5_XOR_CHAR(CONSOLE_HASH_INITIAL_VAL, CONSOLE_UPPERCASE(char1)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char2)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char3)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char4)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char5)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char6)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char7)), \
+                                                                                                                                        CONSOLE_UPPERCASE(char8)) )
 //! @}
 
 //-----------------------------------------------------------------------------
@@ -328,20 +388,20 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
  */
 //! @addtogroup ConsoleReceive
 //! @{
-#define CONSOLE_NULL  0x00 //!< Null
+#define CONSOLE_NULL  0x00 //!< Null            '\0'
 #define CONSOLE_SOH   0x01 //!< Start Of Heading
 #define CONSOLE_STX   0x02 //!< Start of TeXt
 #define CONSOLE_ETX   0x03 //!< End of TeXt
 #define CONSOLE_EOT   0x04 //!< End Of Transmission
 #define CONSOLE_ENQ   0x05 //!< ENQuiry (End of Line)
 #define CONSOLE_ACK   0x06 //!< ACKnowledge
-#define CONSOLE_BEL   0x07 //!< BELl
-#define CONSOLE_BS    0x08 //!< BackSpace
-#define CONSOLE_HT    0x09 //!< Horizontal Tab
-#define CONSOLE_LF    0x0A //!< Line Feed
-#define CONSOLE_VT    0x0B //!< Vertical Tab
+#define CONSOLE_BEL   0x07 //!< BELl            '\a'
+#define CONSOLE_BS    0x08 //!< BackSpace       '\b'
+#define CONSOLE_HT    0x09 //!< Horizontal Tab  '\t'
+#define CONSOLE_LF    0x0A //!< Line Feed       '\n'
+#define CONSOLE_VT    0x0B //!< Vertical Tab    '\v'
 #define CONSOLE_FF    0x0C //!< Form Feed
-#define CONSOLE_CR    0x0D //!< Carriage Return
+#define CONSOLE_CR    0x0D //!< Carriage Return '\r'
 #define CONSOLE_SO    0x0E //!< Shift Out
 #define CONSOLE_SI    0x0F //!< Shift In
 #define CONSOLE_DLE   0x10 //!< Data Link Escape
@@ -364,7 +424,7 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
 //-----------------------------------------------------------------------------
 
 #if !defined(CONSOLE_RX_CURRENT_BUFFER_SIZE)
-#  define CONSOLE_RX_CURRENT_BUFFER_SIZE  50 //!< Console Rx command acquisition default buffer size (for CurrentBuff)
+#  define CONSOLE_RX_CURRENT_BUFFER_SIZE  (size_t)50 //!< Console Rx command acquisition default buffer size (for CurrentBuff)
 #endif
 
 //! Circular Buffer for Console receive structure
@@ -412,14 +472,14 @@ eERRORRESULT InitConsoleRx(ConsoleRx* pApi);
  * @param[in] *pApi Is the Console receive API to work with
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT ReceiveCharFromConsole(ConsoleRx* pApi);
+eERRORRESULT ConsoleRx_ReceiveChar(ConsoleRx* pApi);
 
 /*! @brief Process received char from console
  *
  * @param[in] *pApi Is the Console receive API to work with
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT ProcessReceivedCharFromConsole(ConsoleRx* pApi);
+eERRORRESULT ConsoleRx_ProcessReceivedChars(ConsoleRx* pApi);
 
 /*! @brief Process received command Callback
  * @note This function is weak. Thus the used shall implement is own function
@@ -428,7 +488,7 @@ eERRORRESULT ProcessReceivedCharFromConsole(ConsoleRx* pApi);
  * @param[in] size Is the char count of the command string pCmd
  * @return Returns an #eERRORRESULT value enum
  */
-void ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size) CONSOLE_WEAK;
+CONSOLE_EXTERN eERRORRESULT ConsoleRx_ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_t size) CONSOLE_WEAK;
 
 //-----------------------------------------------------------------------------
 
@@ -465,12 +525,54 @@ typedef enum
   Action_Dir,    //!< Console action direction
 } eConsoleActions;
 
-//! Console string + action tuple
-typedef struct ConsoleAction
+//-----------------------------------------------------------------------------
+
+#ifdef USE_CONSOLE_GPIO_COMMANDS
+
+//! GPIO PORT/pin enumerator
+typedef enum
 {
-  const char* const Str;  //!< Console interface action string
-  eConsoleActions Action; //!< Console interface action
-} ConsoleAction;
+  No_PORTpin,                                      //!< No PORT/pin selected
+  PORTA, PORTB, PORTC, PORTD, PORTE, PORTF, PORTG,
+  PORTH, PORTI, PORTJ, PORTK, PORTL, PORTM, PORTN,
+  PORTO, PORTP, PORTQ, PORTR, PORTS, PORTT, PORTU,
+  PORTV, PORTW, PORTX, PORTY, PORTZ,
+  PORTa_Max,                                       //!< Maximum alphabetical PORT Names
+  PORT0, PORT1, PORT2, PORT3, PORT4,
+  PORT5, PORT6, PORT7, PORT8, PORT9,
+  PORTx_Max,                                       //!< Maximum numerical PORT Names
+  PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM,
+  PN, PO, PP, PQ, PR, PS, PT, PU, PV, PW, PX, PY, PZ,
+  Pa_Max,                                          //!< Maximum alphabetical pin on port names
+//  P0, P1, P2, P3, P4, P5, P6, P7, P8, P9,
+//  Px_Max,                                          //!< Maximum numerical pin on port names
+} eGPIO_PortPin;
+
+/*! @brief Process GPIO command Callback
+ * @note This function is weak. Thus the used shall implement is own function
+ * @details GPIO Commands parsed are the following:
+ * GPIO <action> <PORT/Pin>[ <value>][ <mask>]
+ * Where:
+ *  - <action> can be:
+ *    - RD, READ: Read <PORT/Pin>
+ *    - WR, WRITE: Write <value> to <PORT/Pin>
+ *    - SET: Set bitset of <value> to <PORT/Pin>
+ *    - CLR, CLEAR: Clear bitset of <value> to <PORT/Pin>
+ *    - TG, TOGGLE: Toggle the value of <PORT/Pin>
+ *  - <PORT/Pin> can be:
+ *    - PORTx: where 'x' can be any of the ports name of the MCU
+ *    - Pxy: where 'x' can be any of the ports name and 'y' the number of the pin of the MCU (ex: PA0)
+ *  - <value> is the value to apply in case of Write, Set, or Clear. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value will be 0
+ *  - <mask> is the mask value to apply with the 'value' in case of PORT use. The mask can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value will be 0xFFFFFFFF
+ *
+ * @param[in] action Is the GPIO command action decoded
+ * @param[in] portPin Is the GPIO command PORT/Pin decoded
+ * @param[in] pinNum Is the pin number when portPin is a pin on port value. Is 0xFF when no pin specified
+ * @param[in] value Is the GPIO command value decoded
+ * @param[in] mask Is the GPIO command value mask decoded
+ */
+CONSOLE_EXTERN void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask) CONSOLE_WEAK;
+#endif // USE_CONSOLE_GPIO_COMMANDS
 
 //-----------------------------------------------------------------------------
 //! @}
