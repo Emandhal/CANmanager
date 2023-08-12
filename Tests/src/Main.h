@@ -14,6 +14,24 @@
 #include <stdint.h>
 #include <asf.h> // Use Atmel Software Framework (ASF)
 #include "conf_board.h"
+//-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_GPIO_COMMANDS
+#  include "CAN_Shield_V71Interface.h"
+
+extern PORT_Interface* const PORTAtoZ[]; //!< Description of each PORTs A to Z available on the V71 Xplained Ultra board
+# define PORTSAtoZ_COUNT  ( sizeof(*PORTAtoZ) / sizeof(*PORTAtoZ[0]) ) //!< Count of PORTs A to Z available on the V71 Xplained Ultra board
+
+extern PORT_Interface* const PORT0to9[]; //!< Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
+# define PORTS0to9_COUNT  ( sizeof(*PORT0to9) / sizeof(*PORT0to9[0]) ) //!< Count of PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
+#endif
+//-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+# include "Ultra_V71Interfaces.h"
+
+extern EEPROM* const EEPROMdevices[]; //!< Description of each EEPROM devices on the V71 Xplained Ultra board
+# define EEPROM_DEVICE_COUNT  ( sizeof(*EEPROMdevices) / sizeof(*EEPROMdevices[0]) ) //!< Count of EEPROMs available on the V71 Xplained Ultra board
+#endif
+//-----------------------------------------------------------------------------
 
 
 

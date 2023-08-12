@@ -142,6 +142,9 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
 //-----------------------------------------------------------------------------
 
 
+//! The current Command Input buffer
+CommandInputBuf CommandInput;
+
 //=============================================================================
 // Handler for Console USART interrupt.
 //=============================================================================
@@ -238,10 +241,14 @@ ConsoleRx Console_RxConf =
 //-----------------------------------------------------------------------------
 
 
+
+
+
+//**********************************************************************************************************************************************************
 #ifdef USE_CONSOLE_GPIO_COMMANDS
-//==============================================================================
+//=============================================================================
 // Process GPIO command Callback
-//==============================================================================
+//=============================================================================
 void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask)
 {
   //--- Set GPIO command ---
@@ -285,9 +292,171 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
       break;
   }
 }
-#endif
+#endif // USE_CONSOLE_GPIO_COMMANDS
+//-----------------------------------------------------------------------------
 
+
+
+
+
+//**********************************************************************************************************************************************************
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+
+// Generate a lookup table for 8-bits integers
+#define B2(n) n, n + 1, n + 1, n + 2
+#define B4(n) B2(n), B2(n + 1), B2(n + 1), B2(n + 2)
+#define B6(n) B4(n), B4(n + 1), B4(n + 1), B4(n + 2)
+
+// Lookup table of '1' in each 8-bits values
+uint8_t Uint8_1Count_LUT[256] = { B6(0), B6(1), B6(1), B6(2) };
+
+//=============================================================================
+// Show the device memory
+//=============================================================================
+static void __ShowEEPROMmapping(uint8_t index)
+{
+  eERRORRESULT Error = ERR_OK;
+  volatile uint32_t OneBitsCount = 0;
+  uint8_t  PageBuffer[8];
+  uint32_t EepromSize     = EEPROMdevices[index]->Conf->ArrayByteSize; // Get EEPROM total size
+  uint32_t EepromPageSize = EEPROMdevices[index]->Conf->PageSize;      // Get EEPROM page size
+  if (EepromSize == EepromPageSize)                                    // The EEPROM does not have pages, the memory is in one bloc
+  {                                                                    // Search a pseudo page division
+    //--- Divide by 80 (to fit inside a 80 lines console for < 24kB) ---
+    EepromPageSize /= 80;
+    uint32_t BestPowerOf2 = 1;
+    while (BestPowerOf2 < EepromPageSize) BestPowerOf2 <<= 1;
+    EepromPageSize = BestPowerOf2;
+    if (EepromPageSize <   8) EepromPageSize =   8;
+    if (EepromPageSize > 256) EepromPageSize = 256;
+  }
+
+  //--- Read page per page and create mapping ---
+  LOGINFO("Visual mapping of device %u, page size %u:", (unsigned int)(index), (unsigned int)EepromPageSize);
+  for (size_t zMem = 0; zMem < (EepromSize / EepromPageSize); ++zMem)
+  {
+    OneBitsCount = 0;
+    
+    for (size_t zPage = 0; zPage < (EepromPageSize / sizeof(PageBuffer)); ++zPage)
+    {
+      //--- Read a page ---
+      Error = EEPROM_ReadData(EEPROMdevices[index], (zMem * EepromPageSize) + (zPage * sizeof(PageBuffer)), &PageBuffer[0], sizeof(PageBuffer));
+      if (Error != ERR_OK)
+      {
+        LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
+        return;
+      }
+      //--- Count number of bit at '1' ---
+      for (int32_t zByte = sizeof(PageBuffer); --zByte >= 0;) OneBitsCount += Uint8_1Count_LUT[(uint8_t)PageBuffer[zByte]];
+    }
+
+    //--- Fill visual mapping ---
+    char CharToSend = (char)250;                                      // Char not filled (default)                                    
+    if (OneBitsCount >= (EepromPageSize * 2)) CharToSend = (char)176; // Char filled a little
+    if (OneBitsCount >= (EepromPageSize * 4)) CharToSend = (char)177; // Char partially filled
+    if (OneBitsCount >= (EepromPageSize * 6)) CharToSend = (char)178; // Char filled mostly
+    if (OneBitsCount >= (EepromPageSize * 8)) CharToSend = (char)219; // Char fully filled
+    SetCharToConsoleBuffer(CONSOLE_TX, CharToSend);
+  }
+}
+
+
+//=============================================================================
+// Dump the device memory
+//=============================================================================
+static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
+{
+  eERRORRESULT Error = ERR_OK;
+  static const char* Hexa = "0123456789ABCDEF";
+  uint8_t ReadBuffer[16];
+  
+#define ROW_LENGTH  16           // 16 bytes per row
+  char HexaDump[ROW_LENGTH * 3]; // [2 digit hexa + space] - 1 space + 1 zero terminal
+  char HexaChar[ROW_LENGTH + 1]; // [1 char] + 1 zero terminal
+  size_t SizeToRead = (size_t)(EEPROMdevices[index]->Conf->ArrayByteSize - address); // Set the full device size by default
+  if (SizeToRead > size) SizeToRead = size;
+  LOGINFO("Dump %d bytes at 0x%04X", SizeToRead, (unsigned int)address);
+
+  //--- Dump the data read ---
+  uint8_t* pSrc = &ReadBuffer[0];
+  HexaChar[ROW_LENGTH] = 0;
+  for (int32_t i = ((SizeToRead+ROW_LENGTH-1) / ROW_LENGTH); --i >= 0; pSrc += ROW_LENGTH, SizeToRead -= ROW_LENGTH, address += ROW_LENGTH)
+  {
+    //--- Read the memory ---
+    Error = EEPROM_ReadData(EEPROMdevices[index], address, &ReadBuffer[0], (SizeToRead >= ROW_LENGTH ? ROW_LENGTH : SizeToRead));
+    if (Error != ERR_OK)
+    {
+      LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
+      return;
+    }
+    
+    //--- Dump ---
+    memset(HexaDump, ' ', sizeof(HexaDump));
+    memset(HexaChar, '.', ROW_LENGTH);
+    for (int j = (SizeToRead >= ROW_LENGTH ? ROW_LENGTH : SizeToRead); --j >= 0;)
+    {
+      HexaDump[j * 3 + 0] = Hexa[(pSrc[j] >> 4) & 0xF];
+      HexaDump[j * 3 + 1] = Hexa[(pSrc[j] >> 0) & 0xF];
+      //HexaDump[j * 3 + 2] = ' ';
+      HexaChar[j] = (pSrc[j] < 0x20) ? '.' : pSrc[j];
+    }
+    HexaDump[ROW_LENGTH * 3 - 1] = 0;
+    LOGINFO("  %04X : %s \"%s\"", (unsigned int)address, HexaDump, HexaChar);
+  }
+#undef ROW_LENGTH
+}
+
+
+//=============================================================================
+// Process EEPROM command Callback
+//=============================================================================
+void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data)
+{
+  if (index >= EEPROM_DEVICE_COUNT) { LOGERROR("EEPROM index out of range"); return; } // Check index
+  eERRORRESULT Error;
+  
+  switch (action)
+  {
+    default:
+    case Action_None:
+      break;
+
+    case Action_Read:
+      break;
+
+    case Action_Write:
+      break;
+
+    case Action_Clear:
+      {
+        uint8_t WriteBuffer[16];
+        memset(&WriteBuffer[0], 0xFF, sizeof(WriteBuffer));
+        for (size_t zMem = 0; zMem < (EEPROMdevices[index]->Conf->ArrayByteSize / sizeof(WriteBuffer)); ++zMem)
+        {
+          //--- Write buffer ---
+          Error = EEPROM_WriteData(EEPROMdevices[index], (zMem * sizeof(WriteBuffer)), &WriteBuffer[0], sizeof(WriteBuffer));
+          if (Error != ERR_OK)
+          {
+            LOGERROR("Unable to write EEPROM memory (error code: %u)", (unsigned int)Error);
+            return;
+          }
+        }
+        LOGINFO("The memory has been cleared");
+      }
+      break;
+
+    case Action_Show:
+      __ShowEEPROMmapping(index);
+      break;
+    
+    case Action_Dump:
+      __DumpEEPROMmemory(index, address, size);
+      break;
+  }    
+}
+#endif // USE_CONSOLE_EEPROM_COMMANDS
 #endif // USE_CONSOLE_RX
+
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }

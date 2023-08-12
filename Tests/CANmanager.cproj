@@ -40,9 +40,7 @@
           <option id="sam.drivers.mpu" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.pio" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.pmc" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.spi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.xdmac" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.applications.user_application" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.cmsis.samv71.source.template" value="Add" config="" content-id="Atmel.ASF" />
         </options>
@@ -250,8 +248,6 @@
           <file path="src/ASF/thirdparty/CMSIS/license.txt" framework="" version="" source="thirdparty/CMSIS/license.txt" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/uart/uart.c" framework="" version="3.47.0" source="sam\drivers\uart\uart.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/uart/uart.h" framework="" version="3.47.0" source="sam\drivers\uart\uart.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/xdmac/xdmac.c" framework="" version="3.47.0" source="sam\drivers\xdmac\xdmac.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/xdmac/xdmac.h" framework="" version="3.47.0" source="sam\drivers\xdmac\xdmac.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/services/serial/usart_serial.c" framework="" version="3.47.0" source="common\services\serial\usart_serial.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/services/serial/sam_uart/uart_serial.h" framework="" version="3.47.0" source="common\services\serial\sam_uart\uart_serial.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/services/serial/serial.h" framework="" version="3.47.0" source="common\services\serial\serial.h" changed="False" content-id="Atmel.ASF" />
@@ -259,8 +255,6 @@
           <file path="src/ASF/common/utils/stdio/read.c" framework="" version="3.47.0" source="common\utils\stdio\read.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/utils/stdio/write.c" framework="" version="3.47.0" source="common\utils\stdio\write.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h" framework="" version="3.47.0" source="common\utils\stdio\stdio_serial\stdio_serial.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/spi/spi.c" framework="" version="3.47.0" source="sam\drivers\spi\spi.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/spi/spi.h" framework="" version="3.47.0" source="sam\drivers\spi\spi.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/usart/usart.c" framework="" version="3.47.0" source="sam\drivers\usart\usart.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/usart/usart.h" framework="" version="3.47.0" source="sam\drivers\usart\usart.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/wdt/wdt.c" framework="" version="3.47.0" source="sam\drivers\wdt\wdt.c" changed="False" content-id="Atmel.ASF" />
@@ -358,11 +352,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/common/services/delay</Value>
@@ -409,11 +401,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/common/services/delay</Value>
@@ -443,11 +433,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/common/services/delay</Value>
@@ -474,6 +462,10 @@
       <Value>BOARD=SAMV71_XPLAINED_ULTRA</Value>
       <Value>USE_ERRORS_STRING</Value>
       <Value>CHECK_NULL_PARAM</Value>
+      <Value>USE_EEPROM_GENERICNESS</Value>
+      <Value>USE_GENERICS_DEFINED</Value>
+      <Value>USE_CONSOLE_GPIO_COMMANDS</Value>
+      <Value>USE_CONSOLE_EEPROM_COMMANDS</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -499,11 +491,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/Interface</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
@@ -511,6 +501,7 @@
       <Value>../../CRC</Value>
       <Value>../..</Value>
       <Value>../src/Utils</Value>
+      <Value>../src/Driver</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -556,11 +547,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/common/services/delay</Value>
@@ -591,11 +580,9 @@
       <Value>../src</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/sam/drivers/uart</Value>
-      <Value>../src/ASF/sam/drivers/xdmac</Value>
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
-      <Value>../src/ASF/sam/drivers/spi</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/sam/drivers/wdt</Value>
       <Value>../src/ASF/common/services/delay</Value>
@@ -632,11 +619,9 @@
     <Folder Include="src\ASF\sam\drivers\mpu\" />
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
-    <Folder Include="src\ASF\sam\drivers\spi\" />
     <Folder Include="src\ASF\sam\drivers\uart\" />
     <Folder Include="src\ASF\sam\drivers\usart\" />
     <Folder Include="src\ASF\sam\drivers\wdt\" />
-    <Folder Include="src\ASF\sam\drivers\xdmac\" />
     <Folder Include="src\ASF\sam\utils\" />
     <Folder Include="src\ASF\sam\utils\cmsis\" />
     <Folder Include="src\ASF\sam\utils\cmsis\samv71\" />
@@ -665,17 +650,76 @@
     <Folder Include="src\Config" />
     <Folder Include="src\Interface" />
     <Folder Include="src\Driver" />
-    <Folder Include="src\Utils" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\ErrorsDef.h">
       <SubType>compile</SubType>
       <Link>src\ErrorsDef.h</Link>
     </Compile>
+    <Compile Include="src\Driver\AT24MAC402.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\AT24MAC402.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\EEPROM.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\EEPROM.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP230XX.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP230XX.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP23SXX.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP23SXX.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\SPI_V71.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\SPI_V71.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\TWIHS_V71.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\TWIHS_V71.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\XDMAC_V71.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\XDMAC_V71.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\CAN_Shield_V71Interface.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\CAN_Shield_V71Interface.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\Interface\GPIO_Interface.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\Interface\I2C_Interface.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\SPI_Interface.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\Interface\UART_Interface.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\Ultra_V71Interfaces.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Interface\Ultra_V71Interfaces.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TimerTicks.c">
@@ -694,9 +738,6 @@
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\ASF\common\utils\stdio\read.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\ASF\sam\drivers\spi\spi.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\sam\drivers\usart\usart.c">
@@ -726,9 +767,6 @@
     <None Include="src\ASF\sam\drivers\usart\usart.h">
       <SubType>compile</SubType>
     </None>
-    <None Include="src\ASF\sam\drivers\spi\spi.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\common\utils\stdio\stdio_serial\stdio_serial.h">
       <SubType>compile</SubType>
     </None>
@@ -750,12 +788,6 @@
     <Compile Include="src\ASF\sam\drivers\uart\uart.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\ASF\sam\drivers\xdmac\xdmac.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam\drivers\xdmac\xdmac.h">
-      <SubType>compile</SubType>
-    </None>
     <None Include="src\ASF\sam\drivers\uart\uart.h">
       <SubType>compile</SubType>
     </None>

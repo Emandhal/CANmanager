@@ -382,6 +382,8 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
  * @return Returns an #eERRORRESULT value enum
  */
 static eERRORRESULT __InternalProcessReceivedCommand(const uint8_t* pCmd, size_t size);
+
+#ifdef USE_CONSOLE_GPIO_COMMANDS
 /*! @brief Compare 2 ANSI strings by only the size of the str2
  * @param[in] *pStr1 Is the string to compare
  * @param[in] *pStr2 Is the string to compare. It is also the max size to compare
@@ -404,7 +406,9 @@ static int32_t __strtcmp(const uint8_t** str1, const char* str2);
  * @return Returns the value extracted from string
  */
 static uint32_t __StringToUint(const uint8_t** pStr);
+#endif // USE_CONSOLE_GPIO_COMMANDS
 //-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_GPIO_COMMANDS
 /*! @brief Process GPIO command
  * @details Commands that can be parsed are the following:
  * GPIO <action> <PORT/Pin>[ <value>][ <mask>]
@@ -426,6 +430,28 @@ static uint32_t __StringToUint(const uint8_t** pStr);
  * @return Returns an #eERRORRESULT value enum
  */
 eERRORRESULT __ProcessGPIOcommand(const uint8_t* pCmd, size_t size);
+#endif // USE_CONSOLE_GPIO_COMMANDS
+
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+/*! @brief Process EEPROM command
+ * @details Commands that can be parsed are the following:
+ * EEPROM<x> <action>[ <value>][ <mask>]
+ * Where:
+ *  - <x> is the eeprom index to use
+ *  - <action> can be:
+ *    - RD, READ: Read <PORT/Pin>
+ *    - WR, WRITE: Write <value> to <PORT/Pin>
+ *    - SET: Set bitset of <value> to <PORT/Pin>
+ *    - CLR, CLEAR: Clear bitset of <value> to <PORT/Pin>
+ *    - TG, TOGGLE: Toggle the value of <PORT/Pin>
+ *  - <mask> is the mask value to apply with the 'value' in case of PORT use. The mask can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value will be 0xFFFFFFFF
+ *
+ * @param[in] *pCmd Is the command string first char (NULL terminated string)
+ * @param[in] size Is the char count of the command string pCmd
+ * @return Returns an #eERRORRESULT value enum
+ */
+eERRORRESULT __ProcessEEPROMcommand(const uint8_t* pCmd, size_t size);
+#endif // USE_CONSOLE_EEPROM_COMMANDS
 //-----------------------------------------------------------------------------
 
 
@@ -577,7 +603,10 @@ eERRORRESULT ConsoleRx_ProcessReceivedChars(ConsoleRx* pApi)
 const ConsoleCommand ConsoleCommandsList[] =
 {
 #ifdef USE_CONSOLE_GPIO_COMMANDS
-  { CONSOLE_ROL5XOR_HASH('G','P','I','O','\0','\0','\0','\0'), __ProcessGPIOcommand },
+  { CONSOLE_ROL5XOR_HASH('G','P','I','O','\0','\0','\0','\0'), 4, __ProcessGPIOcommand },
+#endif
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+  { CONSOLE_ROL5XOR_HASH('E','E','P','R','O','M','\0','\0'), 6, __ProcessEEPROMcommand },
 #endif
 };
 
@@ -592,21 +621,24 @@ eERRORRESULT __InternalProcessReceivedCommand(const uint8_t* pCmd, size_t size)
 
   //--- Generate hash of first parameter of the string ---
   uint32_t Hash = CONSOLE_HASH_INITIAL_VAL;
+  uint32_t HashTable[8] = { CONSOLE_HASH_INITIAL_VAL, 0, 0, 0, 0, 0, 0, 0 };
   for (size_t idx = 0; idx < 8; ++idx)
   {
     if (idx >= size) break;                                             // Check index is out of string
     if ((pCmd[idx] == ' ') || (pCmd[idx] == CONSOLE_NULL)) break;       // Check char is space or null char
     Hash = ((Hash >> 27) | (Hash << 5)) ^ CONSOLE_UPPERCASE(pCmd[idx]); // Do Rol 5 xor of uppercase data
+    HashTable[idx] = Hash;                                              // Fill hash table
   }
 
   //--- Search into command list matching command and execute ---
   for (size_t zIdx = 0; zIdx < CONSOLE_COMMANDS_COUNT; ++zIdx)
   {
-    if (Hash == ConsoleCommandsList[zIdx].Hash)
-    {
-      Error = ConsoleCommandsList[zIdx].fnCommandProcess(pCmd, size);   // Process command in associated function
-      if (Error == ERR_NONE) break;                                     // Exit if command have been successfully processed, else give if to another hash
-    }
+    if (ConsoleCommandsList[zIdx].Length > 0)
+      if (HashTable[ConsoleCommandsList[zIdx].Length - 1] == ConsoleCommandsList[zIdx].Hash)
+      {
+        Error = ConsoleCommandsList[zIdx].fnCommandProcess(pCmd, size);   // Process command in associated function
+        if (Error == ERR_NONE) break;                                     // Exit if command have been successfully processed, else give if to another hash
+      }
   }
   if (Error == ERR__NOT_SUPPORTED)
   {
@@ -627,13 +659,13 @@ eERRORRESULT ConsoleRx_ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_
   // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
   return ERR_NONE;
 }
-#endif
+#endif // _MSC_VER
 
 //-----------------------------------------------------------------------------
 
 
 
-
+#if defined(USE_CONSOLE_GPIO_COMMANDS) || defined(USE_CONSOLE_EEPROM_COMMANDS)
 //=============================================================================
 // [STATIC] Compare 2 ANSI strings by only the size of the str2
 //=============================================================================
@@ -752,17 +784,18 @@ uint32_t __StringToUint(const uint8_t** pStr)
   }
   return Result;
 }
+#endif // USE_CONSOLE_GPIO_COMMANDS || USE_CONSOLE_EEPROM_COMMANDS
 
 //-----------------------------------------------------------------------------
 
-
-#ifdef USE_CONSOLE_GPIO_COMMANDS
 //! Console string + action tuple
 typedef struct ConsoleAction
 {
   const char* const Str;  //!< Console interface action string
   eConsoleActions Action; //!< Console interface action
 } ConsoleAction;
+
+#ifdef USE_CONSOLE_GPIO_COMMANDS
 
 //! GPIO action list array. Order of parse is important
 const ConsoleAction GPIOactionsList[] =
@@ -799,7 +832,8 @@ eERRORRESULT __ProcessGPIOcommand(const uint8_t* pCmd, size_t size)
     if (__strscmp(pCmd, GPIOactionsList[zIdx].Str) == 0)                 // Compare 2 ANSI strings by only the size of the str2
     {
       Action = GPIOactionsList[zIdx].Action;
-      pCmd += strlen(GPIOactionsList[zIdx].Str) + 1;
+      pCmd += strlen(GPIOactionsList[zIdx].Str);
+      if (*pCmd != 0) ++pCmd;                                            // Avoid override in case of no more data after <action>
       break;
     }
   }
@@ -860,6 +894,94 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
 }
 #endif // !_MSC_VER
 #endif // USE_CONSOLE_GPIO_COMMANDS
+
+//-----------------------------------------------------------------------------
+
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+
+//! EEPROM action list array. Order of parse is important
+const ConsoleAction EEPROMactionsList[] =
+{
+  { "READ" , Action_Read , },
+  { "RD"   , Action_Read , },
+  { "WRITE", Action_Write, },
+  { "WR"   , Action_Write, },
+  { "CLEAR", Action_Clear, },
+  { "CLR"  , Action_Clear, },
+  { "SHOW" , Action_Show , },
+  { "DUMP" , Action_Dump , },
+};
+
+#define EEPROM_ACTION_LIST_COUNT  ( sizeof(EEPROMactionsList) / sizeof(EEPROMactionsList[0]) )
+
+//=============================================================================
+// [STATIC] Process EEPROM command
+//=============================================================================
+eERRORRESULT __ProcessEEPROMcommand(const uint8_t* pCmd, size_t size)
+{
+  if (size < 8) return ERR__PARSE_ERROR;
+  eConsoleActions Action = Action_None;
+  uint32_t Address = 0, Size = UINT32_MAX;
+  uint8_t Index = 0;
+  pCmd += 6;                                                             // Go after "EEPROM"
+
+  //--- Parse <x> string ---
+  if (*pCmd != 0)
+  {
+    Index = (uint8_t)__StringToUint(&pCmd);                              // Extract <x> as index
+    if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR;         // Check the good position of the parse
+    if (*pCmd != 0) ++pCmd;
+  }
+
+  //--- Parse <action> string ---
+  for (size_t zIdx = 0; zIdx < EEPROM_ACTION_LIST_COUNT; ++zIdx)
+  {
+    if (__strscmp(pCmd, EEPROMactionsList[zIdx].Str) == 0)               // Compare 2 ANSI strings by only the size of the str2
+    {
+      Action = EEPROMactionsList[zIdx].Action;
+      pCmd += strlen(EEPROMactionsList[zIdx].Str);
+      if (*pCmd != 0) ++pCmd;                                            // Avoid override in case of no more data after <action>
+      break;
+    }
+  }
+  if (Action == Action_None) return ERR__PARSE_ERROR;                    // An <action> shall be found at this point
+
+  //--- Parse <address> string ---
+  if ((*pCmd != 0) && ((Action == Action_Read) || (Action == Action_Write) || (Action == Action_Dump)))
+  {
+    Address = __StringToUint(&pCmd);                                     // Extract <address>
+    if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR;         // Check the good position of the parse
+    if (*pCmd != 0) ++pCmd;
+  }
+
+  //--- Parse <size> string ---
+  if ((*pCmd != 0) && ((Action == Action_Read) || (Action == Action_Dump)))
+  {
+    Size = __StringToUint(&pCmd);                                        // Extract <size>
+    if ((*pCmd != ' ') && (*pCmd != 0)) return ERR__PARSE_ERROR;         // Check the good position of the parse
+    if (*pCmd != 0) ++pCmd;
+  }
+
+  //--- Set EEPROM command ---
+  ConsoleRx_EEPROMcommandCallBack(Action, Index, Address, Size, (char*)pCmd);
+  return ERR_NONE;
+}
+
+#if !defined(_MSC_VER)
+//==============================================================================
+// Process EEPROM command Callback
+//==============================================================================
+void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data)
+{
+  (void)action;
+  (void)index;
+  (void)address;
+  (void)size;
+  (void)data;
+  // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
+}
+#endif // !_MSC_VER
+#endif
 
 //-----------------------------------------------------------------------------
 #endif /* USE_CONSOLE_RX */

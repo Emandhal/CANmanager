@@ -98,7 +98,7 @@ extern "C" {
 #define ERR_ERROR_Get(error)              (eERRORRESULT)((uint32_t)(error) & ~ERR_ERROR_CONTEXT_Mask)                           //!< Get the error (ie. isolate the error from the context)
 #define ERR_ERROR_Set(error)              ((uint32_t)(error) & ~ERR_ERROR_CONTEXT_Mask)                                         //!< Set the error
 #define ERR_CONTEXTUALIZE(context,error)  ( (error) != ERR_NONE ? (eERRORRESULT)(ERR_ERROR_CONTEXT_Set(context) | ERR_ERROR_Set(error)) : ERR_NONE ) //!< Combine the context and the error. Will be simplified at compile time if error is fixed
-#define ERR_GENERATE(error)               ERR_CONTEXTUALIZE(UNIT_ERR_CONTEXT,(error)) //!< UNIT_ERR_CONTEXT is set on the .c file and is specific to a .c file. It will contain an eERRORCONTEXTS
+#define ERR_GENERATE(error)               ERR_CONTEXTUALIZE(UNIT_ERR_CONTEXT,(error))                                           //!< UNIT_ERR_CONTEXT is set on the .c file and is specific to a .c file. It will contain an eERRORCONTEXTS
 
 //------------------------------------------------------------------------------
 

@@ -43,6 +43,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "UART_Interface.h"
+#include "ErrorsDef.h"
 //-----------------------------------------------------------------------------
 #if !defined(__cplusplus)
 # include "main.h"
@@ -360,15 +361,15 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
  * @param[in] char6 Is the sixth char of the string for which to generate a hash
  * @param[in] char7 Is the seventh char of the string for which to generate a hash
  * @param[in] char8 Is the eighth char of the string for which to generate a hash
- * @return The ROL5 XOR hash of the 8 chars set in argument if any
+ * @return The ROL5 XOR hash of the 8 chars not '\0' set in argument
  */
-#define CONSOLE_ROL5XOR_HASH(char1, char2, char3, char4, char5, char6, char7, char8)  ( CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
-                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                      \
+#define CONSOLE_ROL5XOR_HASH(char1, char2, char3, char4, char5, char6, char7, char8)  ( CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
+                                                                                        CONSOLE_ROL5_XOR_CHAR(                                                     \
                                                                                         CONSOLE_ROL5_XOR_CHAR(CONSOLE_HASH_INITIAL_VAL, CONSOLE_UPPERCASE(char1)), \
                                                                                                                                         CONSOLE_UPPERCASE(char2)), \
                                                                                                                                         CONSOLE_UPPERCASE(char3)), \
@@ -508,6 +509,7 @@ typedef eERRORRESULT (*RxCommand_Func)(const uint8_t* pCmd, size_t size);
 typedef struct ConsoleCommand
 {
   uint32_t Hash;                   //!< Hash of the first parameter of the command
+  size_t Length;                   //!< Length of the string in parameter
   RxCommand_Func fnCommandProcess; //!< This function will be called when the hash will match
 } ConsoleCommand;
 
@@ -523,12 +525,13 @@ typedef enum
   Action_Clear,  //!< Console action clear
   Action_Toggle, //!< Console action toggle
   Action_Dir,    //!< Console action direction
+  Action_Show,   //!< Console action show
+  Action_Dump,   //!< Console action dump
 } eConsoleActions;
 
 //-----------------------------------------------------------------------------
 
 #ifdef USE_CONSOLE_GPIO_COMMANDS
-
 //! GPIO PORT/pin enumerator
 typedef enum
 {
@@ -573,6 +576,33 @@ typedef enum
  */
 CONSOLE_EXTERN void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask) CONSOLE_WEAK;
 #endif // USE_CONSOLE_GPIO_COMMANDS
+
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+
+/*! @brief Process EEPROM command Callback
+ * @note This function is weak. Thus the used shall implement is own function
+ * @details EEPROM Commands parsed are the following:
+ * EEPROM<x> <action>[ <address>][ <size>][ <data>]
+ * Where:
+ *  - <x> is the eeprom index to use. The default value is 0
+ *  - <action> can be:
+ *    - RD, READ: Read EEPROMx at <Address>, <size> bytes
+ *    - WR, WRITE: Write <data> to EEPROMx at <Address>
+ *    - CLR, CLEAR: Clear the entire EEPROMx
+ *    - SHOW: Show the entire EEPROMx with shaded blocks elements of pages
+ *    - DUMP: Dump EEPROMx at <Address>, <size> bytes and show data in an hexadecimal editor representation
+ *  - <address> is the address of data to read, write or dump. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value is 0
+ *  - <size> is the size of data to read or dump. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value is UINT32_MAX
+ *  - <data> is the data to apply in case of write. The data will end at a '\0' string terminal
+ *
+ * @param[in] action Is the EEPROM command action decoded
+ * @param[in] index Is the EEPROM index decoded
+ * @param[in] address Is the EEPROM command address decoded
+ * @param[in] size Is the size of data to read/dump
+ * @param[in] *data Is the EEPROM command data to write
+ */
+CONSOLE_EXTERN void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data) CONSOLE_WEAK;
+#endif // USE_CONSOLE_EEPROM_COMMANDS
 
 //-----------------------------------------------------------------------------
 //! @}

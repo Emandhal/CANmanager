@@ -42,6 +42,7 @@
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
 #include "Console.h"
+#include "Main.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
   extern "C" {
@@ -164,20 +165,49 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
 
 
 //**********************************************************************************************************************************************************
+
+//! Command buffer size
+#define COMMAND_BUFFER_SIZE   256
+
+/*! @brief Command Input buffer
+ *
+ * This structure contains infos concerning the input data for the received command
+ */
+typedef struct
+{
+	volatile uint32_t BufPos;         //!< Position in the buffer
+	char Buffer[COMMAND_BUFFER_SIZE]; //!< Raw buffer with the frame to be processed
+	volatile bool ToProcess;          //!< Indicate that the frame in buffer should be processed or not
+} CommandInputBuf;
+
+//! The current Command Input buffer
+extern CommandInputBuf CommandInput;
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
 //********************************************************************************************************************
 // Console Receive API
 //********************************************************************************************************************
 #ifdef USE_CONSOLE_RX
+//-----------------------------------------------------------------------------
 
-#  ifdef CONSOLE_RX_USE_COMMAND_RECALL
-#    define CONSOLE_RX_COMMAND_BUFFER_SIZE    400               //!< Define the console command recall buffer size, this set the character count of commands that can be recall
-   char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
-#  endif
+# ifdef CONSOLE_RX_USE_COMMAND_RECALL
+#   define CONSOLE_RX_COMMAND_BUFFER_SIZE    400               //!< Define the console command recall buffer size, this set the character count of commands that can be recall
+    char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
+# endif
 
-   extern ConsoleRx Console_RxConf;   //!< The console reception configuration
-#  define CONSOLE_RX  &Console_RxConf //!< Define to simplify the naming at the functions calling
+  extern ConsoleRx Console_RxConf;   //!< The console reception configuration
+# define CONSOLE_RX  &Console_RxConf //!< Define to simplify the naming at the functions calling
 
+//-----------------------------------------------------------------------------
 #endif // USE_CONSOLE_RX
+
+
+
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }

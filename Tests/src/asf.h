@@ -90,9 +90,6 @@
 // From module: SAMV71 XULTRA LED support enabled
 #include <led.h>
 
-// From module: SPI - Serial Peripheral Interface
-#include <spi.h>
-
 // From module: Standard serial I/O (stdio) - SAM implementation
 #include <stdio_serial.h>
 
@@ -110,9 +107,6 @@
 
 // From module: WDT - Watchdog Timer
 #include <wdt.h>
-
-// From module: XDMAC - XDMA Controller
-#include <xdmac.h>
 
 // From module: pio_handler support enabled
 #include <pio_handler.h>

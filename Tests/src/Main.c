@@ -40,6 +40,41 @@ const char ButtonStateStr[2][7+1/* \0 */] =
 };
 
 //-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_GPIO_COMMANDS
+
+//! Description of each PORTs A to Z available on the V71 Xplained Ultra board
+PORT_Interface* const PORTAtoZ[] =
+{
+  &IOPORTA, //!< PORTA
+  &IOPORTB, //!< PORTB
+  &IOPORTC, //!< PORTC
+  &IOPORTD, //!< PORTD
+  &IOPORTE, //!< PORTE
+};
+
+//! Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
+PORT_Interface* const PORT0to9[] =
+{
+  &PORTGP_U12, //!< PORT0
+  &PORTGPA_U8, //!< PORT1
+  &PORTGPB_U8, //!< PORT2
+  &PORTGPA_U9, //!< PORT3
+  &PORTGPB_U9, //!< PORT4
+};
+
+#endif
+//-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+
+//! Description of each EEPROM devices on the V71 Xplained Ultra board
+EEPROM* const EEPROMdevices[] =
+{
+  &AT24MAC402_V71.Eeprom
+};
+
+#endif // USE_CONSOLE_EEPROM_COMMANDS
+//-----------------------------------------------------------------------------
+
 
 
 
