@@ -462,6 +462,8 @@
       <Value>BOARD=SAMV71_XPLAINED_ULTRA</Value>
       <Value>USE_ERRORS_STRING</Value>
       <Value>CHECK_NULL_PARAM</Value>
+      <Value>USE_DYNAMIC_INTERFACE</Value>
+      <Value>CAN_AUTOMATIC_BITRATE_CALCULUS</Value>
       <Value>USE_EEPROM_GENERICNESS</Value>
       <Value>USE_GENERICS_DEFINED</Value>
       <Value>USE_CONSOLE_GPIO_COMMANDS</Value>
@@ -652,6 +654,10 @@
     <Folder Include="src\Driver" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CAN_common.h">
+      <SubType>compile</SubType>
+      <Link>src\Interface\CAN_common.h</Link>
+    </Compile>
     <Compile Include="..\ErrorsDef.h">
       <SubType>compile</SubType>
       <Link>src\ErrorsDef.h</Link>
@@ -678,6 +684,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Driver\MCP23SXX.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\SJA1000.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\SJA1000.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Driver\SPI_V71.c">

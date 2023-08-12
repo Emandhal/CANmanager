@@ -36,17 +36,11 @@ struct MCP230XX MCP23008_U12 =
                   | MCP230XX_INT_PIN_OUTPUT_PUSH_PULL
                   | MCP230XX_GPIO_SAMPLING_RATE_FAST,
   //--- Interface driver call functions ---
-  .I2C =
-  {
-    .InterfaceDevice = TWIHS0,
-    .UniqueID        = TWIHS_UNIQUE_ID,
-    .fnI2C_Init      = TWIHS_MasterInit_Gen,
-    .fnI2C_Transfer  = TWIHS_PacketTransfer_Gen,
-  },
-  .I2CclockSpeed = 400000, // I2C speed at 400kHz
+  .I2C            = &I2C0_V71,
+  .I2CclockSpeed  = 400000, // I2C speed at 400kHz
   //--- Device address --
-  .AddrA2A1A0    = MCP230XX_ADDR(0, 0, 1),
-  .DeviceName    = MCP23008,
+  .AddrA2A1A0     = MCP230XX_ADDR(0, 0, 1),
+  .DeviceName     = MCP23008,
 };
 
 //! Configuration structure of the MCP230XX as U12
@@ -73,7 +67,7 @@ PORT_Interface PORTGP_U12 =
   .fnPORT_SetDirection   = MCP230XX_SetPORTdirection_Gen,
   .fnPORT_GetInputLevel  = MCP230XX_GetPORTinputLevel_Gen,
   .fnPORT_SetOutputLevel = MCP230XX_SetPORToutputLevel_Gen,
-  .PORTindex             = 0,
+  .PORTindex             = MCP230XX_PORT_GP,
 };
 
 //-----------------------------------------------------------------------------
@@ -89,17 +83,11 @@ struct MCP230XX MCP23017_U8 =
                   | MCP230XX_GPIO_SAMPLING_RATE_FAST
                   | MCP230XX_INT_PIN_MIRRORED,
   //--- Interface driver call functions ---
-  .I2C =
-  {
-    .InterfaceDevice = TWIHS0,
-    .UniqueID        = TWIHS_UNIQUE_ID,
-    .fnI2C_Init      = TWIHS_MasterInit_Gen,
-    .fnI2C_Transfer  = TWIHS_PacketTransfer_Gen,
-  },
-  .I2CclockSpeed = 400000, // I2C speed at 400kHz
+  .I2C            = &I2C0_V71,
+  .I2CclockSpeed  = 400000, // I2C speed at 400kHz
   //--- Device address --
-  .AddrA2A1A0    = MCP230XX_ADDR(0, 0, 0),
-  .DeviceName    = MCP23017,
+  .AddrA2A1A0     = MCP230XX_ADDR(0, 0, 0),
+  .DeviceName     = MCP23017,
 };
 
 //! Configuration structure of the MCP230XX as U8
@@ -137,7 +125,7 @@ PORT_Interface PORTGPA_U8 =
   .fnPORT_SetDirection   = MCP230XX_SetPORTdirection_Gen,
   .fnPORT_GetInputLevel  = MCP230XX_GetPORTinputLevel_Gen,
   .fnPORT_SetOutputLevel = MCP230XX_SetPORToutputLevel_Gen,
-  .PORTindex             = 0,
+  .PORTindex             = MCP230XX_PORT_GPA,
 };
 
 //! PORT interface of the MCP230XX as U12 PORT GPB on the CAN_Shield board
@@ -148,7 +136,7 @@ PORT_Interface PORTGPB_U8 =
   .fnPORT_SetDirection   = MCP230XX_SetPORTdirection_Gen,
   .fnPORT_GetInputLevel  = MCP230XX_GetPORTinputLevel_Gen,
   .fnPORT_SetOutputLevel = MCP230XX_SetPORToutputLevel_Gen,
-  .PORTindex             = 1,
+  .PORTindex             = MCP230XX_PORT_GPB,
 };
 
 //-----------------------------------------------------------------------------
@@ -165,17 +153,11 @@ struct MCP23SXX MCP23S17_U9 =
                   | MCP23SXX_INT_PIN_MIRRORED,
   //--- Interface driver call functions ---
   .SPIchipSelect  = 0x3 << 1, // Y3 output on U7
-  .SPI =
-  {
-    .InterfaceDevice = SPI0,
-    .UniqueID        = SPI_UNIQUE_ID,
-    .fnSPI_Init      = SPI_MasterInit_Gen,
-    .fnSPI_Transfer  = SPI_PacketTransfer_Gen,
-  },
-  .SPIclockSpeed = 10000000, // SPI speed at 10MHz
+  .SPI            = &SPI0_V71,
+  .SPIclockSpeed  = 10000000, // SPI speed at 10MHz
   //--- Device address --
-  .AddrA2A1A0    = MCP23SXX_ADDR(0, 0, 0),
-  .DeviceName    = MCP23S17,
+  .AddrA2A1A0     = MCP23SXX_ADDR(0, 0, 0),
+  .DeviceName     = MCP23S17,
 };
 
 //! Configuration structure of the MCP23SXX as U9
@@ -183,29 +165,29 @@ struct MCP23SXX_Config MCP23S17_U9_Conf =
 {
   .GPA =
   {
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA0: SJA1000_AD0
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA1: SJA1000_AD1
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA2: SJA1000_AD2
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA3: SJA1000_AD3
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA4: SJA1000_AD4
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA5: SJA1000_AD5
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA6: SJA1000_AD6
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA7: SJA1000_AD7
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA0: SJA1000_ALE/AS
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA1: SJA1000_nCS
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA2: SJA1000_nRD/E
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA3: SJA1000_nWR
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA4: MCP_Trans_CS
+    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA5: SJA_Trans_CS
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA6: SJA_Trans_INH
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPA7: SJA_Trans_WAKE
   },
   .GPB =
   {
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB0: SJA1000_ALE/AS
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB1: SJA1000_nCS
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB2: SJA1000_nRD/E
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB3: SJA1000_nWR
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB4: MCP_Trans_CS
-    MCP23SXX_PIN_AS_OUTPUT | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_HIGH | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB5: SJA_Trans_CS
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB6: SJA_Trans_INH
-    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC | MCP23SXX_GPIO_OUTPUT_STATE_LOW  | MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB7: SJA_Trans_WAKE
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB0: SJA1000_AD0
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB1: SJA1000_AD1
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB2: SJA1000_AD2
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB3: SJA1000_AD3
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB4: SJA1000_AD4
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB5: SJA1000_AD5
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB6: SJA1000_AD6
+    MCP23SXX_PIN_AS_INPUT  | MCP23SXX_GPIO_STATE_SAME_LOGIC |                                   MCP23SXX_GPIO_PULLUP_DISABLE | MCP23SXX_INTERRUPT_ON_CHANGE_DISABLE, // GPB7: SJA1000_AD7
   },
 };
 
-//! PORT interface of the MCP230XX as U9 PORT GPA on the CAN_Shield board
+//! PORT interface of the MCP23SXX as U9 PORT GPA on the CAN_Shield board
 PORT_Interface PORTGPA_U9 =
 {
   .InterfaceDevice       = &MCP23S17_U9,
@@ -213,10 +195,10 @@ PORT_Interface PORTGPA_U9 =
   .fnPORT_SetDirection   = MCP23SXX_SetPORTdirection_Gen,
   .fnPORT_GetInputLevel  = MCP23SXX_GetPORTinputLevel_Gen,
   .fnPORT_SetOutputLevel = MCP23SXX_SetPORToutputLevel_Gen,
-  .PORTindex             = 0,
+  .PORTindex             = MCP23SXX_PORT_GPA,
 };
 
-//! PORT interface of the MCP230XX as U9 PORT GPB on the CAN_Shield board
+//! PORT interface of the MCP23SXX as U9 PORT GPB on the CAN_Shield board
 PORT_Interface PORTGPB_U9 =
 {
   .InterfaceDevice       = &MCP23S17_U9,
@@ -224,10 +206,120 @@ PORT_Interface PORTGPB_U9 =
   .fnPORT_SetDirection   = MCP23SXX_SetPORTdirection_Gen,
   .fnPORT_GetInputLevel  = MCP23SXX_GetPORTinputLevel_Gen,
   .fnPORT_SetOutputLevel = MCP23SXX_SetPORToutputLevel_Gen,
-  .PORTindex             = 1,
+  .PORTindex             = MCP23SXX_PORT_GPB,
+};
+
+//! GPIO interface of the MCP23SXX as SJA1000 CS pin on the CAN_Shield board
+GPIO_Interface SJA1000_CS =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 1), // On GPA1
+  .PORTindex            = MCP23SXX_PORT_GPA,
+};
+
+//! GPIO interface of the MCP23SXX as SJA1000 RD#/E pin on the CAN_Shield board
+GPIO_Interface SJA1000_RD_E =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 2), // On GPA2
+  .PORTindex            = MCP23SXX_PORT_GPA,
+};
+
+//! GPIO interface of the MCP23SXX as SJA1000 WR# pin on the CAN_Shield board
+GPIO_Interface SJA1000_WR =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 3), // On GPA3
+  .PORTindex            = MCP23SXX_PORT_GPA,
+};
+
+//! GPIO interface of the MCP23SXX as SJA1000 ALE/AS pin on the CAN_Shield board
+GPIO_Interface SJA1000_ALE_AS =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 0), // On GPA0
+  .PORTindex            = MCP23SXX_PORT_GPA,
+};
+
+//! GPIO interface of the MCP23SXX as MCP2515 Transceiver CS pin on the CAN_Shield board
+GPIO_Interface MCP2515_Trans_CS =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 4), // On GPA4
+  .PORTindex            = MCP23SXX_PORT_GPA,
+};
+
+//! GPIO interface of the MCP23SXX as SJA1000 Transceiver CS pin on the CAN_Shield board
+GPIO_Interface SJA1000_Trans_CS =
+{
+  .InterfaceDevice      = &MCP23S17_U9,
+  .UniqueID             = MCP23SXX_UNIQUE_ID,
+  .fnGPIO_SetState      = MCP23SXX_SetPinState_Gen,
+  .fnGPIO_GetInputLevel = MCP23SXX_GetPinInputLevel_Gen,
+  .PinBitMask           = (1 << 5), // On GPA5
+  .PORTindex            = MCP23SXX_PORT_GPA,
 };
 
 //-----------------------------------------------------------------------------
+
+
+
+
+
+//**********************************************************************************************************************************************************
+
+CAN_BitTimeStats SJA1000_BitTimeStats = { 0 }; //!< SJA1000 Bit Time stat
+
+//! Component structure of the SJA1000 as U6 with link to GPIO expander on the CAN_Shield board
+struct SJA1000 SJA1000_U6 =
+{
+  .UserDriverData = NULL,
+  //--- Interface driver call functions ---
+  .CS     = &SJA1000_CS,
+  .ALE_AS = &SJA1000_ALE_AS,
+  .RD_E   = &SJA1000_RD_E,
+  .WR     = &SJA1000_WR,
+  .DATA   = &PORTGPB_U9,
+};
+
+//! Configuration structure of the SJA1000 as U6
+struct SJA1000_Config SJA1000_U6_Conf =
+{
+  //--- Controller clocks ---
+  .XtalFreq      = 16000000,
+  //--- CAN configuration --
+  .BusConfig     =
+  {
+    .DesiredBitrate   = CAN_SHIELD_BITRATE, // Desired CAN2.0A/CAN2.0B bitrate in bit/s
+    .BusMeters        = 1,                  // Only 10cm on the V71_UltraXplained_CAN_Shield
+    .TransceiverDelay = 120,                // The transceiver is a TJA1145T/FDJ (U4). The worst delay is from bus recessive to RXD           
+  },
+  .BitTimeStats  = &SJA1000_BitTimeStats,
+  //--- Pins configuration ---
+  .outMode      = SJA1000_NORMAL_OUT_MODE,
+  .tx0PinMode   = SJA1000_TX_PUSH_PULL,
+  .tx1PinMode   = SJA1000_TX_PUSH_PULL,
+  .clkoutMode   = SJA1000_CLKOUT_OFF,
+  .tx1AsRxInt   = false,
+  .bypassRxComp = false,
+  //--- Interrupts ---
+  .Interrupts   = SJA1000_ENABLE_ALL_PCAN_INTERRUPTS,
+};
 
 
 

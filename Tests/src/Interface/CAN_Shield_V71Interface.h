@@ -40,10 +40,15 @@
 #include "GPIO_Interface.h"
 #include "MCP230XX.h"
 #include "MCP23SXX.h"
+#include "SJA1000.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
   extern "C" {
 #endif
+//-----------------------------------------------------------------------------
+
+#define CAN_SHIELD_BITRATE  1000000
+
 //-----------------------------------------------------------------------------
 
 
@@ -71,12 +76,22 @@ extern struct MCP23SXX_Config MCP23S17_U9_Conf;
 
 extern PORT_Interface PORTGPA_U9; //!< PORT interface of the MCP23SXX as U9 PORT GPA on the CAN_Shield board
 extern PORT_Interface PORTGPB_U9; //!< PORT interface of the MCP23SXX as U9 PORT GPB on the CAN_Shield board
+
+extern GPIO_Interface SJA1000_CS;       //!< GPIO interface of the MCP23SXX as SJA1000 CS pin on the CAN_Shield board
+extern GPIO_Interface SJA1000_RD_E;     //!< GPIO interface of the MCP23SXX as SJA1000 RD#/E pin on the CAN_Shield board
+extern GPIO_Interface SJA1000_WR;       //!< GPIO interface of the MCP23SXX as SJA1000 WR pin on the CAN_Shield board
+extern GPIO_Interface SJA1000_ALE_AS;   //!< GPIO interface of the MCP23SXX as SJA1000 ALE/AS pin on the CAN_Shield board
+extern GPIO_Interface MCP2515_Trans_CS; //!< GPIO interface of the MCP23SXX as MCP2515 Transceiver CS pin on the CAN_Shield board
+extern GPIO_Interface SJA1000_Trans_CS; //!< GPIO interface of the MCP23SXX as SJA1000 Transceiver CS pin on the CAN_Shield board
 //-----------------------------------------------------------------------------
 
 
 
+//********************************************************************************************************************
+extern CAN_BitTimeStats SJA1000_BitTimeStats; //!< SJA1000 Bit Time stat
 
-
+extern struct SJA1000 SJA1000_U6;             //!< Component structure of the SJA1000 as U6 with link to GPIO expander on the CAN_Shield board
+extern struct SJA1000_Config SJA1000_U6_Conf; //!< Configuration structure of the SJA1000 as U6
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }

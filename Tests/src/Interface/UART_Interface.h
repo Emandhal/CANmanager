@@ -61,7 +61,10 @@
 //********************************************************************************************************************
 // UART Interface functions definitions
 //********************************************************************************************************************
-typedef struct UART_Interface  UART_Interface;   //! Typedef of UART_Interface device object structure
+
+typedef struct UART_Interface UART_Interface; //! Typedef of UART_Interface device object structure
+
+//-----------------------------------------------------------------------------
 
 /*! @brief Interface function for UART transmit
  *
@@ -89,7 +92,6 @@ typedef eERRORRESULT (*UARTreceive_Func)(UART_Interface *pIntDev, uint8_t *data,
 
 //-----------------------------------------------------------------------------
 
-
 //! @brief UART interface container structure
 struct UART_Interface
 {
@@ -98,12 +100,6 @@ struct UART_Interface
   UARTreceive_Func fnUART_Receive;   //!< This function will be called when a driver/library needs to receive data
   uint8_t Channel;                   //!< UART channel of the interface device
 };
-
-//-----------------------------------------------------------------------------
-
-
-
-
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

@@ -52,6 +52,8 @@ extern "C" {
 
 #define GPIO_AS_OUTPUT  0
 #define GPIO_AS_INPUT   1
+#define PORT_AS_OUTPUT  0x00000000
+#define PORT_AS_INPUT   0xFFFFFFFF
 
 //-----------------------------------------------------------------------------
 

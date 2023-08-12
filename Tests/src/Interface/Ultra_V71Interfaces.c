@@ -22,6 +22,31 @@ extern "C" {
 
 
 
+//**********************************************************************************************************************************************************
+
+//! Peripheral structure of the hard I2C0 on the V71
+struct I2C_Interface I2C0_V71 =
+{
+  .InterfaceDevice = TWIHS0,
+  .UniqueID        = TWIHS_UNIQUE_ID,
+  .fnI2C_Init      = TWIHS_MasterInit_Gen,
+  .fnI2C_Transfer  = TWIHS_PacketTransfer_Gen,
+};
+
+
+//! Peripheral structure of the hard SPI0 on the V71
+struct SPI_Interface SPI0_V71 =
+{
+  .InterfaceDevice = SPI0,
+  .UniqueID        = SPI_UNIQUE_ID,
+  .fnSPI_Init      = SPI_MasterInit_Gen,
+  .fnSPI_Transfer  = SPI_PacketTransfer_Gen,
+};
+
+//-----------------------------------------------------------------------------
+
+
+
 
 
 //**********************************************************************************************************************************************************
@@ -35,13 +60,7 @@ struct AT24MAC402 AT24MAC402_V71 =
     //--- EEPROM configuration ---
     .Conf           = &AT24MAC402_Conf,
     //--- Interface driver call functions ---
-    .I2C =
-    {
-      .InterfaceDevice = TWIHS0,
-      .UniqueID        = TWIHS_UNIQUE_ID,
-      .fnI2C_Init      = TWIHS_MasterInit_Gen,
-      .fnI2C_Transfer  = TWIHS_PacketTransfer_Gen,
-    },
+    .I2C            = &I2C0_V71,
     .I2CclockSpeed  = 400000, // I2C speed at 400kHz
     //--- Time call function ---
     .fnGetCurrentms = GetCurrentms_V71,
