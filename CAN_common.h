@@ -167,6 +167,8 @@ typedef struct CAN_BitTimeConfig
   eCAN_PS2mode PS2mode;    //!< Nominal Phase Seg2 BitTime Length Mode
   //--- Result Statistics ---
   CAN_BitTimeStats* Stats; //!< Point to a stat structure (set to NULL if no statistics are necessary)
+  bool EdgeFilter;         //!< Defines Edge Filtering enable
+  bool CAN20only;          //!< The bit time config is only for CAN2.0A and CAN2.0B
   bool Valid;              //!< Indicate the validness of the bit time configuration
 } CAN_BitTimeConfig;
 

@@ -38,9 +38,11 @@ extern EEPROM* const EEPROMdevices[]; //!< Description of each EEPROM devices on
 
 
 //===  System defines ===============================================
-#define SYSTEM_TICK_MS           ( 1u ) // 1ms for system tick
+#define SYSTEM_TICK_MS           ( 1u ) //!< 1ms for system tick
 #define TIMER_TICKS_PER_SECONDS  ( 1000u / SYSTEM_TICK_MS )
-extern volatile uint32_t msCount; //!< Milli-seconds count from start of the system
+extern volatile uint32_t msCount;       //!< Milli-seconds count from start of the system
+#define TIMESTAMP_TICK_us        ( 25 ) //!< TimeStamp tick is 25µs
+#define TIMESTAMP_TICK(sysclk)   ( ((sysclk) / 1000000) * TIMESTAMP_TICK_us )
 
 //=== General pins definitions ===============================================
 #define SYSLED_As_Output  ioport_set_pin_dir(LED0_GPIO, IOPORT_DIR_OUTPUT);

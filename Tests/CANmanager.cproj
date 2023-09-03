@@ -468,6 +468,7 @@
       <Value>USE_GENERICS_DEFINED</Value>
       <Value>USE_CONSOLE_GPIO_COMMANDS</Value>
       <Value>USE_CONSOLE_EEPROM_COMMANDS</Value>
+      <Value>USE_ADVANCED_INTERFACE</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.IncludePaths>
@@ -652,6 +653,7 @@
     <Folder Include="src\Config" />
     <Folder Include="src\Interface" />
     <Folder Include="src\Driver" />
+    <Folder Include="src\Utils" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CAN_common.h">
@@ -684,6 +686,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Driver\MCP23SXX.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP251XFD.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Driver\MCP251XFD.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Driver\SJA1000.c">
@@ -738,6 +746,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\TimerTicks.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Utils\CRC16_CMS.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Utils\CRC16_CMS.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\common\services\delay\delay.h">

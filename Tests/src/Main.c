@@ -1,24 +1,22 @@
 /*
  * Hardware setup:
  *
- * 1) Plug the mikroBus Xplained Pro adapter board into connector EXT1 of the SAM V71 Xplained Ultra evaluation kit.
- * 2) Select 3.3V at the jumper selection: VDD of the MCP2517FD/MCP2518FD.
- * 3) Select 40MHz at the jumper selection of the frequency of the MCP2517FD/MCP2518FD.
- * 4) Connect 5V of the POWER connector of SAM V71 Xplained Ultra to 5V External Power Header of the adapter board (jumper wire): 5V for VCC of ATA6563.
- * 5) Plug MCP2517FD click or a MCP2518FD click into adapter board.
- * 6) Power SAM V71 Xplained by connecting a USB cable to the DEBUG connector and plugging it into your PC.
- * 7) Connect a terminal to see the console debug
- * 8) Connect a wire on the DB9 pin 7 MCP2517FD/MCP2518FD click and the other end to the J1000 pin 1 (CAN_H) of the SAM V71 Xplained Ultra
- * 9) Connect a wire on the DB9 pin 2 MCP2517FD/MCP2518FD click and the other end to the J1000 pin 2 (CAN_L) of the SAM V71 Xplained Ultra
- * 10) Make sure both ends of the CAN bus are terminated.
- * 
- * Bonus add a secondary board:
- * 11) Plug the mikroBus Xplained Pro adapter board into connector EXT2 of the SAM V71 Xplained Ultra evaluation kit.
- * 12) Select 3.3V at the jumper selection: VDD of the MCP2517FD/MCP2518FD.
- * 13) Select 40MHz at the jumper selection of the frequency of the MCP2517FD/MCP2518FD.
- * 14) Connect 5V of the POWER connector of SAM V71 Xplained Ultra to 5V External Power Header of the adapter board (jumper wire): 5V for VCC of ATA6563.
- * 15) Plug MCP2517FD click or a MCP2518FD click into adapter board.
- * 16) Connect the DB9 to a CAN to PC adapter to see some frame on the computer
+ * Plug the V71_XplainedUltra_CAN_Shield (Custom board: https://github.com/Emandhal/CANmanager/tree/main/V71_XplainedUltra_CAN_Shield) board on shield connectors of the SAM V71 Xplained Ultra evaluation kit.
+ * For this test configuration, the MIKROBUS1 connector of the shield board will get a MCP2518FD click (3.3V, 40MHz)
+ * For this test configuration, the MIKROBUS2 connector of the shield board will get a TCAN4550 CAN FD6 click (3.3V)
+ * For this test configuration, the MIKROBUS3 connector of the shield board will get a MCP2517FD click (3.3V, 40MHz)
+ * Power SAM V71 Xplained by connecting a USB cable to the DEBUG connector and plugging it into your PC.
+ * Connect a terminal to see the console debug
+ *
+ * CAN bus :
+ * Connect a wire on the DB9 pin 7 MCP2518FD click and the other end to the H7 pin 1 (CAN_H) of the V71_XplainedUltra_CAN_Shield
+ * Connect a wire on the DB9 pin 2 MCP2518FD click and the other end to the H7 pin 2 (CAN_L) of the V71_XplainedUltra_CAN_Shield
+ * Connect a wire on the DB9 pin 7 TCAN4550 click and the other end to the H6 pin 1 (CAN_H) of the V71_XplainedUltra_CAN_Shield
+ * Connect a wire on the DB9 pin 2 TCAN4550 click and the other end to the H6 pin 2 (CAN_L) of the V71_XplainedUltra_CAN_Shield
+ * Connect a wire on the DB9 pin 7 MCP2517FD click and the other end to the H5 pin 1 (CAN_H) of the V71_XplainedUltra_CAN_Shield
+ * Connect a wire on the DB9 pin 2 MCP2517FD click and the other end to the H5 pin 2 (CAN_L) of the V71_XplainedUltra_CAN_Shield
+ * Connect a terminal resistor with a jumper on H1, and another on H2
+ * Connect another terminal resistor with a jumper on H3, and another on H4 if necessary
  */
 //=============================================================================
 
