@@ -721,15 +721,17 @@ eERRORRESULT SJA1000_CalculateBitTimeConfiguration(const uint32_t periphClk, con
     if (SearchExactBR && (BRP == 0)) { SearchExactBR = false; continue; }                        // No exact baudrate found, check again but with non-exact baudrate accepted
   } while (0);
   if (pConf->Valid == false) *pConf = LastBTconf;                                                // If the current is not valid, get the last good configuration
-  pConf->DBRP    = 0;                                                                            // ** Set the DBRP in the configuration **
-  pConf->DPRSEG  = 0;                                                                            // ** Set the DPRSEG in the configuration **
-  pConf->DTSEG1  = 0;                                                                            // ** Set the DTSEG1 in the configuration **
-  pConf->DTSEG2  = 0;                                                                            // ** Set the DTSEG2 in the configuration **
-  pConf->DSJW    = 0;                                                                            // ** Set the DSJW in the configuration **
-  pConf->TDCO    = 0;                                                                            // ** Set the TDCO in the configuration **
-  pConf->TDCV    = 0;                                                                            // ** Set the TDCV in the configuration **
-  pConf->SAMPL   = (pBusConf.DesiredBitrate > CAN_SAE_CLASS_B_SPEED_MAX ? 1 : 3);                // ** Set the SAM in the configuration ** (1 sample if SAE class C, else 3)
-  pConf->PS2mode = CAN_PS2_BLT_PHSEG2;                                                           // ** Set the PhaseSeg2 mode in the configuration **
+  pConf->DBRP       = 0;                                                                         // ** Set the DBRP in the configuration **
+  pConf->DPRSEG     = 0;                                                                         // ** Set the DPRSEG in the configuration **
+  pConf->DTSEG1     = 0;                                                                         // ** Set the DTSEG1 in the configuration **
+  pConf->DTSEG2     = 0;                                                                         // ** Set the DTSEG2 in the configuration **
+  pConf->DSJW       = 0;                                                                         // ** Set the DSJW in the configuration **
+  pConf->TDCO       = 0;                                                                         // ** Set the TDCO in the configuration **
+  pConf->TDCV       = 0;                                                                         // ** Set the TDCV in the configuration **
+  pConf->SAMPL      = (pBusConf.DesiredBitrate > CAN_SAE_CLASS_B_SPEED_MAX ? 1 : 3);             // ** Set the SAM in the configuration ** (1 sample if SAE class C, else 3)
+  pConf->PS2mode    = CAN_PS2_BLT_PHSEG2;                                                        // ** Set the PhaseSeg2 mode in the configuration **
+  pConf->EdgeFilter = false;                                                                     // ** Edge Filtering enabled, according to ISO 11898-1:2015 **
+  pConf->CAN20only  = true;                                                                      // ** Set the CAN2.0 only configuration **
 
   eERRORRESULT Error = ERR_OK;
   if (pConf->Stats != NULL)
