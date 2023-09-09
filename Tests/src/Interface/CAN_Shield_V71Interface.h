@@ -97,7 +97,7 @@ extern GPIO_Interface SJA1000_Trans_CS; //!< GPIO interface of the MCP23SXX as S
 extern struct MCP251XFD MCP2518FD_MB1;                                //!< Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
 extern MCP251XFD_BitTimeStats MCP2518FD_BTStats;                      //!< MCP2518FD Bit Time stat
 extern uint32_t MCP2518FD_SYSCLK;                                     //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
-extern MCP251XFD_Config MCP2518FD_Config;                             //!< Configuration structure of the MCP2518FD on MIKROBUS1
+extern struct MCP251XFD_Config MCP2518FD_Config;                      //!< Configuration structure of the MCP2518FD on MIKROBUS1
 
 #define MCP2518FD_FIFO_COUNT    1
 extern MCP251XFD_RAMInfos MCP2518FD_RAMInfos;                         //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()
@@ -126,7 +126,7 @@ extern struct SJA1000_Config SJA1000_U6_Conf; //!< Configuration structure of th
 extern struct MCP251XFD MCP2517FD_MB3;                                //!< Component structure of the MCP2517FD on MIKROBUS3 on the V71_XplainedUltra_CAN_Shield board
 extern MCP251XFD_BitTimeStats MCP2517FD_BTStats;                      //!< MCP2517FD Bit Time stat
 extern uint32_t MCP2517FD_SYSCLK;                                     //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
-extern MCP251XFD_Config MCP2517FD_Config;                             //!< Configuration structure of the MCP2517FD on MIKROBUS3
+extern struct MCP251XFD_Config MCP2517FD_Config;                      //!< Configuration structure of the MCP2517FD on MIKROBUS3
 
 #define MCP2517FD_FIFO_COUNT    1
 extern MCP251XFD_RAMInfos MCP2517FD_RAMInfos;                         //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()

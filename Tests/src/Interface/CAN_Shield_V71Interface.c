@@ -304,7 +304,7 @@ GPIO_Interface SJA1000_Trans_CS =
 //********************************************************************************************************************
 
 //! Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
-MCP251XFD MCP2518FD_MB1 =
+struct MCP251XFD MCP2518FD_MB1 =
 {
   .UserDriverData = NULL,
   //--- Driver configuration ---
@@ -332,7 +332,7 @@ CAN_BitTimeStats MCP2518FD_BitTimeStats = { 0 }; //!< MCP2518FD Bit Time stat
 uint32_t MCP2518FD_SYSCLK; //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
 
 //! Configuration structure of the MCP2518FD on MIKROBUS1
-MCP251XFD_Config MCP2518FD_Config =
+struct MCP251XFD_Config MCP2518FD_Config =
 {
   //--- Controller clocks ---
   .XtalFreq       = 0,                         // CLKIN is not a crystal
@@ -358,7 +358,7 @@ MCP251XFD_Config MCP2518FD_Config =
                   | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
                   | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
                   | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
-                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
+                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Donï¿½t use RRS; SID<10:0> according to ISO 11898-1:2015
   //--- GPIOs and Interrupts pins ---
   .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
   .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,
@@ -396,8 +396,6 @@ MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT] =
 // SJA1000 External CAN controller
 //********************************************************************************************************************
 
-CAN_BitTimeStats SJA1000_BitTimeStats = { 0 }; //!< SJA1000 Bit Time stat
-
 //! Component structure of the SJA1000 as U6 with link to GPIO expander on the CAN_Shield board
 struct SJA1000 SJA1000_U6 =
 {
@@ -409,6 +407,10 @@ struct SJA1000 SJA1000_U6 =
   .WR     = &SJA1000_WR,
   .DATA   = &PORTGPB_U9,
 };
+
+//-----------------------------------------------------------------------------
+
+CAN_BitTimeStats SJA1000_BitTimeStats = { 0 }; //!< SJA1000 Bit Time stat
 
 //! Configuration structure of the SJA1000 as U6
 struct SJA1000_Config SJA1000_U6_Conf =
@@ -499,7 +501,7 @@ MCP251XFD_Config MCP2517FD_Config =
                   | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
                   | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
                   | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
-                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
+                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Donï¿½t use RRS; SID<10:0> according to ISO 11898-1:2015
   //--- GPIOs and Interrupts pins ---
   .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
   .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,

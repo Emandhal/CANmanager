@@ -94,7 +94,7 @@ eERRORRESULT Init_MCP23SXX(MCP23SXX *pComp, const MCP23SXX_Config *pConf)
   { SCKfreq = MCP23SXX_SPICLOCK_SAFE; InSafeSCKspeed = true; }                // In case of Autodetect, we do not know yet the maximum speed of the device. We need to set a safe SCK clock speed
 
   //--- Initialize SPI interface ---
-  Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, SPI_MODE0, SCKfreq);
+  Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, STD_SPI_MODE0, SCKfreq);
   if (Error != ERR_NONE) return Error;                                        // If there is an error while calling fnSPI_Init() then return the error
 
   //--- Check device ---
@@ -114,8 +114,8 @@ eERRORRESULT Init_MCP23SXX(MCP23SXX *pComp, const MCP23SXX_Config *pConf)
   if (__MCP23SXX_CheckSCKspeed(pComp) == false) return ERR__SPI_FREQUENCY_ERROR;
   if (InSafeSCKspeed)
   {
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, SPI_MODE0, pComp->SPIclockSpeed); // Reinit the SPI and set the desired speed
-    if (Error != ERR_NONE) return Error;                                                   // If there is an error while calling fnSPI_Init() then return the error
+    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, STD_SPI_MODE0, pComp->SPIclockSpeed); // Reinit the SPI and set the desired speed
+    if (Error != ERR_NONE) return Error;                                                       // If there is an error while calling fnSPI_Init() then return the error
   }
 
   //--- Configure pins ---

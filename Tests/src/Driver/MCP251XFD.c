@@ -1,9 +1,9 @@
 /*!*****************************************************************************
  * @file    MCP251XFD.c
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.6
- * @date    16/04/2023
- * @brief   MCP251XFD driver
+ * @version 1.1.0
+ * @date    03/09/2023
+ * @brief   MCP251XFD C driver with C++ class wrapper
  * @details
  * The MCP251XFD component is a CAN-bus controller supporting CAN2.0A, CAN2.0B
  * and CAN-FD with SPI interface
@@ -40,6 +40,7 @@ extern "C" {
 // Test all RAM address of the MCP251XFD for the driver flag DRIVER_INIT_CHECK_RAM
 static eERRORRESULT __MCP251XFD_TestRAM(MCP251XFD *pComp);
 //-----------------------------------------------------------------------------
+#define MCP251XFD_IS_MCP2517FD          ( MCP251XFD_DEV_ID_GET(pComp->InternalConfig) == MCP2517FD )
 #define MCP251XFD_USE_SID11             ( (pComp->InternalConfig & (MCP251XFD_CANFD_USE_RRS_BIT_AS_SID11 | MCP251XFD_CANFD_ENABLED)) == (MCP251XFD_CANFD_USE_RRS_BIT_AS_SID11 | MCP251XFD_CANFD_ENABLED) )
 #define MCP251XFD_TIME_DIFF(begin,end)  ( ((end) >= (begin)) ? ((end) - (begin)) : (UINT32_MAX - ((begin) - (end) - 1)) ) // Works only if time difference is strictly inferior to (UINT32_MAX/2) and call often
 //-----------------------------------------------------------------------------
@@ -48,11 +49,13 @@ static eERRORRESULT __MCP251XFD_TestRAM(MCP251XFD *pComp);
 
 
 
-//**********************************************************************************************************************************************************
+//********************************************************************************************************************
+// MCP251XFD Driver API
+//********************************************************************************************************************
 //=============================================================================
 // MCP251XFD device initialization
 //=============================================================================
-eERRORRESULT Init_MCP251XFD(MCP251XFD *pComp, const MCP251XFD_Config *pConf)
+eERRORRESULT Init_MCP251XFD(MCP251XFD *pComp, const MCP251XFD_Config* const pConf)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (pConf == NULL)) return ERR__PARAMETER_ERROR;
@@ -82,11 +85,7 @@ eERRORRESULT Init_MCP251XFD(MCP251XFD *pComp, const MCP251XFD_Config *pConf)
   if (pComp->SPIclockSpeed > MCP251XFD_SPICLOCK_MAX) return ERR__SPI_FREQUENCY_ERROR;                    // The SPI clock should not be superior to the SPI clock max
   if ((pComp->DriverConfig & MCP251XFD_DRIVER_SAFE_RESET) == 0)
   {
-#ifdef USE_ADVANCED_INTERFACE
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, SPI_MODE0, pComp->SPIclockSpeed);               // Initialize the SPI interface only in case of no safe reset (the interface will be initialized in the reset at a safe speed)
-#else
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, pComp->SPIclockSpeed);                          // Initialize the SPI interface only in case of no safe reset (the interface will be initialized in the reset at a safe speed)
-#endif
+    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, STD_SPI_MODE0, pComp->SPIclockSpeed);           // Initialize the SPI interface only in case of no safe reset (the interface will be initialized in the reset at a safe speed)
     if (Error != ERR_NONE) return Error;                                                                 // If there is an error while calling fnSPI_Init() then return the error
   }
 
@@ -131,11 +130,7 @@ eERRORRESULT Init_MCP251XFD(MCP251XFD *pComp, const MCP251XFD_Config *pConf)
   if (pComp->SPIclockSpeed > (((CompFreq >> 1) * 85) / 100)) return ERR__SPI_FREQUENCY_ERROR;            // Ensure that FSCK is less than or equal to 0.85*(FSYSCLK/2). Follows datasheets errata for: The SPI can write corrupted data to the RAM at fast SPI speeds
   if ((pComp->DriverConfig & MCP251XFD_DRIVER_SAFE_RESET) > 0)
   {
-#ifdef USE_ADVANCED_INTERFACE
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, SPI_MODE0, pComp->SPIclockSpeed);               // Set the SPI speed clock to desired clock speed
-#else
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, pComp->SPIclockSpeed);                          // Set the SPI speed clock to desired clock speed
-#endif
+    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, STD_SPI_MODE0, pComp->SPIclockSpeed);           // Set the SPI speed clock to desired clock speed
     if (Error != ERR_NONE) return Error;                                                                 // If there is an error while changing SPI interface speed then return the error
   }
 
@@ -244,7 +239,7 @@ eERRORRESULT MCP251XFD_InitRAM(MCP251XFD *pComp)
 //=============================================================================
 // Get actual device of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetDeviceID(MCP251XFD *pComp, eMCP251XFD_Devices* device, uint8_t* deviceId, uint8_t* deviceRev)
+eERRORRESULT MCP251XFD_GetDeviceID(MCP251XFD *pComp, eMCP251XFD_Devices* const device, uint8_t* const deviceId, uint8_t* const deviceRev)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (device == NULL)) return ERR__PARAMETER_ERROR;
@@ -327,12 +322,9 @@ eERRORRESULT MCP251XFD_ReadData(MCP251XFD *pComp, uint16_t address, uint8_t* dat
 
     //--- Now send the data through SPI interface ---
     const size_t ByteToReadCount = ByteCount + (UseCRC ? (2 + 1 + 2) : 2);   // In case of use CRC for read, here are 2 bytes for Command + 1 for Length + 2 for CRC, else just 2 for command
-#ifdef USE_ADVANCED_INTERFACE
     SPIInterface_Packet PacketDesc = SPI_INTERFACE_RX_DATA_DESC(&Buffer[0], ByteToReadCount, true);
-    Error = pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                                                         // Transfer the data in the buffer
-#else
-    Error = pSPI->fnSPI_Transfer(pSPI, pComp->SPIchipSelect, &Buffer[0], &Buffer[0], ByteToReadCount, true); // Transfer the data in the buffer
-#endif
+    if (MCP251XFD_IS_MCP2517FD) PacketDesc.Config.Value |= SPI_BLOCK_INTERRUPTS_ON_TRANSFER; // On MCP2517FD, the interrupt shall be deactivated (see TX MAB underflow/RX MAB overflow due to long delays between SPI bytes in DS80000792B document)
+    Error = pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                         // Transfer the data in the buffer
     if (Error != ERR_NONE) return Error;                                     // If there is an error while transferring data then return the error
 
     //--- Copy buffer to data ---
@@ -467,12 +459,9 @@ eERRORRESULT MCP251XFD_WriteData(MCP251XFD *pComp, uint16_t address, const uint8
 
     //--- Now send the data through SPI interface ---
     const size_t ByteToWriteCount = ByteCount + (UseSafe ? (2 + 2) : (UseCRC ? (2 + 1 + 2) : 2)); // In case of use CRC for write here are 2 bytes for Command + 1 for Length for not safe + 2 for CRC, else just 2 for command
-#ifdef USE_ADVANCED_INTERFACE
     SPIInterface_Packet PacketDesc = SPI_INTERFACE_TX_DATA_DESC(&Buffer[0], ByteToWriteCount, true);
-    Error = pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                                                    // Transfer the data in the buffer (2 for Command + 1 for Length + 2 for CRC)
-#else
-    Error = pSPI->fnSPI_Transfer(pSPI, pComp->SPIchipSelect, &Buffer[0], NULL, ByteToWriteCount, true); // Transfer the data in the buffer (2 for Command + 1 for Length + 2 for CRC)
-#endif
+    if (MCP251XFD_IS_MCP2517FD) PacketDesc.Config.Value |= SPI_BLOCK_INTERRUPTS_ON_TRANSFER; // On MCP2517FD, the interrupt shall be deactivated (see TX MAB underflow/RX MAB overflow due to long delays between SPI bytes in DS80000792B document)
+    Error = pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                        // Transfer the data in the buffer (2 for Command + 1 for Length + 2 for CRC)
     if (Error != ERR_NONE) return Error;                                    // If there is an error while transferring data then return the error
   }
 
@@ -487,7 +476,7 @@ eERRORRESULT MCP251XFD_WriteData(MCP251XFD *pComp, uint16_t address, const uint8
 //=============================================================================
 // Transmit a message object (with data) to the FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_TransmitMessageObjectToFIFO(MCP251XFD *pComp, uint8_t* messageObjectToSend, uint8_t objectSize, eMCP251XFD_FIFO toFIFO, bool andFlush)
+eERRORRESULT MCP251XFD_TransmitMessageObjectToFIFO(MCP251XFD *pComp, const uint8_t* const messageObjectToSend, uint8_t objectSize, eMCP251XFD_FIFO toFIFO, bool andFlush)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageObjectToSend == NULL)) return ERR__PARAMETER_ERROR;
@@ -515,7 +504,7 @@ eERRORRESULT MCP251XFD_TransmitMessageObjectToFIFO(MCP251XFD *pComp, uint8_t* me
 //=============================================================================
 // Transmit a message to a FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_TransmitMessageToFIFO(MCP251XFD *pComp, MCP251XFD_CANMessage* messageToSend, eMCP251XFD_FIFO toFIFO, bool andFlush)
+eERRORRESULT MCP251XFD_TransmitMessageToFIFO(MCP251XFD *pComp, const CAN_CANMessage* const messageToSend, eMCP251XFD_FIFO toFIFO, bool andFlush)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageToSend == NULL)) return ERR__PARAMETER_ERROR;
@@ -525,22 +514,20 @@ eERRORRESULT MCP251XFD_TransmitMessageToFIFO(MCP251XFD *pComp, MCP251XFD_CANMess
   MCP251XFD_CAN_TX_Message* Message = (MCP251XFD_CAN_TX_Message*)Buffer; // The first 8 bytes represent the MCP251XFD_CAN_TX_Message struct
 
   //--- Fill message ID (T0) ---
-  bool Extended   = ((messageToSend->ControlFlags & MCP251XFD_EXTENDED_MESSAGE_ID) > 0);
-  bool CANFDframe = ((messageToSend->ControlFlags & MCP251XFD_CANFD_FRAME        ) > 0);
-  Message->T0.T0  = MCP251XFD_MessageIDtoObjectMessageIdentifier(messageToSend->MessageID, Extended, MCP251XFD_USE_SID11 && CANFDframe);
+  const bool Extended   = ((messageToSend->ControlFlags & CAN_EXTENDED_MESSAGE_ID) > 0);
+  const bool CANFDframe = ((messageToSend->ControlFlags & CAN_CANFD_FRAME        ) > 0);
+  Message->T0.T0 = MCP251XFD_MessageIDtoObjectMessageIdentifier(messageToSend->MessageID, Extended, MCP251XFD_USE_SID11 && CANFDframe);
 
   //--- Fill message controls (T1) ---
-  Message->T1.T1 = 0;                          // Initialize message Controls to 0
-  Message->T1.SEQ = messageToSend->MessageSEQ; // Set message Sequence
-  if (CANFDframe                                                          )      Message->T1.FDF = 1;
-  if ((messageToSend->ControlFlags & MCP251XFD_SWITCH_BITRATE             ) > 0) Message->T1.BRS = 1;
-  if ((messageToSend->ControlFlags & MCP251XFD_REMOTE_TRANSMISSION_REQUEST) > 0) Message->T1.RTR = 1;
-  if ((messageToSend->ControlFlags & MCP251XFD_EXTENDED_MESSAGE_ID        ) > 0) Message->T1.IDE = 1;
-  if ((messageToSend->ControlFlags & MCP251XFD_TRANSMIT_ERROR_PASSIVE     ) > 0) Message->T1.ESI = 1;
-  Message->T1.DLC = (uint8_t)messageToSend->DLC;
+  Message->T1.T1 = MCP251XFD_CAN_MSGT1_SEQ_SET(messageToSend->MessageMarker) | MCP251XFD_CAN_MSGT1_DLC_SET(messageToSend->DLC); // Set message Sequence and DLC
+  if (CANFDframe                                                    )      Message->T1.T1 |= MCP251XFD_CAN_MSGT1_FDF; // FDF
+  if ((messageToSend->ControlFlags & CAN_SWITCH_BITRATE             ) > 0) Message->T1.T1 |= MCP251XFD_CAN_MSGT1_BRS; // BRS
+  if ((messageToSend->ControlFlags & CAN_REMOTE_TRANSMISSION_REQUEST) > 0) Message->T1.T1 |= MCP251XFD_CAN_MSGT1_RTR; // RTR
+  if (Extended                                                      )      Message->T1.T1 |= MCP251XFD_CAN_MSGT1_IDE; // IDE
+  if ((messageToSend->ControlFlags & CAN_TRANSMIT_ERROR_PASSIVE     ) > 0) Message->T1.T1 |= MCP251XFD_CAN_MSGT1_ESI; // ESI
 
   //--- Fill payload data ---
-  if ((messageToSend->DLC != MCP251XFD_DLC_0BYTE) && (messageToSend->PayloadData == NULL)) return ERR__NO_DATA_AVAILABLE;
+  if ((messageToSend->DLC != CAN_DLC_0BYTE) && (messageToSend->PayloadData == NULL)) return ERR__NO_DATA_AVAILABLE;
   uint8_t BytesDLC = MCP251XFD_DLCToByte(messageToSend->DLC, CANFDframe);
   if (messageToSend->PayloadData != NULL)
   {
@@ -565,7 +552,7 @@ eERRORRESULT MCP251XFD_TransmitMessageToFIFO(MCP251XFD *pComp, MCP251XFD_CANMess
 //=============================================================================
 // Receive a message object (with data) to the FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ReceiveMessageObjectFromFIFO(MCP251XFD *pComp, uint8_t* messageObjectGet, uint8_t objectSize, eMCP251XFD_FIFO fromFIFO)
+eERRORRESULT MCP251XFD_ReceiveMessageObjectFromFIFO(MCP251XFD *pComp, uint8_t* const messageObjectGet, uint8_t objectSize, eMCP251XFD_FIFO fromFIFO)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageObjectGet == NULL)) return ERR__PARAMETER_ERROR;
@@ -593,7 +580,7 @@ eERRORRESULT MCP251XFD_ReceiveMessageObjectFromFIFO(MCP251XFD *pComp, uint8_t* m
 //=============================================================================
 // Receive a message from a FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ReceiveMessageFromFIFO(MCP251XFD *pComp, MCP251XFD_CANMessage* messageGet, eMCP251XFD_PayloadSize payloadSize, uint32_t* timeStamp, eMCP251XFD_FIFO fromFIFO)
+eERRORRESULT MCP251XFD_ReceiveMessageFromFIFO(MCP251XFD *pComp, CAN_CANMessage* const messageGet, eMCP251XFD_PayloadSize payloadSize, uint32_t* const timeStamp, eMCP251XFD_FIFO fromFIFO)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageGet == NULL)) return ERR__PARAMETER_ERROR;
@@ -613,20 +600,20 @@ eERRORRESULT MCP251XFD_ReceiveMessageFromFIFO(MCP251XFD *pComp, MCP251XFD_CANMes
   if (Error != ERR_NONE) return Error;                                                     // If there is an error while calling MCP251XFD_ReceiveMessageObjectFromFIFO() then return the error
 
   //--- Extract message ID (R0) ---
-  bool Extended   = (Message->R1.IDE == 1);
-  bool CANFDframe = (Message->R1.FDF == 1);
+  bool Extended   = ((Message->R1.R1 & MCP251XFD_CAN_MSGR1_IDE) > 0); // IDE
+  bool CANFDframe = ((Message->R1.R1 & MCP251XFD_CAN_MSGR1_FDF) > 0); // FDF
   messageGet->MessageID = MCP251XFD_ObjectMessageIdentifierToMessageID(Message->R0.R0, Extended, MCP251XFD_USE_SID11 && CANFDframe); // Extract SID/EID from R0
 
   //--- Extract message controls (R1) ---
-  messageGet->ControlFlags = MCP251XFD_NO_MESSAGE_CTRL_FLAGS;
-  messageGet->MessageSEQ   = 0u;
-  if (fromFIFO == MCP251XFD_TEF) messageGet->MessageSEQ = ((MCP251XFD_CAN_TX_EventObject*)Buffer)->TE1.SEQ; // If it is a TEF, extract the Sequence by casting Buffer into a TEF object and get SEQ in TE1
-  if (CANFDframe          ) messageGet->ControlFlags = (setMCP251XFD_MessageCtrlFlags)(messageGet->ControlFlags + MCP251XFD_CANFD_FRAME                );
-  if (Message->R1.BRS == 1) messageGet->ControlFlags = (setMCP251XFD_MessageCtrlFlags)(messageGet->ControlFlags + MCP251XFD_SWITCH_BITRATE             );
-  if (Message->R1.RTR == 1) messageGet->ControlFlags = (setMCP251XFD_MessageCtrlFlags)(messageGet->ControlFlags + MCP251XFD_REMOTE_TRANSMISSION_REQUEST);
-  if (Extended            ) messageGet->ControlFlags = (setMCP251XFD_MessageCtrlFlags)(messageGet->ControlFlags + MCP251XFD_EXTENDED_MESSAGE_ID        );
-  if (Message->R1.ESI == 1) messageGet->ControlFlags = (setMCP251XFD_MessageCtrlFlags)(messageGet->ControlFlags + MCP251XFD_TRANSMIT_ERROR_PASSIVE     );
-  messageGet->DLC = (eMCP251XFD_DataLength)Message->R1.DLC;
+  messageGet->ControlFlags  = CAN_NO_MESSAGE_CTRL_FLAGS;
+  messageGet->MessageMarker = 0u;
+  if (fromFIFO == MCP251XFD_TEF) messageGet->MessageMarker = ((MCP251XFD_CAN_TX_EventObject*)Buffer)->TE1.SEQ; // If it is a TEF, extract the Sequence by casting Buffer into a TEF object and get SEQ in TE1
+  if (CANFDframe                                    ) messageGet->ControlFlags = (setCAN_MessageCtrlFlags)(messageGet->ControlFlags + CAN_CANFD_FRAME                ); // FDF
+  if ((Message->R1.R1 & MCP251XFD_CAN_MSGR1_BRS) > 0) messageGet->ControlFlags = (setCAN_MessageCtrlFlags)(messageGet->ControlFlags + CAN_SWITCH_BITRATE             ); // BRS
+  if ((Message->R1.R1 & MCP251XFD_CAN_MSGR1_RTR) > 0) messageGet->ControlFlags = (setCAN_MessageCtrlFlags)(messageGet->ControlFlags + CAN_REMOTE_TRANSMISSION_REQUEST); // RTR
+  if (Extended                                      ) messageGet->ControlFlags = (setCAN_MessageCtrlFlags)(messageGet->ControlFlags + CAN_EXTENDED_MESSAGE_ID        ); // IDE
+  if ((Message->R1.R1 & MCP251XFD_CAN_MSGR1_ESI) > 0) messageGet->ControlFlags = (setCAN_MessageCtrlFlags)(messageGet->ControlFlags + CAN_TRANSMIT_ERROR_PASSIVE     ); // ESI
+  messageGet->DLC = MCP251XFD_CAN_MSGR1_DLC_GET(Message->R1.R1);
 
   //--- Extract TimeStamp ---
   uint8_t* pBuff = &Buffer[sizeof(MCP251XFD_CAN_RX_Message_Identifier) + sizeof(MCP251XFD_CAN_RX_Message_Control)]; // Next bytes of the Buffer is for timestamp and/or payload
@@ -639,7 +626,7 @@ eERRORRESULT MCP251XFD_ReceiveMessageFromFIFO(MCP251XFD *pComp, MCP251XFD_CANMes
   //--- Extract payload data ---
   if (fromFIFO != MCP251XFD_TEF)
   {
-    if ((messageGet->DLC != MCP251XFD_DLC_0BYTE) && (messageGet->PayloadData == NULL)) return ERR__NO_DATA_AVAILABLE;
+    if ((messageGet->DLC != CAN_DLC_0BYTE) && (messageGet->PayloadData == NULL)) return ERR__NO_DATA_AVAILABLE;
     if (messageGet->PayloadData != NULL)
     {
       uint8_t* pData = &messageGet->PayloadData[0];                        // Select the first byte of payload data
@@ -672,7 +659,7 @@ eERRORRESULT MCP251XFD_ConfigureCRC(MCP251XFD *pComp, setMCP251XFD_CRCEvents int
 //=============================================================================
 // Get CRC Status of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetCRCEvents(MCP251XFD *pComp, setMCP251XFD_CRCEvents* events, uint16_t* lastCRCMismatch)
+eERRORRESULT MCP251XFD_GetCRCEvents(MCP251XFD *pComp, setMCP251XFD_CRCEvents* const events, uint16_t* const lastCRCMismatch)
 {
 #ifdef CHECK_NULL_PARAM
   if (events == NULL) return ERR__PARAMETER_ERROR;
@@ -713,7 +700,7 @@ eERRORRESULT MCP251XFD_ConfigureECC(MCP251XFD *pComp, bool enableECC, setMCP251X
 //=============================================================================
 // Get ECC Status of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetECCEvents(MCP251XFD *pComp, setMCP251XFD_ECCEvents* events, uint16_t* lastErrorAddress)
+eERRORRESULT MCP251XFD_GetECCEvents(MCP251XFD *pComp, setMCP251XFD_ECCEvents* const events, uint16_t* const lastErrorAddress)
 {
 #ifdef CHECK_NULL_PARAM
   if (events == NULL) return ERR__PARAMETER_ERROR;
@@ -777,7 +764,7 @@ eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, uint8_t pinsDirect
 //=============================================================================
 // Get GPIO pins input level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t *pinsState)
+eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t* pinsState)
 {
   return MCP251XFD_ReadSFR8(pComp, RegMCP251XFD_IOCON_INLEVEL, pinsState); // Read actual state of the input pins in the IOCON register (third byte only)
 }
@@ -824,7 +811,7 @@ eERRORRESULT MCP251XFD_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint3
 //=============================================================================
 // Get PORT pins input level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t *pinsLevel)
+eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* pinsLevel)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
@@ -890,7 +877,7 @@ eERRORRESULT MCP251XFD_SetPinState_Gen(GPIO_Interface *pIntDev, const eGPIO_Stat
 //=============================================================================
 // Get a pin on PORT input level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetPinInputLevel_Gen(GPIO_Interface *pIntDev, eGPIO_State *pinLevel)
+eERRORRESULT MCP251XFD_GetPinInputLevel_Gen(GPIO_Interface *pIntDev, eGPIO_State* pinLevel)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
@@ -1201,7 +1188,7 @@ eERRORRESULT MCP251XFD_AbortAllTransmissions(MCP251XFD *pComp)
 //=============================================================================
 // Get actual operation mode of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetActualOperationMode(MCP251XFD *pComp, eMCP251XFD_OperationMode* actualMode)
+eERRORRESULT MCP251XFD_GetActualOperationMode(MCP251XFD *pComp, eMCP251XFD_OperationMode* const actualMode)
 {
   eERRORRESULT Error;
   uint8_t Config;
@@ -1390,7 +1377,7 @@ eERRORRESULT MCP251XFD_EnterSleepMode(MCP251XFD *pComp)
 //=============================================================================
 // Verify if the MCP251XFD is in sleep mode
 //=============================================================================
-eERRORRESULT MCP251XFD_IsDeviceInSleepMode(MCP251XFD *pComp, bool* isInSleepMode)
+eERRORRESULT MCP251XFD_IsDeviceInSleepMode(MCP251XFD *pComp, bool* const isInSleepMode)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
@@ -1418,7 +1405,7 @@ eERRORRESULT MCP251XFD_IsDeviceInSleepMode(MCP251XFD *pComp, bool* isInSleepMode
 //=============================================================================
 // Manually wake up the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_WakeUp(MCP251XFD *pComp, eMCP251XFD_PowerStates *fromState)
+eERRORRESULT MCP251XFD_WakeUp(MCP251XFD *pComp, eMCP251XFD_PowerStates* const fromState)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
@@ -1509,7 +1496,7 @@ eERRORRESULT MCP251XFD_SetTimeStamp(MCP251XFD *pComp, uint32_t value)
 //=============================================================================
 // Get the Time Stamp counter the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetTimeStamp(MCP251XFD *pComp, uint32_t* value)
+eERRORRESULT MCP251XFD_GetTimeStamp(MCP251XFD *pComp, uint32_t* const value)
 {
   return MCP251XFD_ReadSFR32(pComp, RegMCP251XFD_CiTBC, value); // Read the value to the CiTBC register
 }
@@ -1522,7 +1509,7 @@ eERRORRESULT MCP251XFD_GetTimeStamp(MCP251XFD *pComp, uint32_t* value)
 //=============================================================================
 // Configure TEF of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureTEF(MCP251XFD *pComp, bool enableTEF, MCP251XFD_FIFO *confTEF)
+eERRORRESULT MCP251XFD_ConfigureTEF(MCP251XFD *pComp, bool enableTEF, const MCP251XFD_FIFO* const confTEF)
 {
   eERRORRESULT Error;
 
@@ -1572,7 +1559,7 @@ eERRORRESULT MCP251XFD_ConfigureTEF(MCP251XFD *pComp, bool enableTEF, MCP251XFD_
 //=============================================================================
 // Configure TXQ of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureTXQ(MCP251XFD *pComp, bool enableTXQ, MCP251XFD_FIFO *confTXQ)
+eERRORRESULT MCP251XFD_ConfigureTXQ(MCP251XFD *pComp, bool enableTXQ, const MCP251XFD_FIFO* const confTXQ)
 {
   eERRORRESULT Error;
 
@@ -1624,7 +1611,7 @@ eERRORRESULT MCP251XFD_ConfigureTXQ(MCP251XFD *pComp, bool enableTXQ, MCP251XFD_
 //=============================================================================
 // Configure a FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureFIFO(MCP251XFD *pComp, MCP251XFD_FIFO *confFIFO)
+eERRORRESULT MCP251XFD_ConfigureFIFO(MCP251XFD *pComp, const MCP251XFD_FIFO* const confFIFO)
 {
 #ifdef CHECK_NULL_PARAM
   if (confFIFO == NULL) return ERR__PARAMETER_ERROR;
@@ -1685,7 +1672,7 @@ eERRORRESULT MCP251XFD_ConfigureFIFO(MCP251XFD *pComp, MCP251XFD_FIFO *confFIFO)
 //=============================================================================
 // Configure a FIFO list of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureFIFOList(MCP251XFD *pComp, MCP251XFD_FIFO *listFIFO, size_t count)
+eERRORRESULT MCP251XFD_ConfigureFIFOList(MCP251XFD *pComp, MCP251XFD_FIFO* listFIFO, size_t count)
 {
 #ifdef CHECK_NULL_PARAM
   if (listFIFO == NULL) return ERR__PARAMETER_ERROR;
@@ -1855,7 +1842,7 @@ eERRORRESULT MCP251XFD_FlushFIFO(MCP251XFD *pComp, eMCP251XFD_FIFO name)
 //=============================================================================
 // Get status of a FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetFIFOStatus(MCP251XFD *pComp, eMCP251XFD_FIFO name, setMCP251XFD_FIFOstatus *statusFlags)
+eERRORRESULT MCP251XFD_GetFIFOStatus(MCP251XFD *pComp, eMCP251XFD_FIFO name, setMCP251XFD_FIFOstatus* const statusFlags)
 {
 #ifdef CHECK_NULL_PARAM
   if (statusFlags == NULL) return ERR__PARAMETER_ERROR;
@@ -1876,7 +1863,7 @@ eERRORRESULT MCP251XFD_GetFIFOStatus(MCP251XFD *pComp, eMCP251XFD_FIFO name, set
 //=============================================================================
 // Get next message address and/or index of a FIFO of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetNextMessageAddressFIFO(MCP251XFD *pComp, eMCP251XFD_FIFO name, uint32_t *nextAddress, uint8_t *nextIndex)
+eERRORRESULT MCP251XFD_GetNextMessageAddressFIFO(MCP251XFD *pComp, eMCP251XFD_FIFO name, uint32_t* const nextAddress, uint8_t* const nextIndex)
 {
   if (name >= MCP251XFD_FIFO_COUNT) return ERR__PARAMETER_ERROR;
   eERRORRESULT Error;
@@ -1953,7 +1940,7 @@ eERRORRESULT MCP251XFD_ConfigureDeviceNetFilter(MCP251XFD *pComp, eMCP251XFD_DNE
 //=============================================================================
 // Configure a filter of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureFilter(MCP251XFD *pComp, MCP251XFD_Filter *confFilter)
+eERRORRESULT MCP251XFD_ConfigureFilter(MCP251XFD *pComp, const MCP251XFD_Filter* const confFilter)
 {
 #ifdef CHECK_NULL_PARAM
   if (confFilter == NULL) return ERR__PARAMETER_ERROR;
@@ -2025,7 +2012,7 @@ eERRORRESULT MCP251XFD_ConfigureFilter(MCP251XFD *pComp, MCP251XFD_Filter *confF
 //=============================================================================
 // Configure a filter list and the DNCNT of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_ConfigureFilterList(MCP251XFD *pComp, eMCP251XFD_DNETFilter filter, MCP251XFD_Filter *listFilter, size_t count)
+eERRORRESULT MCP251XFD_ConfigureFilterList(MCP251XFD *pComp, eMCP251XFD_DNETFilter filter, const MCP251XFD_Filter* listFilter, size_t count)
 {
 #ifdef CHECK_NULL_PARAM
   if (listFilter == NULL) return ERR__PARAMETER_ERROR;
@@ -2106,7 +2093,7 @@ eERRORRESULT MCP251XFD_ConfigureInterrupt(MCP251XFD *pComp, setMCP251XFD_Interru
 //=============================================================================
 // Get interrupt events of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetInterruptEvents(MCP251XFD *pComp, setMCP251XFD_InterruptEvents* interruptsFlags)
+eERRORRESULT MCP251XFD_GetInterruptEvents(MCP251XFD *pComp, setMCP251XFD_InterruptEvents* const interruptsFlags)
 {
   return MCP251XFD_ReadSFR16(pComp, RegMCP251XFD_CiINT_FLAG, (uint16_t*)interruptsFlags); // Read interrupt flags (The 2 LSB bytes)
 }
@@ -2116,7 +2103,7 @@ eERRORRESULT MCP251XFD_GetInterruptEvents(MCP251XFD *pComp, setMCP251XFD_Interru
 //=============================================================================
 // Get the current interrupt event of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetCurrentInterruptEvent(MCP251XFD *pComp, eMCP251XFD_InterruptFlagCode* currentEvent)
+eERRORRESULT MCP251XFD_GetCurrentInterruptEvent(MCP251XFD *pComp, eMCP251XFD_InterruptFlagCode* const currentEvent)
 {
   return MCP251XFD_ReadSFR8(pComp, RegMCP251XFD_CiVEC_ICODE, (uint8_t*)currentEvent); // Read current interrupt event (First byte only)
 }
@@ -2141,7 +2128,7 @@ eERRORRESULT MCP251XFD_ClearInterruptEvents(MCP251XFD *pComp, setMCP251XFD_Inter
 //=============================================================================
 // Get current receive FIFO name and status that generate an interrupt (if any)
 //=============================================================================
-eERRORRESULT MCP251XFD_GetCurrentReceiveFIFONameAndStatusInterrupt(MCP251XFD *pComp, eMCP251XFD_FIFO *name, setMCP251XFD_FIFOstatus *flags)
+eERRORRESULT MCP251XFD_GetCurrentReceiveFIFONameAndStatusInterrupt(MCP251XFD *pComp, eMCP251XFD_FIFO* const name, setMCP251XFD_FIFOstatus* const flags)
 {
 #ifdef CHECK_NULL_PARAM
   if (name == NULL) return ERR__PARAMETER_ERROR;
@@ -2170,7 +2157,7 @@ eERRORRESULT MCP251XFD_GetCurrentReceiveFIFONameAndStatusInterrupt(MCP251XFD *pC
 //=============================================================================
 // Get current transmit FIFO name and status that generate an interrupt (if any)
 //=============================================================================
-eERRORRESULT MCP251XFD_GetCurrentTransmitFIFONameAndStatusInterrupt(MCP251XFD *pComp, eMCP251XFD_FIFO *name, setMCP251XFD_FIFOstatus *flags)
+eERRORRESULT MCP251XFD_GetCurrentTransmitFIFONameAndStatusInterrupt(MCP251XFD *pComp, eMCP251XFD_FIFO* const name, setMCP251XFD_FIFOstatus* const flags)
 {
 #ifdef CHECK_NULL_PARAM
   if (name == NULL) return ERR__PARAMETER_ERROR;
@@ -2232,7 +2219,7 @@ eERRORRESULT MCP251XFD_ClearFIFOEvents(MCP251XFD *pComp, eMCP251XFD_FIFO name, u
 //=============================================================================
 // Get the receive interrupt pending status of all FIFO
 //=============================================================================
-eERRORRESULT MCP251XFD_GetReceiveInterruptStatusOfAllFIFO(MCP251XFD *pComp, setMCP251XFD_InterruptOnFIFO* interruptPending, setMCP251XFD_InterruptOnFIFO* overflowStatus)
+eERRORRESULT MCP251XFD_GetReceiveInterruptStatusOfAllFIFO(MCP251XFD *pComp, setMCP251XFD_InterruptOnFIFO* const interruptPending, setMCP251XFD_InterruptOnFIFO* const overflowStatus)
 {
   eERRORRESULT Error;
   if (interruptPending != NULL)
@@ -2253,7 +2240,7 @@ eERRORRESULT MCP251XFD_GetReceiveInterruptStatusOfAllFIFO(MCP251XFD *pComp, setM
 //=============================================================================
 // Get the transmit interrupt pending status of all FIFO
 //=============================================================================
-eERRORRESULT MCP251XFD_GetTransmitInterruptStatusOfAllFIFO(MCP251XFD *pComp, setMCP251XFD_InterruptOnFIFO* interruptPending, setMCP251XFD_InterruptOnFIFO* attemptStatus)
+eERRORRESULT MCP251XFD_GetTransmitInterruptStatusOfAllFIFO(MCP251XFD *pComp, setMCP251XFD_InterruptOnFIFO* const interruptPending, setMCP251XFD_InterruptOnFIFO* const attemptStatus)
 {
   eERRORRESULT Error;
   if (interruptPending != NULL)
@@ -2277,7 +2264,7 @@ eERRORRESULT MCP251XFD_GetTransmitInterruptStatusOfAllFIFO(MCP251XFD *pComp, set
 //=============================================================================
 // Get transmit/receive error count and status of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetTransmitReceiveErrorCountAndStatus(MCP251XFD *pComp, uint8_t* transmitErrorCount, uint8_t* receiveErrorCount, eMCP251XFD_TXRXErrorStatus* status)
+eERRORRESULT MCP251XFD_GetTransmitReceiveErrorCountAndStatus(MCP251XFD *pComp, uint8_t* const transmitErrorCount, uint8_t* const receiveErrorCount, eMCP251XFD_TXRXErrorStatus* const status)
 {
   eERRORRESULT Error;
   if (transmitErrorCount != NULL)
@@ -2304,7 +2291,7 @@ eERRORRESULT MCP251XFD_GetTransmitReceiveErrorCountAndStatus(MCP251XFD *pComp, u
 //=============================================================================
 // Get Bus diagnostic of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetBusDiagnostic(MCP251XFD *pComp, MCP251XFD_CiBDIAG0_Register* busDiagnostic0, MCP251XFD_CiBDIAG1_Register* busDiagnostic1)
+eERRORRESULT MCP251XFD_GetBusDiagnostic(MCP251XFD *pComp, MCP251XFD_CiBDIAG0_Register* const busDiagnostic0, MCP251XFD_CiBDIAG1_Register* const busDiagnostic1)
 {
   eERRORRESULT Error;
   uint32_t Data;
@@ -2376,25 +2363,18 @@ eERRORRESULT MCP251XFD_ResetDevice(MCP251XFD *pComp)
 #endif
 
     // Set SPI speed to 1MHz
-#ifdef USE_ADVANCED_INTERFACE
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, SPI_MODE0, MCP251XFD_DRIVER_SAFE_RESET_SPI_CLK); // Set the SPI speed clock to 1MHz (safe clock speed)
-#else
-    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, MCP251XFD_DRIVER_SAFE_RESET_SPI_CLK);            // Set the SPI speed clock to 1MHz (safe clock speed)
-#endif
-    if (Error != ERR_NONE) return Error;                                                                  // If there is an error while reading the register then return the error
+    Error = pSPI->fnSPI_Init(pSPI, pComp->SPIchipSelect, STD_SPI_MODE0, MCP251XFD_DRIVER_SAFE_RESET_SPI_CLK); // Set the SPI speed clock to 1MHz (safe clock speed)
+    if (Error != ERR_NONE) return Error;                                                                      // If there is an error while reading the register then return the error
 
     // Request configuration mode to avoid transmission error without aborting them
-    Error = MCP251XFD_RequestOperationMode(pComp, MCP251XFD_CONFIGURATION_MODE, true);                    // Request a configuration mode and wait until device is this mode
-    if (Error != ERR_NONE) return Error;                                                                  // If there is an error while calling MCP251XFD_RequestOperationMode() then return the error
+    Error = MCP251XFD_RequestOperationMode(pComp, MCP251XFD_CONFIGURATION_MODE, true);                        // Request a configuration mode and wait until device is this mode
+    if (Error != ERR_NONE) return Error;                                                                      // If there is an error while calling MCP251XFD_RequestOperationMode() then return the error
   }
 
   //-- Perform Reset --------------------------------------------------------
-#ifdef USE_ADVANCED_INTERFACE
   SPIInterface_Packet PacketDesc = SPI_INTERFACE_TX_DATA_DESC(&Buffer[0], sizeof(Buffer), true);
-  return pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                                                  // Perform reset
-#else
-  return pSPI->fnSPI_Transfer(pSPI, pComp->SPIchipSelect, &Buffer[0], NULL, sizeof(Buffer), true); // Perform reset
-#endif
+  if (MCP251XFD_IS_MCP2517FD) PacketDesc.Config.Value |= SPI_BLOCK_INTERRUPTS_ON_TRANSFER; // On MCP2517FD, the interrupt shall be deactivated (see TX MAB underflow/RX MAB overflow due to long delays between SPI bytes in DS80000792B document)
+  return pSPI->fnSPI_Transfer(pSPI, &PacketDesc);                                          // Perform reset
 }
 
 
@@ -2507,31 +2487,104 @@ uint8_t MCP251XFD_PayloadToByte(eMCP251XFD_PayloadSize payload)
 //=============================================================================
 // Data Length Content to Byte Count
 //=============================================================================
-uint8_t MCP251XFD_DLCToByte(eMCP251XFD_DataLength dlc, bool isCANFD)
+uint8_t MCP251XFD_DLCToByte(eCAN_DataLength dlc, bool isCANFD)
 {
-  const uint8_t CAN20_DLC_TO_VALUE[MCP251XFD_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8,  8,  8,  8,  8,  8,  8,  8};
-  const uint8_t CANFD_DLC_TO_VALUE[MCP251XFD_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
-  if ((dlc >= MCP251XFD_DLC_COUNT) || (dlc < (eMCP251XFD_DataLength)0)) return 0;
+  const uint8_t CAN20_DLC_TO_VALUE[CAN_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8,  8,  8,  8,  8,  8,  8,  8};
+  const uint8_t CANFD_DLC_TO_VALUE[CAN_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
+  if ((dlc >= CAN_DLC_COUNT) || (dlc < (eCAN_DataLength)0)) return 0;
   if (isCANFD) return CANFD_DLC_TO_VALUE[dlc & 0xF];
   return CAN20_DLC_TO_VALUE[dlc & 0xF];
 }
 
+//-----------------------------------------------------------------------------
+#ifdef __cplusplus
+}
+#endif
+//-----------------------------------------------------------------------------
 
 
 
 
-//**********************************************************************************************************************************************************
+
+//********************************************************************************************************************
+// MCP251XFD Wrapper Class
+//********************************************************************************************************************
+#ifdef __cplusplus
+//-----------------------------------------------------------------------------
+#  ifdef ARDUINO
+#    ifdef USE_DYNAMIC_INTERFACE
+//=============================================================================
+// [ARDUINO] Constructor of the MCP251XFD class with #USE_DYNAMIC_INTERFACE
+//=============================================================================
+  MCP251XFD_Component(const uint8_t csPin, struct SPI_Interface& aSPI, uint32_t spiClockSpeed, CRC16CMS_Func fnComputeCRC16CMS) :
+    Comp
+    {
+      UserDriverData(NULL),
+      DriverConfig  (setMCP251XFD_DriverConfig(0)),
+      InternalConfig(0),
+      GPIOsOutDir   (0),
+      GPIOsOutLevel (0),
+      SPIchipSelect (csPin),
+      SPI           (&aSPI),
+      SPIclockSpeed (spiClockSpeed),
+      fnGetCurrentms(static_cast<GetCurrentms_Func>(millis)), // Only return differs unsigned int to uint32_t
+      fnComputeCRC16(fnComputeCRC16CMS),
+    } { };
+#    else //#if !defined(USE_DYNAMIC_INTERFACE)
+//=============================================================================
+// [ARDUINO] Constructor of the MCP251XFD class
+//=============================================================================
+  MCP251XFD_Component(const uint8_t csPin, SPIClass& aSPI, uint32_t spiClockSpeed, CRC16CMS_Func fnComputeCRC16CMS) :
+    Comp
+    {
+      UserDriverData(NULL),
+      DriverConfig  (setMCP251XFD_DriverConfig(0)),
+      InternalConfig(0),
+      GPIOsOutDir   (0),
+      GPIOsOutLevel (0),
+      SPIchipSelect (csPin),
+      SPI
+      {
+        _SPIsettings  (SPISettings(MCP251XFD_DRIVER_SAFE_RESET_SPI_CLK, MSBFIRST, STD_SPI_MODE0)),
+        _SPIclass     (aSPI),
+        fnSPI_Init    (MCP251XFD_SPIinit),
+        fnSPI_Transfer(MCP251XFD_SPItransfer),
+        _CSpin        (0),
+      },
+      SPIclockSpeed   (spiClockSpeed),
+      fnGetCurrentms  (NULL),//static_cast<GetCurrentms_Func>(millis), // Only return differs unsigned int to uint32_t
+      fnComputeCRC16  (fnComputeCRC16CMS),
+    } { };
+#    endif
+#  endif //#ifdef ARDUINO
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
 #if !defined(_MSC_VER)
 //=============================================================================
 // [WEAK] Function for SPI driver initialization
 //=============================================================================
-eERRORRESULT MCP251XFD_SPIinit(void* pIntDev, uint8_t chipSelect, const uint32_t sckFreq)
+eERRORRESULT MCP251XFD_SPIinit(SPI_Interface *pIntDev, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreq)
 { // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
+#ifdef CHECK_NULL_PARAM
+  if (pIntDev == NULL) return ERR__SPI_PARAMETER_ERROR;
+#endif
+
 #ifdef ARDUINO
-  
+  if (SPI_PIN_COUNT_GET(mode) > 1u) return ERR__NOT_SUPPORTED;
+  pIntDev->_SPIsettings = SPISettings(sckFreq, (SPI_IS_LSB_FIRST(mode) ? LSBFIRST : MSBFIRST), SPI_MODE_GET(mode));
+
+#elif defined(USE_HAL_DRIVER) // STM32cubeIDE
+
 #else
   (void)pIntDev;
   (void)chipSelect;
+  (void)mode;
   (void)sckFreq;
 #endif
   return ERR_NONE;
@@ -2541,70 +2594,72 @@ eERRORRESULT MCP251XFD_SPIinit(void* pIntDev, uint8_t chipSelect, const uint32_t
 //=============================================================================
 // [WEAK] Function for SPI transfer
 //=============================================================================
-eERRORRESULT MCP251XFD_SPItransfer(void* pIntDev, uint8_t chipSelect, uint8_t* txData, uint8_t* rxData, size_t size, bool endTransfer)
+eERRORRESULT MCP251XFD_SPItransfer(SPI_Interface *pIntDev, SPIInterface_Packet* const pPacketDesc)
 { // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
 #ifdef CHECK_NULL_PARAM
-  if ((pIntDev == NULL) || (txData == NULL)) return ERR__SPI_PARAMETER_ERROR;
+  if ((pIntDev == NULL) || (pPacketDesc == NULL)) return ERR__SPI_PARAMETER_ERROR;
 #endif
 
 #ifdef ARDUINO
-
-  struct SPI_Interface* pSPI = (struct SPI_Interface*)pIntDev;
-  pSPI->aSPI.beginTransaction(pSPI->SPISettings);
+  pIntDev->aSPI.beginTransaction(pIntDev->SPISettings);
   //--- Disable interrupts ---
+  if (SPI_IS_BLOCK_INTERRUPTS_ON_TRANSFER(pPacketDesc->Config.Value))
+  {
 # ifdef ARDUINO_ARCH_ESP32
-  taskDISABLE_INTERRUPTS();
+    taskDISABLE_INTERRUPTS();
 # else
-  noInterrupts();
+    noInterrupts();
 # endif
+  }
   //--- SPI transfer ---
-  assertCS();
+  digitalWrite(pPacketDesc->ChipSelect, LOW); // Set CS at low level
   for (size_t zIdx = 0; zIdx < size; ++zIdx)
   {
-    uint8_t RxValue = pSPI->aSPI.transfer(txData[zIdx]);
-    if (rxData != NULL) rxData[zIdx] = RxValue;
+    uint8_t RxValue = pIntDev->aSPI.transfer(pPacketDesc->TxData[zIdx]);
+    if (pPacketDesc->RxData != NULL) pPacketDesc->RxData[zIdx] = RxValue;
   }
-  if (endTransfer) deassertCS();
-  //--- Enable interrupts ---
+  if (pPacketDesc->Terminate)
+  {
+    digitalWrite(pPacketDesc->ChipSelect, HIGH); // Set CS at high level
+    //--- Enable interrupts ---
+    if (SPI_IS_BLOCK_INTERRUPTS_ON_TRANSFER(pPacketDesc->Config.Value))
+    {
 # ifdef ARDUINO_ARCH_ESP32
-  taskENABLE_INTERRUPTS();
+      taskENABLE_INTERRUPTS();
 # else
-  interrupts();
+      interrupts();
 # endif
+    }
+  }
   pIntDev->aSPI.endTransaction();
+  return ERR_NONE;
 
 #elif defined(USE_HAL_DRIVER) // STM32cubeIDE
-
   HAL_StatusTypeDef HALstatus;
-  struct SPI_Interface* pSPI = (struct SPI_Interface*)pIntDev;
-  //--- Clear CS pin ---
-  HAL_GPIO_WritePin(pSPI->pGPIOx, pSPI->GPIOpin, GPIO_PIN_RESET);
+  if (SPI_IS_BLOCK_INTERRUPTS_ON_TRANSFER(pPacketDesc->Config.Value)) __disable_irq();  // Disable IRQ if asked
+  HAL_GPIO_WritePin(pIntDev->pGPIOx, pIntDev->GPIOpin, GPIO_PIN_RESET);                 // Clear CS pin
   //--- Transfer data ---
-  if (rxData != NULL)
-	   HALstatus = HAL_SPI_TransmitReceive(pSPI->pHSPI, txData, rxData, size, pSPI->SPItimeout);
-  else HALstatus = HAL_SPI_Transmit(pSPI->pHSPI, txData, size, pSPI->SPItimeout);
-  //--- Set CS pin ---
-  if (endTransfer) HAL_GPIO_WritePin(pSPI->pGPIOx, pSPI->GPIOpin, GPIO_PIN_SET);
+  if (pPacketDesc->RxData != NULL)
+       HALstatus = HAL_SPI_TransmitReceive(pIntDev->pHSPI, pPacketDesc->TxData, pPacketDesc->RxData, pPacketDesc->DataSize, pIntDev->SPItimeout);
+  else HALstatus = HAL_SPI_Transmit(pIntDev->pHSPI, pPacketDesc->TxData, pPacketDesc->DataSize, pIntDev->SPItimeout);
+  if (pPacketDesc->Terminate || (HALstatus != HAL_OK))                                  // If terminate or transfer error...
+  {
+    HAL_GPIO_WritePin(pIntDev->pGPIOx, pIntDev->GPIOpin, GPIO_PIN_SET);                 // Set CS pin
+    if (SPI_IS_BLOCK_INTERRUPTS_ON_TRANSFER(pPacketDesc->Config.Value)) __enable_irq(); // Enable IRQ if asked
+  }
   //--- Check for errors ---
   if (HALstatus == HAL_ERROR  ) return ERR__SPI_COMM_ERROR;
   if (HALstatus == HAL_BUSY   ) return ERR__SPI_BUSY;
   if (HALstatus == HAL_TIMEOUT) return ERR__SPI_TIMEOUT;
-  
+  return ERR_NONE;
+
 #else
   (void)pIntDev;
-  (void)chipSelect;
-  (void)txData;
-  (void)rxData;
-  (void)size;
-  (void)endTransfer;
+  (void)pPacketDesc;
+  return ERR__NOT_IMPLEMENTED;
 #endif
-  return ERR_NONE;
 }
 #endif // #if !defined(_MSC_VER)
 
-
 //-----------------------------------------------------------------------------
-#ifdef __cplusplus
-}
 #endif
-//-----------------------------------------------------------------------------
