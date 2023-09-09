@@ -358,7 +358,7 @@ struct MCP251XFD_Config MCP2518FD_Config =
                   | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
                   | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
                   | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
-                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Donï¿½t use RRS; SID<10:0> according to ISO 11898-1:2015
+                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
   //--- GPIOs and Interrupts pins ---
   .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
   .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,
@@ -384,6 +384,66 @@ MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT] =
 MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT] =
 {
   { .Filter = MCP251XFD_FILTER0, .EnableFilter = true, .Match = MCP251XFD_MATCH_SID_EID, .AcceptanceID = MCP251XFD_ACCEPT_ALL_MESSAGES, .AcceptanceMask = MCP251XFD_ACCEPT_ALL_MESSAGES, .PointTo = MCP251XFD_FIFO1, },
+};
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
+// MCP2515 External CAN controller
+//********************************************************************************************************************
+
+//! Component structure of the MCP2515 as U5
+struct MCP251X MCP2515_U5 =
+{
+  .UserDriverData = NULL,
+  //--- Device configuration ---
+  .InternalConfig = 0,
+  //--- Interface driver call functions ---
+  .SPIchipSelect  = 0x2 << 1, // Y2 output on U7
+  .SPI            = &SPI0_V71,
+  .SPIclockSpeed  = 10000000, // 10MHz
+  //--- Time call function ---
+  .fnGetCurrentms = GetCurrentms_V71,
+};
+
+//-----------------------------------------------------------------------------
+
+CAN_BitTimeStats MCP2515_BitTimeStats = { 0 }; //!< MCP2515 Bit Time stat
+
+//! Configuration structure of the MCP2515 as U5
+struct MCP251X_Config MCP2515_U5_Conf =
+{
+  //--- Controller clocks ---
+  .XtalFreq       = 16000000,
+  //--- CAN configuration ---
+  .BusConfig      =
+  {
+    .DesiredBitrate   = CAN_SHIELD_BITRATE, // Desired CAN2.0A/CAN2.0B bitrate in bit/s
+    .BusMeters        = 1,                  // Only 10cm on the V71_UltraXplained_CAN_Shield
+    .TransceiverDelay = 120,                // The transceiver is a TJA1145T/FDJ (U4). The worst delay is from bus recessive to RXD
+  },
+  .BitTimeStats   = &MCP2515_BitTimeStats,
+  //--- CAN configuration ---
+  .UseOneShotMode = false,
+  //--- Configure buffers ---
+  .tx0Priority    = MCP251X_MESSAGE_TX_PRIORITY1,
+  .tx1Priority    = MCP251X_MESSAGE_TX_PRIORITY1,
+  .tx2Priority    = MCP251X_MESSAGE_TX_PRIORITY1,
+  .rx0Conf        = MCP251X_RX_ACCEPT_ALL_MESSAGES,
+  .rx1Conf        = MCP251X_RX_ACCEPT_ALL_MESSAGES,
+  //--- Pins configuration ---
+  .tx0PinMode     = MCP251X_TxPIN_AS_INT_TX,
+  .tx1PinMode     = MCP251X_TxPIN_AS_INT_TX,
+  .tx2PinMode     = MCP251X_TxPIN_AS_INT_TX,
+  .rx0PinMode     = MCP251X_RxPIN_AS_INT_RX,
+  .rx1PinMode     = MCP251X_RxPIN_AS_INT_RX,
+  .clkoutMode     = MCP251X_CLKOUT_IS_SOF,
+  //--- Interrupts ---
+  .Interrupts     = MCP251X_ENABLE_ALL_INTERRUPTS,
 };
 
 //-----------------------------------------------------------------------------
@@ -501,7 +561,7 @@ MCP251XFD_Config MCP2517FD_Config =
                   | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
                   | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
                   | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
-                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Donï¿½t use RRS; SID<10:0> according to ISO 11898-1:2015
+                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
   //--- GPIOs and Interrupts pins ---
   .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
   .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,

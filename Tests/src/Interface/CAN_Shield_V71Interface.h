@@ -42,6 +42,7 @@
 #include "MCP23SXX.h"
 #include "MCP251XFD.h"
 #include "SJA1000.h"
+#include "MCP251X.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
   extern "C" {
@@ -105,6 +106,17 @@ extern MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT];       //!< Confi
 
 #define MCP2518FD_FILTER_COUNT  1
 extern MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT]; //!< Configuration structure for Filters of the MCP2518FD on MIKROBUS1
+//-----------------------------------------------------------------------------
+
+
+
+//********************************************************************************************************************
+// MCP2515 External CAN controller
+//********************************************************************************************************************
+extern CAN_BitTimeStats MCP2515_BitTimeStats; //!< MCP2515 Bit Time stat
+
+extern struct MCP251X MCP2515_U5;             //!< Component structure of the MCP2515 as U5
+extern struct MCP251X_Config MCP2515_U5_Conf; //!< Configuration structure of the MCP2515 as U5
 //-----------------------------------------------------------------------------
 
 
