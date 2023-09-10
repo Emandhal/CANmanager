@@ -293,6 +293,73 @@ typedef struct CAN_CANMessage
 } CAN_CANMessage;
 
 //-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
+// CAN Data Structure Commons
+//********************************************************************************************************************
+
+/*! @brief Data structure specification
+ * @details When sending/receiving data to/from CAN controller, the data specification that send/receive messages will be defined
+ * It is coded like this .....dtt_nnnnnnnn, where:
+ * - 'n' is the index of the data type structure
+ * - 't' is the type of data structure #eCAN_DataStructs
+ * - 'd' is the direction of the data structure, #CAN_DATA_STRUCT_TRANSMIT for transmission and #CAN_DATA_STRUCT_RECEIVE for reception
+ * @ex For a TXQ, the value will be 0b00000010_00000000
+ * @ex For a receive FIFO22, the value will be 0b00000100_00010110
+ * @ex For a receive Buffer at index 62, the value will be 0b00000101_00111110
+ */
+
+//-----------------------------------------------------------------------------
+
+//! Data structures directions enumerator
+typedef enum
+{
+  CAN_DATA_STRUCT_TRANSMIT = 0, //!< CAN data structures direction is transmit
+  CAN_DATA_STRUCT_RECEIVE  = 1, //!< CAN data structures direction is receive
+} eCAN_DataStructsDirection;
+
+#define CAN_DATA_STRUCT_DIR_Pos         10
+#define CAN_DATA_STRUCT_DIR_Mask        (0x1u << CAN_DATA_STRUCT_DIR_Pos)
+#define CAN_DATA_STRUCT_DIR_GET(value)  (eCAN_DataStructsDirection)(((uint32_t)(value) & CAN_DATA_STRUCT_DIR_Mask) >> CAN_DATA_STRUCT_DIR_Pos) //!< Get data structure direction
+#define CAN_DATA_STRUCT_DIR_SET(value)  (((uint32_t)(value) << CAN_DATA_STRUCT_DIR_Pos) & CAN_DATA_STRUCT_DIR_Mask) //!< Set data structure direction
+
+//-----------------------------------------------------------------------------
+
+//! Data structures types enumerator
+typedef enum
+{
+  CAN_FIFO_TYPE   = 0, //!< CAN data structures is FIFO type
+  CAN_BUFFER_TYPE = 1, //!< CAN data structures is Buffer type
+  CAN_QUEUE_TYPE  = 2, //!< CAN data structures is Queue type
+  CAN_EVENT_TYPE  = 3, //!< CAN data structures is Event FIFO type
+} eCAN_DataStructsType;
+
+#define CAN_DATA_STRUCT_TYPE_Pos         8
+#define CAN_DATA_STRUCT_TYPE_Mask        (0x3u << CAN_DATA_STRUCT_TYPE_Pos)
+#define CAN_DATA_STRUCT_TYPE_GET(value)  (eCAN_DataStructsType)(((uint32_t)(value) & CAN_DATA_STRUCT_TYPE_Mask) >> CAN_DATA_STRUCT_TYPE_Pos) //!< Get data structure type
+#define CAN_DATA_STRUCT_TYPE_SET(value)  (((uint32_t)(value) << CAN_DATA_STRUCT_TYPE_Pos) & CAN_DATA_STRUCT_TYPE_Mask) //!< Set data structure type
+
+//-----------------------------------------------------------------------------
+
+#define CAN_DATA_STRUCT_INDEX_Pos         0
+#define CAN_DATA_STRUCT_INDEX_Mask        (0xFFu << CAN_DATA_STRUCT_INDEX_Pos)
+#define CAN_DATA_STRUCT_INDEX_GET(value)  (eCAN_DataStructsType)(((uint32_t)(value) & CAN_DATA_STRUCT_INDEX_Mask) >> CAN_DATA_STRUCT_INDEX_Pos) //!< Get data structure index
+#define CAN_DATA_STRUCT_INDEX_SET(value)  (((uint32_t)(value) << CAN_DATA_STRUCT_INDEX_Pos) & CAN_DATA_STRUCT_INDEX_Mask) //!< Set data structure index
+
+//-----------------------------------------------------------------------------
+
+#define CAN_TEF            ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_TRANSMIT) | CAN_DATA_STRUCT_TYPE_SET(CAN_EVENT_TYPE ) ) //!< TEF data structure
+#define CAN_TXQ            ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_TRANSMIT) | CAN_DATA_STRUCT_TYPE_SET(CAN_QUEUE_TYPE ) ) //!< TXQ data structure
+#define CAN_TxBUFFER(idx)  ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_TRANSMIT) | CAN_DATA_STRUCT_TYPE_SET(CAN_BUFFER_TYPE) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Tx Buffer data structure
+#define CAN_RxBUFFER(idx)  ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_RECEIVE ) | CAN_DATA_STRUCT_TYPE_SET(CAN_BUFFER_TYPE) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Rx Buffer data structure
+#define CAN_TxFIFO(idx)    ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_TRANSMIT) | CAN_DATA_STRUCT_TYPE_SET(CAN_FIFO_TYPE  ) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Tx FIFO data structure
+#define CAN_RxFIFO(idx)    ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_RECEIVE ) | CAN_DATA_STRUCT_TYPE_SET(CAN_FIFO_TYPE  ) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Rx FIFO data structure
+
+//-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }
 #endif
