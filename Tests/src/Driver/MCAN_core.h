@@ -52,6 +52,9 @@
 #  define MCAN_UNPACKITEM           __pragma(pack(pop))
 #  define MCAN_PACKENUM(name,type)  typedef enum name : type
 #  define MCAN_UNPACKENUM(name)     name
+#  define _RO_                      volatile //!< Defines 'read only' permissions
+#  define _WO_                      volatile //!< Defines 'write only' permissions
+#  define _RW_                      volatile //!< Defines 'read / write' permissions
 extern "C" {
   
 #else
@@ -64,6 +67,9 @@ extern "C" {
 #  define MCAN_UNPACKITEM
 #  define MCAN_PACKENUM(name,type)  typedef enum __MCAN_PACKED__
 #  define MCAN_UNPACKENUM(name)     name
+#  define _RO_                      volatile const //!< Defines 'read only' permissions
+#  define _WO_                      volatile       //!< Defines 'write only' permissions
+#  define _RW_                      volatile       //!< Defines 'read / write' permissions
 
 #endif
 //-----------------------------------------------------------------------------
@@ -94,7 +100,7 @@ extern "C" {
 #ifdef MCAN_INTERNAL_CAN_CONTROLLER
 #  define MCAN_RAM_START_ADDRESS  ( (uint32_t)pComp->RAMallocation )
 #  define MCAN_MAX_RAM            ( MCAN_MAX_POSSIBLE_RAM )
-#  define MCAN_RAM_END_ADDRESS    ( MCAN_RAM_START_ADDRESS + MCAN_MAX_RAM )
+#  define MCAN_RAM_END_ADDRESS    ( MCAN_RAM_START_ADDRESS + (uint32_t)pComp->RAMsize )
 #else // MCAN_EXTERNAL_CAN_CONTROLLER
 #  if !defined(MCAN_DEVICE_RAM_START_ADDRESS) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
 #    error MCAN_DEVICE_RAM_START_ADDRESS shall be defined
@@ -371,7 +377,7 @@ typedef enum
 
 static const uint8_t MCAN20_DLC_TO_VALUE[MCAN_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8,  8,  8,  8,  8,  8,  8,  8};
 static const uint8_t MCANFD_DLC_TO_VALUE[MCAN_DLC_COUNT] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 12, 16, 20, 24, 32, 48, 64};
-#define MCAN_DLCToByte(dlc, isCANFD)  ( ((isCANFD) ? CANFD_DLC_TO_VALUE[(size_t)(dlc) & 0xF] : CAN20_DLC_TO_VALUE[(size_t)(dlc) & 0xF] )
+#define MCAN_DLCToByte(dlc, isCANFD)  ( ((isCANFD) ? MCANFD_DLC_TO_VALUE[(size_t)(dlc) & 0xF] : MCAN20_DLC_TO_VALUE[(size_t)(dlc) & 0xF] )
 
 //-----------------------------------------------------------------------------
 
@@ -801,7 +807,6 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_RxMessage, 8);
 #define RegMCAN_COUNT  ( 64 )
 #define RegMCAN_SIZE   ( RegMCAN_COUNT * sizeof(uint32_t) )
 
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
 //! MCAN Core registers list
 typedef enum
 {
@@ -859,7 +864,9 @@ typedef enum
   RegMCAN_TXEFA  = 0xF8u, //!< (Offset: 0xF8) Transmit Event FIFO Acknowledge Register
                           //   (Offset: 0xFC) Reserved
 } eMCAN_Registers;
-#endif // !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+
+//-----------------------------------------------------------------------------
+
 
 
 
@@ -2538,8 +2545,9 @@ typedef enum
 
 //-----------------------------------------------------------------------------
 
-static const uint8_t MCAN_PAYLOAD_TO_VALUE[MCAN_PAYLOAD_COUNT] = {8, 12, 16, 20, 24, 32, 48, 64};
-#define MCAN_PayploadToByte(payload)  ( ((payload >= MCAN_PAYLOAD_COUNT) ? CANFD_DLC_TO_VALUE[(size_t)(dlc) & 0xF] : CAN20_DLC_TO_VALUE[(size_t)(dlc) & 0xF] )
+static const uint8_t MCAN20_PAYLOAD_TO_VALUE[MCAN_PAYLOAD_COUNT] = {8,  8,  8,  8,  8,  8,  8,  8};
+static const uint8_t MCANFD_PAYLOAD_TO_VALUE[MCAN_PAYLOAD_COUNT] = {8, 12, 16, 20, 24, 32, 48, 64};
+#define MCAN_PayloadToByte(payload,canfd)  ( ((canfd == true) ? MCANFD_PAYLOAD_TO_VALUE[(size_t)(payload) & 0xF] : MCAN20_PAYLOAD_TO_VALUE[(size_t)(payload) & 0xF]) )
 
 //-----------------------------------------------------------------------------
 
@@ -3339,13 +3347,14 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_TXEFA_Register, 4);
 //! Available FIFO/Buffer list
 typedef enum
 {
-  MCAN_TEF       = -1, //!< TEF - Transmit Event FIFO
-  MCAN_RX_FIFO0  =  0, //!< RX FIFO 0
-  MCAN_RX_FIFO1  =  1, //!< RX FIFO 1
-  MCAN_RX_BUFFER =  2, //!< RX buffer
-  MCAN_TX_BUFFER =  3, //!< TX buffer
-  MCAN_TXQ_FIFO  =  4, //!< TXQ/FIFO - Transmit Queue or Tx FIFO
-  MCAN_NO_FIFO_BUFF,   //!< No specific FIFO/Buffer
+  MCAN_RX_FIFO0    = 0, //!< RX FIFO 0
+  MCAN_RX_FIFO1    = 1, //!< RX FIFO 1
+  MCAN_RX_BUFFER   = 2, //!< RX buffer
+  MCAN_TEF         = 3, //!< TEF - Transmit Event FIFO
+  MCAN_TX_BUFFER   = 4, //!< TX buffer
+  MCAN_TXQ_FIFO    = 5, //!< TXQ/FIFO - Transmit Queue or Tx FIFO
+  MCAN_FIFO_BUFF_COUNT, // KEEP Last!
+  MCAN_NO_FIFO_BUFF,    //!< No specific FIFO/Buffer
 } eMCAN_FIFObuffer;
 
 //-----------------------------------------------------------------------------
@@ -3406,59 +3415,59 @@ typedef union __MCAN_PACKED__ MCAN_HardReg
   volatile uint8_t  Bytes[RegMCAN_SIZE];
   struct
   {
-    volatile uint32_t RegMCAN_CREL;   //!< (Offset: 0x00) Core Release Register
-    volatile uint32_t RegMCAN_ENDN;   //!< (Offset: 0x04) Endian Register
-    volatile uint32_t RegMCAN_CUST;   //!< (Offset: 0x08) Customer Register
-    volatile uint32_t RegMCAN_DBTP;   //!< (Offset: 0x0C) Data Bit Timing and Prescaler Register
-    volatile uint32_t RegMCAN_TEST;   //!< (Offset: 0x10) Test Register
-    volatile uint32_t RegMCAN_RWD;    //!< (Offset: 0x14) RAM Watchdog Register
-    volatile uint32_t RegMCAN_CCCR;   //!< (Offset: 0x18) CC Control Register
-    volatile uint32_t RegMCAN_NBTP;   //!< (Offset: 0x1C) Nominal Bit Timing and Prescaler Register
-    volatile uint32_t RegMCAN_TSCC;   //!< (Offset: 0x20) Timestamp Counter Configuration Register
-    volatile uint32_t RegMCAN_TSCV;   //!< (Offset: 0x24) Timestamp Counter Value Register
-    volatile uint32_t RegMCAN_TOCC;   //!< (Offset: 0x28) Timeout Counter Configuration Register
-    volatile uint32_t RegMCAN_TOCV;   //!< (Offset: 0x2C) Timeout Counter Value Register
-    volatile uint32_t Reserved1[4];   //!< (Offset: 0x30..0x3C)
-    volatile uint32_t RegMCAN_ECR;    //!< (Offset: 0x40) Error Counter Register
-    volatile uint32_t RegMCAN_PSR;    //!< (Offset: 0x44) Protocol Status Register
-    volatile uint32_t RegMCAN_TDCR;   //!< (Offset: 0x48) Transmit Delay Compensation Register
-    volatile uint32_t Reserved2[1];   //!< (Offset: 0x4C)
-    volatile uint32_t RegMCAN_IR;     //!< (Offset: 0x50) Interrupt Register
-    volatile uint32_t RegMCAN_IE;     //!< (Offset: 0x54) Interrupt Enable Register
-    volatile uint32_t RegMCAN_ILS;    //!< (Offset: 0x58) Interrupt Line Select Register
-    volatile uint32_t RegMCAN_ILE;    //!< (Offset: 0x5C) Interrupt Line Enable Register
-    volatile uint32_t Reserved3[8];   //!< (Offset: 0x60..0x7C)
-    volatile uint32_t RegMCAN_GFC;    //!< (Offset: 0x80) Global Filter Configuration Register
-    volatile uint32_t RegMCAN_SIDFC;  //!< (Offset: 0x84) Standard ID Filter Configuration Register
-    volatile uint32_t RegMCAN_XIDFC;  //!< (Offset: 0x88) Extended ID Filter Configuration Register
-    volatile uint32_t Reserved4[1];   //!< (Offset: 0x8C)
-    volatile uint32_t RegMCAN_XIDAM;  //!< (Offset: 0x90) Extended ID AND Mask Register
-    volatile uint32_t RegMCAN_HPMS;   //!< (Offset: 0x94) High Priority Message Status Register
-    volatile uint32_t RegMCAN_NDAT1;  //!< (Offset: 0x98) New Data 1 Register
-    volatile uint32_t RegMCAN_NDAT2;  //!< (Offset: 0x9C) New Data 2 Register
-    volatile uint32_t RegMCAN_RXF0C;  //!< (Offset: 0xA0) Receive FIFO 0 Configuration Register
-    volatile uint32_t RegMCAN_RXF0S;  //!< (Offset: 0xA4) Receive FIFO 0 Status Register
-    volatile uint32_t RegMCAN_RXF0A;  //!< (Offset: 0xA8) Receive FIFO 0 Acknowledge Register
-    volatile uint32_t RegMCAN_RXBC;   //!< (Offset: 0xAC) Receive Rx Buffer Configuration Register
-    volatile uint32_t RegMCAN_RXF1C;  //!< (Offset: 0xB0) Receive FIFO 1 Configuration Register
-    volatile uint32_t RegMCAN_RXF1S;  //!< (Offset: 0xB4) Receive FIFO 1 Status Register
-    volatile uint32_t RegMCAN_RXF1A;  //!< (Offset: 0xB8) Receive FIFO 1 Acknowledge Register
-    volatile uint32_t RegMCAN_RXESC;  //!< (Offset: 0xBC) Receive Buffer / FIFO Element Size Configuration Register
-    volatile uint32_t RegMCAN_TXBC;   //!< (Offset: 0xC0) Transmit Buffer Configuration Register
-    volatile uint32_t RegMCAN_TXFQS;  //!< (Offset: 0xC4) Transmit FIFO/Queue Status Register
-    volatile uint32_t RegMCAN_TXESC;  //!< (Offset: 0xC8) Transmit Buffer Element Size Configuration Register
-    volatile uint32_t RegMCAN_TXBRP;  //!< (Offset: 0xCC) Transmit Buffer Request Pending Register
-    volatile uint32_t RegMCAN_TXBAR;  //!< (Offset: 0xD0) Transmit Buffer Add Request Register
-    volatile uint32_t RegMCAN_TXBCR;  //!< (Offset: 0xD4) Transmit Buffer Cancellation Request Register
-    volatile uint32_t RegMCAN_TXBTO;  //!< (Offset: 0xD8) Transmit Buffer Transmission Occurred Register
-    volatile uint32_t RegMCAN_TXBCF;  //!< (Offset: 0xDC) Transmit Buffer Cancellation Finished Register
-    volatile uint32_t RegMCAN_TXBTIE; //!< (Offset: 0xE0) Transmit Buffer Transmission Interrupt Enable Register
-    volatile uint32_t RegMCAN_TXBCIE; //!< (Offset: 0xE4) Transmit Buffer Cancellation Finished Interrupt Enable Register
-    volatile uint32_t Reserved5[2];   //!< (Offset: 0xE8..0xEC)
-    volatile uint32_t RegMCAN_TXEFC;  //!< (Offset: 0xF0) Transmit Event FIFO Configuration Register
-    volatile uint32_t RegMCAN_TXEFS;  //!< (Offset: 0xF4) Transmit Event FIFO Status Register
-    volatile uint32_t RegMCAN_TXEFA;  //!< (Offset: 0xF8) Transmit Event FIFO Acknowledge Register
-    volatile uint32_t Reserved6[1];   //!< (Offset: 0xFC)
+    _RO_ uint32_t RegMCAN_CREL;   //!< (Offset: 0x00) Core Release Register
+    _RO_ uint32_t RegMCAN_ENDN;   //!< (Offset: 0x04) Endian Register
+    _RW_ uint32_t RegMCAN_CUST;   //!< (Offset: 0x08) Customer Register
+    _RW_ uint32_t RegMCAN_DBTP;   //!< (Offset: 0x0C) Data Bit Timing and Prescaler Register
+    _RW_ uint32_t RegMCAN_TEST;   //!< (Offset: 0x10) Test Register
+    _RW_ uint32_t RegMCAN_RWD;    //!< (Offset: 0x14) RAM Watchdog Register
+    _RW_ uint32_t RegMCAN_CCCR;   //!< (Offset: 0x18) CC Control Register
+    _RW_ uint32_t RegMCAN_NBTP;   //!< (Offset: 0x1C) Nominal Bit Timing and Prescaler Register
+    _RW_ uint32_t RegMCAN_TSCC;   //!< (Offset: 0x20) Timestamp Counter Configuration Register
+    _RW_ uint32_t RegMCAN_TSCV;   //!< (Offset: 0x24) Timestamp Counter Value Register
+    _RW_ uint32_t RegMCAN_TOCC;   //!< (Offset: 0x28) Timeout Counter Configuration Register
+    _RW_ uint32_t RegMCAN_TOCV;   //!< (Offset: 0x2C) Timeout Counter Value Register
+         uint32_t Reserved1[4];   //!< (Offset: 0x30..0x3C)
+    _RO_ uint32_t RegMCAN_ECR;    //!< (Offset: 0x40) Error Counter Register
+    _RO_ uint32_t RegMCAN_PSR;    //!< (Offset: 0x44) Protocol Status Register
+    _RW_ uint32_t RegMCAN_TDCR;   //!< (Offset: 0x48) Transmit Delay Compensation Register
+         uint32_t Reserved2[1];   //!< (Offset: 0x4C)
+    _RW_ uint32_t RegMCAN_IR;     //!< (Offset: 0x50) Interrupt Register
+    _RW_ uint32_t RegMCAN_IE;     //!< (Offset: 0x54) Interrupt Enable Register
+    _RW_ uint32_t RegMCAN_ILS;    //!< (Offset: 0x58) Interrupt Line Select Register
+    _RW_ uint32_t RegMCAN_ILE;    //!< (Offset: 0x5C) Interrupt Line Enable Register
+         uint32_t Reserved3[8];   //!< (Offset: 0x60..0x7C)
+    _RW_ uint32_t RegMCAN_GFC;    //!< (Offset: 0x80) Global Filter Configuration Register
+    _RW_ uint32_t RegMCAN_SIDFC;  //!< (Offset: 0x84) Standard ID Filter Configuration Register
+    _RW_ uint32_t RegMCAN_XIDFC;  //!< (Offset: 0x88) Extended ID Filter Configuration Register
+         uint32_t Reserved4[1];   //!< (Offset: 0x8C)
+    _RW_ uint32_t RegMCAN_XIDAM;  //!< (Offset: 0x90) Extended ID AND Mask Register
+    _RO_ uint32_t RegMCAN_HPMS;   //!< (Offset: 0x94) High Priority Message Status Register
+    _RW_ uint32_t RegMCAN_NDAT1;  //!< (Offset: 0x98) New Data 1 Register
+    _RW_ uint32_t RegMCAN_NDAT2;  //!< (Offset: 0x9C) New Data 2 Register
+    _RW_ uint32_t RegMCAN_RXF0C;  //!< (Offset: 0xA0) Receive FIFO 0 Configuration Register
+    _RO_ uint32_t RegMCAN_RXF0S;  //!< (Offset: 0xA4) Receive FIFO 0 Status Register
+    _RW_ uint32_t RegMCAN_RXF0A;  //!< (Offset: 0xA8) Receive FIFO 0 Acknowledge Register
+    _RW_ uint32_t RegMCAN_RXBC;   //!< (Offset: 0xAC) Receive Rx Buffer Configuration Register
+    _RW_ uint32_t RegMCAN_RXF1C;  //!< (Offset: 0xB0) Receive FIFO 1 Configuration Register
+    _RO_ uint32_t RegMCAN_RXF1S;  //!< (Offset: 0xB4) Receive FIFO 1 Status Register
+    _RW_ uint32_t RegMCAN_RXF1A;  //!< (Offset: 0xB8) Receive FIFO 1 Acknowledge Register
+    _RW_ uint32_t RegMCAN_RXESC;  //!< (Offset: 0xBC) Receive Buffer / FIFO Element Size Configuration Register
+    _RW_ uint32_t RegMCAN_TXBC;   //!< (Offset: 0xC0) Transmit Buffer Configuration Register
+    _RO_ uint32_t RegMCAN_TXFQS;  //!< (Offset: 0xC4) Transmit FIFO/Queue Status Register
+    _RW_ uint32_t RegMCAN_TXESC;  //!< (Offset: 0xC8) Transmit Buffer Element Size Configuration Register
+    _RO_ uint32_t RegMCAN_TXBRP;  //!< (Offset: 0xCC) Transmit Buffer Request Pending Register
+    _RW_ uint32_t RegMCAN_TXBAR;  //!< (Offset: 0xD0) Transmit Buffer Add Request Register
+    _RW_ uint32_t RegMCAN_TXBCR;  //!< (Offset: 0xD4) Transmit Buffer Cancellation Request Register
+    _RO_ uint32_t RegMCAN_TXBTO;  //!< (Offset: 0xD8) Transmit Buffer Transmission Occurred Register
+    _RO_ uint32_t RegMCAN_TXBCF;  //!< (Offset: 0xDC) Transmit Buffer Cancellation Finished Register
+    _RW_ uint32_t RegMCAN_TXBTIE; //!< (Offset: 0xE0) Transmit Buffer Transmission Interrupt Enable Register
+    _RW_ uint32_t RegMCAN_TXBCIE; //!< (Offset: 0xE4) Transmit Buffer Cancellation Finished Interrupt Enable Register
+         uint32_t Reserved5[2];   //!< (Offset: 0xE8..0xEC)
+    _RW_ uint32_t RegMCAN_TXEFC;  //!< (Offset: 0xF0) Transmit Event FIFO Configuration Register
+    _RO_ uint32_t RegMCAN_TXEFS;  //!< (Offset: 0xF4) Transmit Event FIFO Status Register
+    _RW_ uint32_t RegMCAN_TXEFA;  //!< (Offset: 0xF8) Transmit Event FIFO Acknowledge Register
+         uint32_t Reserved6[1];   //!< (Offset: 0xFC)
   };
 } MCAN_HardReg;
 MCAN_UNPACKITEM;
@@ -3616,10 +3625,12 @@ typedef eMCAN_CANCtrlFlags setMCAN_CANCtrlFlags; //! Set of CAN control configur
 //! FIFO/Buffers configuration flags
 typedef enum
 {
+  MCAN_TEF_MODE               = 0x00, //!< TEF mode
   //--- Tx FIFO/Buffer ---
+  MCAN_TX_BUFFER_MODE         = 0x00, //!< Tx Buffer mode
   MCAN_TX_FIFO_MODE           = 0x00, //!< Tx FIFO/Queue in Tx FIFO mode
   MCAN_TXQ_MODE               = 0x01, //!< Tx FIFO/Queue in Tx Queue mode
-  //--- Rx FINO/Buffer ---
+  //--- Rx FIFO/Buffer ---
   MCAN_RX_FIFO_BLOCKING_MODE  = 0x00, //!< Rx FIFO/Buffer Blocking mode
   MCAN_RX_FIFO_OVERWRITE_MODE = 0x01, //!< Rx FIFO/Buffer Overwrite mode
 } eMCAN_FIFOCtrlFlags;
@@ -3646,7 +3657,7 @@ typedef struct MCAN_FIFObuff
 {
   eMCAN_FIFObuffer Name;             //!< FIFO/buffer name (TXQ, FIFO, Buffer, or TEF)
 
-  //--- FIFO Size ---
+  //--- FIFO/Buffer Size ---
   uint8_t Size;                      //!< FIFO/buffer Message size deep (1 to 32/64 depending on FIFO/Buffer). Set to 0 to disable
   eMCAN_PayloadSize Payload;         //!< Message Payload Size (8, 12, 16, 20, 24, 32, 48 or 64 bytes)
 
@@ -3654,6 +3665,9 @@ typedef struct MCAN_FIFObuff
   eMCAN_FIFOCtrlFlags ControlFlags;  //!< FIFO/buffer control flags to configure the FIFO
   eMCAN_FIFOIntFlags InterruptFlags; //!< FIFO/buffer interrupt flags to configure interrupts of the FIFO
   uint8_t WatermarkLevel;            //!< Receive/TxEvent FIFO watermark level. Set to 0 or superior to FIFO/TxEvent size to disable
+
+  //--- RAM Infos ---
+  CAN_RAMconfig *RAMInfos;           //!< RAM Informations of the FIFO/Buffer (Can be NULL)
 } MCAN_FIFObuff;
 
 //-----------------------------------------------------------------------------
@@ -3765,12 +3779,6 @@ typedef struct MCAN_Filter
     MCAN_FilterRangeID RangeID;  //!< Fill only if MCAN_FilterConfig.Type == MCAN_FILTER_MATCH_ID_RANGE or MCAN_FilterConfig.Type == MCAN_FILTER_MATCH_ID_RANGE_MASK
   };
 } MCAN_Filter;
-
-//-----------------------------------------------------------------------------
-
-
-
-
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

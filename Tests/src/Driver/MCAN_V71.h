@@ -48,8 +48,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 //-----------------------------------------------------------------------------
-#include "MCAN_core.h"
 #include "CAN_common.h"
+#include "MCAN_core.h"
 #include "ErrorsDef.h"
 #if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
 #  include "SPI_Interface.h"
@@ -104,6 +104,12 @@ typedef eMCAN_DriverConfig setMCAN_DriverConfig; //! Set of Driver configuration
 #define MCAN_DEV_PS_GET(value)             (eMCAN_PowerStates)(((uint32_t)(value) & MCAN_DEV_PS_Mask) >> MCAN_DEV_PS_Pos) // Get Device Power State
 #define MCAN_16BIT_MM_ENABLED              ( 1 << 30 ) // This value is used inside the driver (MCANV71.InternalConfig) to indicate if the Wide Message Marker is configured
 #define MCAN_CANFD_ENABLED                 ( 1 << 31 ) // This value is used inside the driver (MCANV71.InternalConfig) to indicate if the CANFD is configured
+
+#define MCANV71_GetSIDfilterElementCount(pComp)  ( MCAN_FILTER_SID_SIZE_GET((pComp)->InternalConfig) ) //!< Get the SID filter elements count configured for the pComp
+#define MCANV71_GetEIDfilterElementCount(pComp)  ( MCAN_FILTER_EID_SIZE_GET((pComp)->InternalConfig) ) //!< Get the EID filter elements count configured for the pComp
+
+#define MCANV71_GetSIDfilterTotalByteSize(pComp)  ( MCANV71_GetSIDfilterElementCount(pComp) * MCAN_CAN_STANDARD_FILTER_SIZE ) //!< Get the SID filter total byte size
+#define MCANV71_GetEIDfilterTotalByteSize(pComp)  ( MCANV71_GetEIDfilterElementCount(pComp) * MCAN_CAN_EXTENDED_FILTER_SIZE ) //!< Get the EID filter total byte size
 
 //-----------------------------------------------------------------------------
 
@@ -163,6 +169,7 @@ typedef struct MCANV71_Config
   //--- Controller clocks ---
   uint32_t MainFreq;                             //!< Main MCAN frequency. Set to 0 to use the Peripheral frequency with the #MCANV71_ConfigurePeripheralClocks() function call
   uint8_t MessageRAMwatchdogConf;                //!< Start value of the Message RAM Watchdog Counter. The counter is disabled when WDC is cleared
+  uint32_t *SYSCLK_Result;                        //!< This is the SYSCLK of the component after configuration (can be NULL if the internal SYSCLK of the component do not have to be known)
 
   //--- RAM configuration ---
   uint8_t SIDelementsCount;                      //!< Standard ID Number of Filter Elements in RAM (0 to 128 elements)
@@ -228,7 +235,7 @@ MCAN_EXTERN eERRORRESULT MCANV71_ConfigureMCANbaseAddress(MCANV71 *pComp) MCAN_W
  * @param[in] *count Is the element count of the listFIFO array
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, const MCAN_FIFObuff* const listFIFO, size_t count);
+eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, const MCAN_FIFObuff* const listFIFO, size_t listFIFOcount);
 
 //********************************************************************************************************************
 
@@ -249,7 +256,6 @@ eERRORRESULT MCANV71_GetMCANcoreID(MCANV71 *pComp, uint8_t* const mcanCoreId, ui
 //********************************************************************************************************************
 
 
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
 /*! @brief Read from a 32-bits register of MCAN peripheral
  *
  * @param[in] *pComp Is the pointed structure of the MCAN to be used
@@ -267,7 +273,7 @@ eERRORRESULT MCANV71_ReadREG32(MCANV71 *pComp, const uint32_t address, uint32_t*
  * @return Returns an #eERRORRESULT value enum
  */
 eERRORRESULT MCANV71_WriteREG32(MCANV71 *pComp, const uint32_t address, const uint32_t data);
-#endif
+
 //-----------------------------------------------------------------------------
 
 
@@ -303,13 +309,7 @@ eERRORRESULT MCANV71_WriteRAM(MCANV71 *pComp, const uint32_t address, const uint
  */
 inline eERRORRESULT MCANV71_ReadCustomerRegister(MCANV71 *pComp, uint32_t* const data)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *data = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CUST;          // Read value of the CUST register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_CUST, data); // Read value of the CUST register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_CUST, data); // Read value of the CUST register of an external controller
 }
 
 
@@ -321,13 +321,7 @@ inline eERRORRESULT MCANV71_ReadCustomerRegister(MCANV71 *pComp, uint32_t* const
  */
 inline eERRORRESULT MCANV71_WriteCustomerRegister(MCANV71 *pComp, const uint32_t data)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CUST = data;            // Read value of the CUST register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_CUST, data); // Read value of the CUST register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_CUST, data); // Read value of the CUST register of an external controller
 }
 
 //********************************************************************************************************************
@@ -453,13 +447,7 @@ inline eERRORRESULT MCANV71_ReceiveMessageFromTEF(MCANV71 *pComp, CAN_CANMessage
  */
 inline eERRORRESULT MCANV71_ConfigureWatchdogRAM(MCANV71 *pComp, uint8_t messageRAMwatchdogConf)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RWD = MCAN_RWD_WATCHDOG_CONFIG_SET(messageRAMwatchdogConf);            // Write value of the RWD register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_RWD, MCAN_RWD_WATCHDOG_CONFIG_SET(messageRAMwatchdogConf)); // Write value of the RWD register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_RWD, MCAN_RWD_WATCHDOG_CONFIG_SET(messageRAMwatchdogConf)); // Write value of the RWD register of an external controller
 }
 
 /*! @brief Get message RAM watchdog's value of MCAN peripheral
@@ -474,12 +462,8 @@ inline eERRORRESULT MCANV71_GetWatchdogRAMvalue(MCANV71 *pComp, uint8_t* const m
    if ((pComp == NULL) || (messageRAMwatchdogValue == NULL)) return ERR__PARAMETER_ERROR;
 #endif
   MCAN_RWD_Register Reg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Reg.RWD = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RWD;            // Read RWD register
-#else
   eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_RWD, &Reg.RWD); // Read RWD register of an external controller
   if (Error != ERR_NONE) return Error;
-#endif
   *messageRAMwatchdogValue = (uint8_t)MCAN_RWD_WATCHDOG_VALUE_GET(Reg.RWD);
   return ERR_NONE;
 }
@@ -504,11 +488,11 @@ eERRORRESULT MCANV71_ConfigureINTlines(MCANV71 *pComp, bool enableLineINT0, bool
  * Calculate the best Bit Time configuration following desired bitrates for CAN-FD
  * This function call automatically the MCANV71_CalculateBitrateStatistics() function
  * @param[in] periphClk Is the clock of the peripheral
- * @param[in] busConf Is the bus configuration of the CAN-bus
+ * @param[in] *busConf Is the bus configuration of the CAN-bus
  * @param[out] *pConf Is the pointed structure of the Bit Time configuration
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_CalculateBitTimeConfiguration(const uint32_t periphClk, const struct CAN_CANFDbusConfig busConf, struct CAN_BitTimeConfig* const pConf);
+eERRORRESULT MCANV71_CalculateBitTimeConfiguration(const uint32_t periphClk, const struct CAN_CANFDbusConfig* const busConf, struct CAN_BitTimeConfig* const pConf);
 
 /*! @brief Calculate Bitrate Statistics of a Bit Time configuration
  *
@@ -545,7 +529,7 @@ eERRORRESULT MCANV71_ConfigureWriteProtection(MCANV71 *pComp, bool enable, uint3
  * @param[in] *pComp Is the pointed structure of the peripheral to be used
  * @return Returns an #eERRORRESULT value enum
  */
-inline eERRORRESULT MCANV71_SetWriteProtection(MCANV71 *pComp, bool enable)
+inline eERRORRESULT MCANV71_SetWriteProtection(MCANV71 *pComp)
 {
   return MCANV71_ConfigureWriteProtection(pComp, true, NULL);
 }
@@ -555,7 +539,7 @@ inline eERRORRESULT MCANV71_SetWriteProtection(MCANV71 *pComp, bool enable)
  * @param[in] *pComp Is the pointed structure of the peripheral to be used
  * @return Returns an #eERRORRESULT value enum
  */
-inline eERRORRESULT MCANV71_RemoveWriteProtection(MCANV71 *pComp, bool enable)
+inline eERRORRESULT MCANV71_RemoveWriteProtection(MCANV71 *pComp)
 {
   return MCANV71_ConfigureWriteProtection(pComp, false, NULL);
 }
@@ -608,6 +592,8 @@ inline eERRORRESULT MCANV71_StartCANListenOnly(MCANV71 *pComp)
 {
   return MCANV71_RequestOperationMode(pComp, MCAN_LISTEN_ONLY_MODE);
 }
+
+//********************************************************************************************************************
 
 
 
@@ -684,13 +670,7 @@ eERRORRESULT MCANV71_ConfigureTimeStamp(MCANV71 *pComp, eMCAN_TimeStampSelect ti
  */
 inline eERRORRESULT MCANV71_SetTimeStamp(MCANV71 *pComp, uint32_t value)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TSCV = MCAN_TSCV_TIMESTAMP_SET(value);            // Write configuration to the TSCV register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TSCV, MCAN_TSCV_TIMESTAMP_SET(value)); // Write configuration to the TSCV register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TSCV, MCAN_TSCV_TIMESTAMP_SET(value)); // Write configuration to the TSCV register of an external controller
 }
 
 /*! @brief Get the Time Stamp counter the MCAN peripheral
@@ -701,13 +681,7 @@ inline eERRORRESULT MCANV71_SetTimeStamp(MCANV71 *pComp, uint32_t value)
  */
 inline eERRORRESULT MCANV71_GetTimeStamp(MCANV71 *pComp, uint32_t* value)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *value = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TSCV;          // Read the value to the TSCV register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TSCV, value); // Read the value to the TSCV register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_TSCV, value); // Read the value to the TSCV register of an external controller
 }
 
 //********************************************************************************************************************
@@ -722,7 +696,7 @@ inline eERRORRESULT MCANV71_GetTimeStamp(MCANV71 *pComp, uint32_t* value)
  * @param[in] period Is the period of the timeout counter
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCAN_TimeoutSelect timeoutSelect, uint8_t period);
+eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCAN_TimeoutSelect timeoutSelect, uint16_t period);
 
 /*! @brief Set the Rx timeout counter the MCAN peripheral
  *
@@ -732,13 +706,7 @@ eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCA
  */
 inline eERRORRESULT MCANV71_SetTimeoutCounter(MCANV71 *pComp, uint32_t value)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TOCV = MCAN_TOCV_TIMEOUT_COUNTER_SET(value);            // Write configuration to the TOCV register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TOCV, MCAN_TOCV_TIMEOUT_COUNTER_SET(value)); // Write configuration to the TOCV register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TOCV, MCAN_TOCV_TIMEOUT_COUNTER_SET(value)); // Write configuration to the TOCV register of an external controller
 }
 
 /*! @brief Get the Rx timeout counter the MCAN peripheral
@@ -749,13 +717,7 @@ inline eERRORRESULT MCANV71_SetTimeoutCounter(MCANV71 *pComp, uint32_t value)
  */
 inline eERRORRESULT MCANV71_GetTimeoutCounter(MCANV71 *pComp, uint32_t* value)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *value = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TOCV;          // Read the value to the TOCV register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TOCV, value); // Read the value to the TOCV register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_TOCV, value); // Read the value to the TOCV register of an external controller
 }
 
 //********************************************************************************************************************
@@ -823,13 +785,7 @@ inline eERRORRESULT MCANV71_SetTxBufferAddRequest(MCANV71 *pComp, uint32_t buffe
 {
   if (bufferIndex > (MCAN_TX_BUFFER_SIZE_MAX - 1)) return ERR__PARAMETER_ERROR;
   bufferIndex = (1 << bufferIndex);
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBAR = bufferIndex;            // Write configuration to the TXBAR register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBAR, bufferIndex); // Write configuration to the TXBAR register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TXBAR, bufferIndex); // Write configuration to the TXBAR register of an external controller
 }
 
 /*! @brief Get all Tx Buffer request pending of the MCAN peripheral
@@ -840,13 +796,7 @@ inline eERRORRESULT MCANV71_SetTxBufferAddRequest(MCANV71 *pComp, uint32_t buffe
  */
 inline eERRORRESULT MCANV71_GetAllTxBufferRequestPending(MCANV71 *pComp, uint32_t* const requestPending)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *requestPending = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBRP;          // Read internal register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBRP, requestPending); // Read register of an external device
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_TXBRP, requestPending); // Read register of an external device
 }
 
 /*! @brief Set multiple Tx Buffer cancellation request of the MCAN peripheral
@@ -855,7 +805,10 @@ inline eERRORRESULT MCANV71_GetAllTxBufferRequestPending(MCANV71 *pComp, uint32_
  * @param[in] multipleRequest Is the set of buffers to cancel (bit set to '1' when corresponding buffer have a cancellation request). Flags can be OR'ed
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_SetMultipleTxBufferCancellationRequest(MCANV71 *pComp, uint32_t multipleRequest);
+inline eERRORRESULT MCANV71_SetMultipleTxBufferCancellationRequest(MCANV71 *pComp, uint32_t multipleRequest)
+{
+  return MCANV71_WriteREG32(pComp, RegMCAN_TXBCR, multipleRequest); // Write configuration to the TXBCR register
+}
 
 /*! @brief Set Tx Buffer cancellation request of the MCAN peripheral
  *
@@ -878,13 +831,7 @@ inline eERRORRESULT MCANV71_SetTxBufferCancellationRequest(MCANV71 *pComp, uint3
  */
 inline eERRORRESULT MCANV71_GetAllTxBufferTransmitOccured(MCANV71 *pComp, uint32_t* const transmissionOccured)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *transmissionOccured = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBTO;          // Read internal register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBTO, transmissionOccured); // Read register of an external device
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_TXBTO, transmissionOccured); // Read register of an external device
 }
 
 /*! @brief Get all Tx Buffer cancellation finished of the MCAN peripheral
@@ -895,13 +842,7 @@ inline eERRORRESULT MCANV71_GetAllTxBufferTransmitOccured(MCANV71 *pComp, uint32
  */
 inline eERRORRESULT MCANV71_GetAllTxBufferCancellationFinished(MCANV71 *pComp, uint32_t* const cancellationFinished)
 {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *cancellationFinished = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBCF;          // Read internal register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBCF, cancellationFinished); // Read register of an external device
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_ReadREG32(pComp, RegMCAN_TXBCF, cancellationFinished); // Read register of an external device
 }
 
 //********************************************************************************************************************
@@ -927,13 +868,7 @@ eERRORRESULT MCANV71_ConfigureGlobalFilters(MCANV71 *pComp, bool rejectAllStanda
 inline eERRORRESULT MCANV71_SetEIDrangeFilterMask(MCANV71 *pComp, uint32_t andMask)
 {
   if ((andMask & ~MCAN_CAN_FILTER_EID_AND_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_XIDAM = andMask;            // Write configuration to the XIDAM register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_XIDAM, andMask); // Write configuration to the XIDAM register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_XIDAM, andMask); // Write configuration to the XIDAM register of an external controller
 }
 
 /*! @brief Configure a SID filter of the MCAN peripheral
@@ -988,7 +923,10 @@ eERRORRESULT MCANV71_ConfigureInterrupt(MCANV71 *pComp, setMCAN_InterruptEvents 
  * @param[out] *interruptsFlags Is the return value of interrupt events. Flags are OR'ed
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_GetInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents* interruptsFlags);
+inline eERRORRESULT MCANV71_GetInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents* interruptsFlags)
+{
+  return MCANV71_ReadREG32(pComp, RegMCAN_IR, (uint32_t*)interruptsFlags); // Read all interrupt flags status
+}
 
 /*! @brief Clear interrupt events of the MCAN peripheral
  *
@@ -996,7 +934,10 @@ eERRORRESULT MCANV71_GetInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents*
  * @param[in] interruptsFlags Is the set of events where interrupts will be cleared. Flags can be OR'ed
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_ClearInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents interruptsFlags);
+inline eERRORRESULT MCANV71_ClearInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents interruptsFlags)
+{
+  return MCANV71_WriteREG32(pComp, RegMCAN_IR, (uint32_t)interruptsFlags); // Write configuration to the IR register
+}
 
 /*! @brief Get high priority message status of the MCAN peripheral
  * @detail This register is updated every time a Message ID filter element configured to generate a priority event matches.
@@ -1058,7 +999,13 @@ eERRORRESULT MCANV71_GetTransmitReceiveErrorCountAndStatus(MCANV71 *pComp, uint8
  * @param[out] *busDiagnostic Is the return value that contains separate errors of the CAN protocol
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCANV71_GetBusDiagnostic(MCANV71 *pComp, MCAN_PSR_Register* const busDiagnostic);
+inline eERRORRESULT MCANV71_GetBusDiagnostic(MCANV71 *pComp, MCAN_PSR_Register* const busDiagnostic)
+{
+#ifdef CHECK_NULL_PARAM
+  if (busDiagnostic == NULL) return ERR__PARAMETER_ERROR;
+#endif
+  return MCANV71_ReadREG32(pComp, RegMCAN_PSR, (uint32_t*)busDiagnostic->PSR); // Read value of the PSR register
+}
 
 //********************************************************************************************************************
 
@@ -1078,12 +1025,6 @@ uint8_t MCANV71_PayloadToByte(eMCAN_PayloadSize payload);
  * @return Returns the byte count
  */
 uint8_t MCANV71_DLCToByte(eMCAN_DataLength dlc, bool isCANFD);
-
-//********************************************************************************************************************
-
-
-
-
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

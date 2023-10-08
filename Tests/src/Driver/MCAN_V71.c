@@ -33,15 +33,16 @@ extern "C" {
 //=============================================================================
 /*! @brief Configure a FIFO of the MCAN peripheral
  * @param[in] *pComp Is the pointed structure of the peripheral to be used
- * @param[in/out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
+ * @param[in,out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
  * @param[in] *confTxBuffers Is Tx buffer configuration to set
- * @param[in] *confTxFIFOTXQ Is Tx buffer configuration to set
+ * @param[in] *confTxFIFOTXQ Is TXQ configuration to set
+ * @param[in,out] *totalSize Is the current total size. Will be updated with the new configuration
  * @return Returns an #eERRORRESULT value enum
  */
-static eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const startAddr, MCAN_FIFObuff* const confTxBuffers, MCAN_FIFObuff* const confTxFIFOTXQ);
+static eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const startAddr, MCAN_FIFObuff* const confTxBuffers, MCAN_FIFObuff* const confTxFIFOTXQ, uint32_t* const totalSize);
 /*! @brief Configure a FIFO list of the MCAN peripheral
  * @param[in] *pComp Is the pointed structure of the peripheral to be used
- * @param[in/out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
+ * @param[in,out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
  * @param[in] *listFIFO Is Tx/Rx Buffers/FIFO/TXQ/TEF configuration list to set
  * @param[in] count Is the count of elements in the listFIFO array
  * @return Returns an #eERRORRESULT value enum
@@ -50,7 +51,7 @@ static eERRORRESULT __MCANV71_ConfigureFIFOList(MCANV71 *pComp, uint32_t* const 
 //-----------------------------------------------------------------------------
 /*! @brief Configure SID and EID filters MRAM allocation of the MCAN peripheral
  * @param[in] *pComp Is the pointed structure of the peripheral to be used
- * @param[in/out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
+ * @param[in,out] *startAddr Is the address inside the RAM allocation where the elements configuration will start (need 32-bits alignment). The address will be updated inside the RAM
  * @param[in] sidElementsCount Is the count of SID filters elements to allocate
  * @param[in] eidElementsCount Is the count of EID filters elements to allocate
  * @return Returns an #eERRORRESULT value enum
@@ -75,7 +76,7 @@ static uint32_t __CalcBitCount(uint32_t val);
 //=============================================================================
 // [WEAK] Configure the MCAN peripheral clock
 //=============================================================================
-eERRORRESULT MCANV71_ConfigurePeripheralClocks(MCANV71 *pComp, uint32_t* const peripheralClock)
+/*eERRORRESULT MCANV71_ConfigurePeripheralClocks(MCANV71 *pComp, uint32_t* const peripheralClock)
 { // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (peripheralClock == NULL)) return ERR__PARAMETER_ERROR;
@@ -92,7 +93,7 @@ eERRORRESULT MCANV71_ConfigureMCANbaseAddress(MCANV71 *pComp)
 {
   return ERR_NONE;
   // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
-}
+}*/
 #endif
 //-----------------------------------------------------------------------------
 
@@ -104,7 +105,7 @@ eERRORRESULT MCANV71_ConfigureMCANbaseAddress(MCANV71 *pComp)
 //=============================================================================
 // MCAN on SAMV71 peripheral initialization
 //=============================================================================
-eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, const MCAN_FIFObuff* const listFIFO, size_t count)
+eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, const MCAN_FIFObuff* const listFIFO, size_t listFIFOcount)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (pConf == NULL)) return ERR__PARAMETER_ERROR;
@@ -116,8 +117,8 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
   pComp->InternalConfig = 0;
 
   //--- Configure peripheral clock ---------------------------
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
   uint32_t PeripheralClock = pConf->MainFreq;
+#ifdef MCAN_INTERNAL_CAN_CONTROLLER
   if (PeripheralClock == 0)                                                                                  // If peripheral configuration is not configured (= 0)
   {
     Error = MCANV71_ConfigurePeripheralClocks(pComp, &PeripheralClock);                                      //** This is microcontroller specific. It is called to enable peripheral clock and get the peripheral clock
@@ -126,6 +127,7 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
     if (PeripheralClock > MCAN_PERIPHERAL_CLK_MAX) return ERR__FREQUENCY_ERROR;
   }
 #endif
+  if (pConf->SYSCLK_Result != NULL) *pConf->SYSCLK_Result = PeripheralClock;                                 // Save the internal SYSCLK if needed
 
   //--- Configure SPI Interface -----------------------------
 #if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
@@ -139,13 +141,9 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
 
   //--- Check endianness ------------------------------------
   uint32_t RegENDNval = 0;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  RegENDNval = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_ENDN;                                             // Read value of the ENDN register
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_ENDN, &RegENDNval);                                               // Read value of the ENDN register of an external controller
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_ENDN, &RegENDNval);                                               // Read value of the ENDN register
   if (Error != ERR_NONE) return Error;
-#endif
-  if (MCAN_ENDN_IS_CORRECT_ENDIANNESS(RegENDNval)) return ERR__BAD_ENDIANNESS;                               // Check the endianness. If fail here, set the MCAN_SWAP_ENDIANNESS define
+  if (MCAN_ENDN_IS_CORRECT_ENDIANNESS(RegENDNval) == false) return ERR__BAD_ENDIANNESS;                      // Check the endianness. If fail here, set the MCAN_SWAP_ENDIANNESS define
 
   //--- Configure component clock ---------------------------
 
@@ -153,6 +151,10 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
   //--- Configure CRC Interrupts ----------------------------
   //--- Test SPI connection and RAM Test --------------------
   //--- Configure RAM ECC -----------------------------------
+  
+  //--- Remove write protection -----------------------------
+  Error = MCANV71_RemoveWriteProtection(pComp);
+  if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_RemoveWriteProtection() then return the error
 
   //--- Watchdog RAM configuration --------------------------
   Error = MCANV71_ConfigureWatchdogRAM(pComp, pConf->MessageRAMwatchdogConf);
@@ -166,7 +168,7 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
   uint32_t CurrAddress = StartAddress;
   Error = __MCANV71_ConfigureFiltersMRAM(pComp, &CurrAddress, pConf->SIDelementsCount, pConf->EIDelementsCount);
   if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling __MCANV71_ConfigureFiltersMRAM() then return the error
-  Error = __MCANV71_ConfigureFIFOList(pComp, &CurrAddress, listFIFO, count);
+  Error = __MCANV71_ConfigureFIFOList(pComp, &CurrAddress, listFIFO, listFIFOcount);
   if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling __MCANV71_ConfigureFIFOList() then return the error
 #ifdef MCAN_INTERNAL_CAN_CONTROLLER
   // Tricky verification: The RAM allocation can have its address at a position where the MCAN can misplace messages
@@ -203,9 +205,9 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
 #if defined(SJA1000_AUTOMATIC_BITRATE_CALCULUS) || defined(CAN_AUTOMATIC_BITRATE_CALCULUS)
   CAN_BitTimeConfig BitTimeConfig;
   ConfBitTime = &BitTimeConfig;
-  Error = MCANV71_CalculateBitTimeConfiguration(pConf->MainFreq, pConf->BusConfig, ConfBitTime);             // Calculate Bit Time
-  if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_CalculateBitTimeConfiguration() then return the error
   ConfBitTime->Stats = pConf->BitTimeStats;
+  Error = MCANV71_CalculateBitTimeConfiguration(PeripheralClock, &pConf->BusConfig, ConfBitTime);            // Calculate Bit Time
+  if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_CalculateBitTimeConfiguration() then return the error
 #else
   ConfBitTime = &pConf->BitTimeConfig;
 #endif
@@ -214,12 +216,8 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
 
   //--- System interrupt enable -----------------------------
   uint32_t SysInterruptFlags;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  SysInterruptFlags = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IE;                                        // Read FIFOs/Buffers/TEF interrupt flags already configured by __MCANV71_ConfigureFIFOList()
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_IE, &SysInterruptFlags);                                          // Read FIFOs/Buffers/TEF interrupt flags already configured by __MCANV71_ConfigureFIFOList() of an external controller
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_IE, &SysInterruptFlags);                                          // Read FIFOs/Buffers/TEF interrupt flags already configured by __MCANV71_ConfigureFIFOList()
   if (Error != ERR_NONE) return Error;
-#endif
   SysInterruptFlags &= MCAN_INT_FIFO_BUFFER_TEF_FLAGS_MASK;                                                  // Clear all flags that are not FIFOs/Buffers/TEF flags
   SysInterruptFlags |= (uint32_t)pConf->SysInterruptFlags;                                                   // Merge all interrupts flags
   Error = MCANV71_ConfigureInterrupt(pComp, pConf->SysInterruptFlags, pConf->SysIntLineSelect);              // Configure interrupts and interrupts Line Select
@@ -242,12 +240,8 @@ eERRORRESULT MCANV71_GetMCANcoreID(MCANV71 *pComp, uint8_t* const mcanCoreId, ui
 #endif
 
   MCAN_CREL_Register RegValue;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  RegValue.CREL = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CREL;             // Read value of the CREL register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_CREL, &RegValue.CREL);  // Read value of the CREL register of an external controller
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_CREL, &RegValue.CREL);  // Read value of the CREL register
   if (Error != ERR_NONE) return Error;
-#endif
   if (mcanCoreId  != NULL) *mcanCoreId  = MCAN_CREL_REL_GET(RegValue.CREL);     // Get Core Release
   if (mcanStep    != NULL) *mcanStep    = MCAN_CREL_STEP_GET(RegValue.CREL);    // Get Step of Core Release
   if (mcanSubStep != NULL) *mcanSubStep = MCAN_CREL_SUBSTEP_GET(RegValue.CREL); // Get Sub-step of Core Release
@@ -262,11 +256,40 @@ eERRORRESULT MCANV71_GetMCANcoreID(MCANV71 *pComp, uint8_t* const mcanCoreId, ui
 
 
 //**********************************************************************************************************************************************************
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+#ifdef MCAN_INTERNAL_CAN_CONTROLLER
 //=============================================================================
 // Read from a 32-bits register of MCAN peripheral
 //=============================================================================
-eERRORRESULT MCANV71_ReadREG32(MCANV71 *pComp, const uint32_t address, uint32_t* data)
+inline eERRORRESULT MCANV71_ReadREG32(MCANV71 *pComp, const uint32_t address, uint32_t* data)
+{
+#ifdef CHECK_NULL_PARAM
+  if ((pComp == NULL) || (data == NULL)) return ERR__PARAMETER_ERROR;
+#endif
+  if (address > (uint32_t)RegMCAN_TXEFA) return ERR__BAD_ADDRESS;
+  *data = ((volatile MCAN_HardReg*)(pComp->Instance))->Regs[address >> 2];
+  return ERR_NONE;
+}
+
+
+//=============================================================================
+// Write to a 32-bits register of MCAN peripheral
+//=============================================================================
+inline eERRORRESULT MCANV71_WriteREG32(MCANV71 *pComp, const uint32_t address, const uint32_t data)
+{
+#ifdef CHECK_NULL_PARAM
+  if (pComp == NULL) return ERR__PARAMETER_ERROR;
+#endif
+  if (address > (uint32_t)RegMCAN_TXEFA) return ERR__BAD_ADDRESS;
+  ((volatile MCAN_HardReg*)(pComp->Instance))->Regs[address >> 2] = data;
+  return ERR_NONE;
+}
+
+#else // MCAN_EXTERNAL_CAN_CONTROLLER
+
+//=============================================================================
+// Read from a 32-bits register of MCAN peripheral
+//=============================================================================
+inline eERRORRESULT MCANV71_ReadREG32(MCANV71 *pComp, const uint32_t address, uint32_t* data)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (data == NULL)) return ERR__PARAMETER_ERROR;
@@ -279,7 +302,7 @@ eERRORRESULT MCANV71_ReadREG32(MCANV71 *pComp, const uint32_t address, uint32_t*
 //=============================================================================
 // Write to a 32-bits register of MCAN peripheral
 //=============================================================================
-eERRORRESULT MCANV71_WriteREG32(MCANV71 *pComp, const uint32_t address, const uint32_t data)
+inline eERRORRESULT MCANV71_WriteREG32(MCANV71 *pComp, const uint32_t address, const uint32_t data)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
@@ -287,6 +310,7 @@ eERRORRESULT MCANV71_WriteREG32(MCANV71 *pComp, const uint32_t address, const ui
 
   return ERR_NONE;
 }
+
 #endif
 
 //-----------------------------------------------------------------------------
@@ -302,24 +326,24 @@ eERRORRESULT MCANV71_ReadRAM(MCANV71 *pComp, const uint32_t address, uint8_t* da
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (data == NULL)) return ERR__PARAMETER_ERROR;
 #endif
-  if ((address & MCAN_ADDRESS32_ALIGN_MASK) > 0) return ERR__ADDRESS_ALIGNMENT; // Only 32-bits aligned addresses
-  if (address >= pComp->RAMsize) return ERR__PARAMETER_ERROR;
-  uintptr_t Address = ((uintptr_t)(pComp->RAMallocation) & MCAN_BASE_ADDRESS_MASK) + address;
-  for (int_fast16_t z = count; --z >= 0;)
+  if ((address & ~MCAN_ADDRESS32_ALIGN_MASK) > 0) return ERR__ADDRESS_ALIGNMENT; // Only 32-bits aligned addresses
+  uintptr_t CurrentAddr = ((uintptr_t)MCAN_RAM_START_ADDRESS & MCAN_BASE_ADDRESS_MASK) + address;
+  if ((CurrentAddr + count) >= MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;
+  for (int_fast16_t z = 0; z < count; z += sizeof(uint32_t))
   {
 #ifdef MCAN_SWAP_ENDIANNESS
-    data[0] = *((uint8_t*)Address + 3);
-    data[1] = *((uint8_t*)Address + 2);
-    data[2] = *((uint8_t*)Address + 1);
-    data[3] = *((uint8_t*)Address + 0);
+    data[0] = *((uint8_t*)(CurrentAddr + 3));
+    data[1] = *((uint8_t*)(CurrentAddr + 2));
+    data[2] = *((uint8_t*)(CurrentAddr + 1));
+    data[3] = *((uint8_t*)(CurrentAddr + 0));
 #else
-    data[0] = *((uint8_t*)Address + 0);
-    data[1] = *((uint8_t*)Address + 1);
-    data[2] = *((uint8_t*)Address + 2);
-    data[3] = *((uint8_t*)Address + 3);
+    data[0] = *((uint8_t*)(CurrentAddr + 0));
+    data[1] = *((uint8_t*)(CurrentAddr + 1));
+    data[2] = *((uint8_t*)(CurrentAddr + 2));
+    data[3] = *((uint8_t*)(CurrentAddr + 3));
 #endif
-    Address += sizeof(uint32_t);
-    data    += sizeof(uint32_t);
+    CurrentAddr += sizeof(uint32_t);
+    data        += sizeof(uint32_t);
   }
   return ERR_NONE;
 }
@@ -333,24 +357,24 @@ eERRORRESULT MCANV71_WriteRAM(MCANV71 *pComp, const uint32_t address, const uint
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (data == NULL)) return ERR__PARAMETER_ERROR;
 #endif
-  if ((address & MCAN_ADDRESS32_ALIGN_MASK) > 0) return ERR__ADDRESS_ALIGNMENT; // Only 32-bits aligned addresses
-  if (address >= pComp->RAMsize) return ERR__PARAMETER_ERROR;
-  uintptr_t Address = ((uintptr_t)(pComp->RAMallocation) & MCAN_BASE_ADDRESS_MASK) + address;
-  for (int_fast16_t z = count; --z >= 0;)
+  if ((address & ~MCAN_ADDRESS32_ALIGN_MASK) > 0) return ERR__ADDRESS_ALIGNMENT; // Only 32-bits aligned addresses
+  uintptr_t CurrentAddr = ((uintptr_t)MCAN_RAM_START_ADDRESS & MCAN_BASE_ADDRESS_MASK) + address;
+  if ((CurrentAddr + count) >= MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;
+  for (int_fast16_t z = 0; z < count; z += sizeof(uint32_t))
   {
 #ifdef MCAN_SWAP_ENDIANNESS
-    *((uint8_t*)Address + 0) = data[3];
-    *((uint8_t*)Address + 1) = data[2];
-    *((uint8_t*)Address + 2) = data[1];
-    *((uint8_t*)Address + 3) = data[0];
+    *((uint8_t*)(CurrentAddr + 0)) = data[3];
+    *((uint8_t*)(CurrentAddr + 1)) = data[2];
+    *((uint8_t*)(CurrentAddr + 2)) = data[1];
+    *((uint8_t*)(CurrentAddr + 3)) = data[0];
 #else
-    *((uint8_t*)Address + 0) = data[0];
-    *((uint8_t*)Address + 1) = data[1];
-    *((uint8_t*)Address + 2) = data[2];
-    *((uint8_t*)Address + 3) = data[3];
+    *((uint8_t*)(CurrentAddr + 0)) = data[0];
+    *((uint8_t*)(CurrentAddr + 1)) = data[1];
+    *((uint8_t*)(CurrentAddr + 2)) = data[2];
+    *((uint8_t*)(CurrentAddr + 3)) = data[3];
 #endif
-    Address += sizeof(uint32_t);
-    data    += sizeof(uint32_t);
+    CurrentAddr += sizeof(uint32_t);
+    data        += sizeof(uint32_t);
   }
   return ERR_NONE;
 }
@@ -368,6 +392,9 @@ eERRORRESULT MCANV71_ReadRAM(MCANV71 *pComp, const uint32_t address, uint8_t* da
   if ((address & MCAN_ADDRESS32_ALIGN_MASK) > 0) return ERR__ADDRESS_ALIGNMENT; // Only 32-bits aligned addresses
 
 #ifdef MCAN_SWAP_ENDIANNESS
+
+#else
+    
 #endif
 
 
@@ -414,22 +441,18 @@ eERRORRESULT MCANV71_TransmitMessageObject(MCANV71 *pComp, const uint8_t* const 
 
   //--- Get address where to write the frame ---
   MCAN_TXBC_Register ConfReg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ConfReg.TXBC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBC;                    // Read Tx Buffer Configuration internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   ConfReg.TXBC = pComp->__RegCache[MCAN_CACHE_TXBC];                                  // Read Tx Buffer Configuration in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBC, &ConfReg.TXBC);                      // Read Tx Buffer Configuration register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBC, &ConfReg.TXBC);                      // Read Tx Buffer Configuration register
   if (Error != ERR_NONE) return Error;
 #endif
   uint32_t NextAddress = MCAN_TXBC_TX_BUFFERS_SA_GET(ConfReg.TXBC);                   // Start address of the Tx Buffer/FIFO/TXQ
   MCAN_TXESC_Register SizeReg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  SizeReg.TXESC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXESC;                  // Read Tx Buffer Element Size Configuration internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   SizeReg.TXESC = pComp->__RegCache[MCAN_CACHE_TXESC];                                // Read Tx Buffer Element Size Configuration in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXESC, &SizeReg.TXESC);                    // Read Tx Buffer Element Size Configuration register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXESC, &SizeReg.TXESC);                    // Read Tx Buffer Element Size Configuration register
   if (Error != ERR_NONE) return Error;
 #endif
   if (toFIFObuff == MCAN_TX_BUFFER)
@@ -439,12 +462,8 @@ eERRORRESULT MCANV71_TransmitMessageObject(MCANV71 *pComp, const uint8_t* const 
   else
   {
     MCAN_TXFQS_Register Status;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    Status.TXFQS = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXFQS;                 // Read FIFO/Buffer/TXQ status
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_TXFQS, Status.TXFQS);                    // Read FIFO/Buffer/TXQ status of an external controller
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_TXFQS, &Status.TXFQS);                   // Read FIFO/Buffer/TXQ status
     if (Error != ERR_NONE) return Error;
-#endif
     if ((Status.TXFQS & MCAN_TXFQS_TX_FIFO_QUEUE_FULL) > 0) return ERR__BUFFER_FULL;
     index = MCAN_TXFQS_TX_FIFO_PUT_INDEX_GET(Status.TXFQS);                           // Get put index
   }
@@ -528,19 +547,15 @@ eERRORRESULT MCANV71_ReceiveMessageObject(MCANV71 *pComp, uint8_t* const message
 #endif
   if ((fromFIFObuff == MCAN_TX_BUFFER) || (fromFIFObuff == MCAN_TXQ_FIFO) || (fromFIFObuff == MCAN_TEF)) return ERR__PARAMETER_ERROR;
   uint32_t NextAddress = 0, FIFObuffSize = 0, Status = 0;
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   uint32_t RegAddr = 0;
-#endif
   eERRORRESULT Error;
 
   //--- Get FIFO/Buffer paypload size ---
   MCAN_RXESC_Register SizeReg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  SizeReg.RXESC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXESC;             // Read internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   SizeReg.RXESC = pComp->__RegCache[MCAN_CACHE_RXESC];                           // Read in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_RXESC, &SizeReg.RXESC);               // Read register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_RXESC, &SizeReg.RXESC);               // Read register
   if (Error != ERR_NONE) return Error;
 #endif
 
@@ -550,13 +565,10 @@ eERRORRESULT MCANV71_ReceiveMessageObject(MCANV71 *pComp, uint8_t* const message
   {
     default:
     case MCAN_RX_FIFO0 :
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-      ConfReg = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF0C;               // Read FIFO0 configuration internal register
-      Status  = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF0S;               // Read FIFO0 status
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
       ConfReg = pComp->__RegCache[MCAN_CACHE_RXF0C];                             // Read FIFO0 configuration in cache
 #else
-      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXF0C, &ConfReg);                 // Read FIFO0 configuration register of an external device
+      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXF0C, &ConfReg);                 // Read FIFO0 configuration register
       if (Error != ERR_NONE) return Error;
       RegAddr = (uint32_t)RegMCAN_RXF0S;                                         // Prepare status address of Rx FIFO0
 #endif
@@ -565,13 +577,10 @@ eERRORRESULT MCANV71_ReceiveMessageObject(MCANV71 *pComp, uint8_t* const message
       break;
 
     case MCAN_RX_FIFO1 :
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-      ConfReg = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF1C;               // Read FIFO1 configuration internal register
-      Status  = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF1S;               // Read FIFO1 status
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
       ConfReg = pComp->__RegCache[MCAN_CACHE_RXF1C];                             // Read FIFO1 configuration in cache
 #else
-      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXF1C, &ConfReg);                 // Read FIFO1 configuration register of an external device
+      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXF1C, &ConfReg);                 // Read FIFO1 configuration register
       if (Error != ERR_NONE) return Error;
       RegAddr = (uint32_t)RegMCAN_RXF1S;                                         // Prepare status address of Rx FIFO1
 #endif
@@ -581,12 +590,10 @@ eERRORRESULT MCANV71_ReceiveMessageObject(MCANV71 *pComp, uint8_t* const message
 
     case MCAN_RX_BUFFER:
       if (index > MCAN_RX_BUFFERS_SIZE_GET(pComp->InternalConfig)) return ERR__OUT_OF_RANGE; // If  index > configuration, then return an error
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-      ConfReg = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXBC;                // Read internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
       ConfReg = pComp->__RegCache[MCAN_CACHE_RXBC];                              // Read in cache
 #else
-      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXBC, &ConfReg);                  // Read register of an external device
+      Error = MCANV71_ReadREG32(pComp, RegMCAN_RXBC, &ConfReg);                  // Read register
       if (Error != ERR_NONE) return Error;
 #endif
       NextAddress = MCAN_RXBC_RX_BUFFER_SA_GET(ConfReg);                         // Get Rx Buffer Start Address
@@ -597,10 +604,8 @@ eERRORRESULT MCANV71_ReceiveMessageObject(MCANV71 *pComp, uint8_t* const message
   //--- Read FIFO status ---
   if (fromFIFObuff != MCAN_RX_BUFFER)
   {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-    Error = MCANV71_ReadREG32(pComp, RegAddr, Status);                           // Read FIFO status of an external controller
+    Error = MCANV71_ReadREG32(pComp, RegAddr, &Status);                          // Read FIFO status
     if (Error != ERR_NONE) return Error;
-#endif
     if (MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_GET(Status) == 0) return ERR__NO_DATA_AVAILABLE;
     index = MCAN_RXF0S_RX_FIFO0_GET_INDEX_GET(Status);                           // Get get index
   }
@@ -630,24 +635,18 @@ eERRORRESULT MCANV71_ReceiveMessageObjectFromTEF(MCANV71 *pComp, uint8_t* const 
 
   //--- Get TEF configuration ---
   MCAN_TXEFC_Register ConfReg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ConfReg.TXEFC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXEFC;              // Read internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   ConfReg.TXEFC = pComp->__RegCache[MCAN_CACHE_TXEFC];                            // Read in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXEFC, &ConfReg.TXEFC);                // Read register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXEFC, &ConfReg.TXEFC);                // Read register
   if (Error != ERR_NONE) return Error;
 #endif
 
   //--- Get address where to read the frame ---
   uint32_t NextAddress = MCAN_TXEFC_EVENT_FIFO_SA_GET(ConfReg.TXEFC);             // Start address of the TEF FIFO
   MCAN_TXEFS_Register Status;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Status.TXEFS = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXEFS;               // Read FIFO/Buffer/TXQ status
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXEFS, &Status.TXEFS);                 // Read FIFO/Buffer/TXQ status of an external controller
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_TXEFS, &Status.TXEFS);                 // Read FIFO/Buffer/TXQ status
   if (Error != ERR_NONE) return Error;
-#endif
   if ((Status.TXEFS & MCAN_TXFQS_EVENT_FIFO_FULL) > 0) return ERR__BUFFER_FULL;
   uint32_t Index = MCAN_TXFQS_EVENT_FIFO_GET_INDEX_GET(Status.TXEFS);             // Get put index
   NextAddress += (MCAN_CAN_TX_EVENTOBJECT_SIZE * Index);                          // Get address following GetIndex
@@ -748,20 +747,11 @@ eERRORRESULT MCANV71_ReceiveMessage(MCANV71 *pComp, CAN_CANMessage* const messag
 //=============================================================================
 eERRORRESULT MCANV71_ConfigureINTlines(MCANV71 *pComp, bool enableLineINT0, bool enableLineINT1)
 {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  eERRORRESULT Error;
-#endif
   MCAN_ILE_Register RegConf;
   RegConf.ILE = MCAN_ILE_EINT0_DIS | MCAN_ILE_EINT1_DIS;
   if (enableLineINT0) RegConf.ILE |= MCAN_ILE_EINT0_EN;
   if (enableLineINT1) RegConf.ILE |= MCAN_ILE_EINT1_EN;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_ILE = RegConf.ILE;            // Write value of the ILE register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_ILE, RegConf.ILE); // Write value of the ILE register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_ILE, RegConf.ILE); // Write value of the ILE register
 }
 
 
@@ -772,17 +762,17 @@ eERRORRESULT MCANV71_ConfigureINTlines(MCANV71 *pComp, bool enableLineINT0, bool
 //=============================================================================
 // Calculate Bit Time for CAN2.0 or CAN-FD configuration for the MCAN peripheral
 //=============================================================================
-eERRORRESULT MCANV71_CalculateBitTimeConfiguration(const uint32_t periphClk, const struct CAN_CANFDbusConfig busConf, struct CAN_BitTimeConfig* const pConf)
+eERRORRESULT MCANV71_CalculateBitTimeConfiguration(const uint32_t periphClk, const struct CAN_CANFDbusConfig* const busConf, struct CAN_BitTimeConfig* const pConf)
 {
 #ifdef CHECK_NULL_PARAM
   if (pConf == NULL) return ERR__PARAMETER_ERROR;
 #endif
   //--- Check values ----------------------------------------
-  if (busConf.DesiredNominalBitrate < MCAN_NOMBITRATE_MIN ) return ERR__BAUDRATE_ERROR;
-  if (busConf.DesiredNominalBitrate > MCAN_NOMBITRATE_MAX ) return ERR__BAUDRATE_ERROR;
-  if (busConf.DesiredDataBitrate != CAN_NO_CANFD)
-    if (busConf.DesiredDataBitrate  < MCAN_DATABITRATE_MIN) return ERR__BAUDRATE_ERROR;
-  if (busConf.DesiredDataBitrate    > MCAN_DATABITRATE_MAX) return ERR__BAUDRATE_ERROR;
+  if (busConf->DesiredNominalBitrate < MCAN_NOMBITRATE_MIN ) return ERR__BAUDRATE_ERROR;
+  if (busConf->DesiredNominalBitrate > MCAN_NOMBITRATE_MAX ) return ERR__BAUDRATE_ERROR;
+  if (busConf->DesiredDataBitrate != CAN_NO_CANFD)
+    if (busConf->DesiredDataBitrate  < MCAN_DATABITRATE_MIN) return ERR__BAUDRATE_ERROR;
+  if (busConf->DesiredDataBitrate    > MCAN_DATABITRATE_MAX) return ERR__BAUDRATE_ERROR;
 
   //--- Declaration -----------------------------------------
   uint32_t ErrorTQ, ErrorNTQ, ErrorDTQ, DTQbits = 0;
@@ -793,103 +783,129 @@ eERRORRESULT MCANV71_CalculateBitTimeConfiguration(const uint32_t periphClk, con
   uint32_t BRP = MCAN_NBRP_MAX;                                               // Select the worst BRP value. Here all value from max to min will be tested to get the best tuple of NBRP and DBRP, identical TQ in both phases prevents quantization errors during bit rate switching
   while (--BRP >= MCAN_NBRP_MIN)
   {
-    uint32_t NTQbits = periphClk / busConf.DesiredNominalBitrate / BRP;       // Calculate the NTQbits according to BRP and the desired Nominal Bitrate
+    uint32_t NTQbits = periphClk / busConf->DesiredNominalBitrate / BRP;      // Calculate the NTQbits according to BRP and the desired Nominal Bitrate
     if ((NTQbits < MCAN_NTQBIT_MIN) || (NTQbits > MCAN_NTQBIT_MAX)) continue; // This TQbits count is not possible with this BRP, then do the next BRP value
-    DTQbits = periphClk / busConf.DesiredDataBitrate / BRP;                   // Calculate the DTQbits according to BRP and the desired Data Bitrate
+    DTQbits = periphClk / busConf->DesiredDataBitrate / BRP;                  // Calculate the DTQbits according to BRP and the desired Data Bitrate
     if ((DTQbits < MCAN_DTQBIT_MIN) || (DTQbits > MCAN_DTQBIT_MAX)) continue; // This TQbits count is not possible with this BRP, then do the next BRP value
 
     //--- NTQ & DTQ bits count ---
-    ErrorNTQ = (periphClk - (busConf.DesiredNominalBitrate * NTQbits * BRP));                               // Calculate NTQ error
-    if (ErrorNTQ == 0) ErrorNTQ = 1;                                                                        // Adjust NTQ error
-    ErrorDTQ = (periphClk - (busConf.DesiredDataBitrate * DTQbits * BRP)); if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error
+    ErrorNTQ = (periphClk - (busConf->DesiredNominalBitrate * NTQbits * BRP));                               // Calculate NTQ error
+    if (ErrorNTQ == 0) ErrorNTQ = 1;                                                                         // Adjust NTQ error
+    ErrorDTQ = (periphClk - (busConf->DesiredDataBitrate * DTQbits * BRP)); if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error
     ErrorTQ = (ErrorNTQ * ErrorDTQ);
-    if (ErrorTQ <= MinErrorBR)                                                                              // If better error then
-    { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits; BestDTQbits = DTQbits; }                  // Save best parameters
+    if (ErrorTQ <= MinErrorBR)                                                                               // If better error then
+    { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits; BestDTQbits = DTQbits; }                   // Save best parameters
 
     //--- NTQ+1 & DTQ bits count ---
     if (NTQbits < MCAN_NTQBIT_MAX)
     {
-      ErrorNTQ = ((busConf.DesiredNominalBitrate * (NTQbits+1) * BRP) - periphClk);                           // Calculate NTQ error with NTQbits+1
-      if (ErrorNTQ == 0) ErrorNTQ = 1;                                                                        // Adjust NTQ error
-      ErrorDTQ = (periphClk - (busConf.DesiredDataBitrate * DTQbits * BRP)); if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error
+      ErrorNTQ = ((busConf->DesiredNominalBitrate * (NTQbits+1) * BRP) - periphClk);                           // Calculate NTQ error with NTQbits+1
+      if (ErrorNTQ == 0) ErrorNTQ = 1;                                                                         // Adjust NTQ error
+      ErrorDTQ = (periphClk - (busConf->DesiredDataBitrate * DTQbits * BRP)); if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error
       ErrorTQ = (ErrorNTQ * ErrorDTQ);
-      if (ErrorTQ <= MinErrorBR)                                                                              // If better error then
-      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits+1; BestDTQbits = DTQbits; }                // Save best parameters
+      if (ErrorTQ <= MinErrorBR)                                                                               // If better error then
+      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits+1; BestDTQbits = DTQbits; }                 // Save best parameters
     }
 
     //--- NTQ+1 & DTQ or DTQ+1 bits count ---
     if (DTQbits < MCAN_DTQBIT_MAX)
     {
-      ErrorNTQ = (periphClk - (busConf.DesiredNominalBitrate * NTQbits * BRP));  if (ErrorNTQ == 0) ErrorNTQ = 1;    // Calculate NTQ error
-      ErrorDTQ = ((busConf.DesiredDataBitrate * (DTQbits+1) * BRP) - periphClk); if (ErrorDTQ == 0) ErrorDTQ = 1;    // Calculate DTQ error with DTQbits+1
+      ErrorNTQ = (periphClk - (busConf->DesiredNominalBitrate * NTQbits * BRP));  if (ErrorNTQ == 0) ErrorNTQ = 1;    // Calculate NTQ error
+      ErrorDTQ = ((busConf->DesiredDataBitrate * (DTQbits+1) * BRP) - periphClk); if (ErrorDTQ == 0) ErrorDTQ = 1;    // Calculate DTQ error with DTQbits+1
       ErrorTQ = (ErrorNTQ * ErrorDTQ);
-      if (ErrorTQ <= MinErrorBR)                                                                                     // If better error then
-      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits; BestDTQbits = DTQbits+1; }                       // Save best parameters
+      if (ErrorTQ <= MinErrorBR)                                                                                      // If better error then
+      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits; BestDTQbits = DTQbits+1; }                        // Save best parameters
     }
     if ((NTQbits < MCAN_NTQBIT_MAX) && (DTQbits < MCAN_DTQBIT_MAX))
     {
-      ErrorNTQ = ((busConf.DesiredNominalBitrate * (NTQbits+1) * BRP) - periphClk); if (ErrorNTQ == 0) ErrorNTQ = 1; // Calculate NTQ error with NTQbits+1
-      ErrorDTQ = ((busConf.DesiredDataBitrate * (DTQbits+1) * BRP) - periphClk);    if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error with DTQbits+1
+      ErrorNTQ = ((busConf->DesiredNominalBitrate * (NTQbits+1) * BRP) - periphClk); if (ErrorNTQ == 0) ErrorNTQ = 1; // Calculate NTQ error with NTQbits+1
+      ErrorDTQ = ((busConf->DesiredDataBitrate * (DTQbits+1) * BRP) - periphClk);    if (ErrorDTQ == 0) ErrorDTQ = 1; // Calculate DTQ error with DTQbits+1
       ErrorTQ = (ErrorNTQ * ErrorDTQ);
-      if (ErrorTQ <= MinErrorBR)                                                                                     // If better error then
-      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits+1; BestDTQbits = DTQbits+1; }                     // Save best parameters
+      if (ErrorTQ <= MinErrorBR)                                                                                      // If better error then
+      { MinErrorBR = ErrorTQ; BestBRP = BRP; BestNTQbits = NTQbits+1; BestDTQbits = DTQbits+1; }                      // Save best parameters
     }
   }
-  if (MinErrorBR == UINT32_MAX) return ERR__BITTIME_ERROR;               // Impossible to find a good BRP
+  if (MinErrorBR == UINT32_MAX) return ERR__BITTIME_ERROR;                  // Impossible to find a good BRP
 
   //--- Calculate Nominal segments --------------------------
-  pConf->NBRP = BestBRP - 1;                                             // ** Save the best NBRP in the configuration **
-  uint32_t NTSEG2 = (BestNTQbits * (100u - busConf.NominalSamplePoint)); // Calculate the Nominal Sample Point
-  NTSEG2 = (NTSEG2 + 50) / 100;                                          // Round Nominal Sample Point
-  if (NTSEG2 < MCAN_NTSEG2_MIN) NTSEG2 = MCAN_NTSEG2_MIN;                // Correct NTSEG2 if < 1
-  if (NTSEG2 > MCAN_NTSEG2_MAX) NTSEG2 = MCAN_NTSEG2_MAX;                // Correct NTSEG2 if > 128
-  pConf->NTSEG2 = NTSEG2 - 1;                                            // ** Save the NTSEG2 in the configuration **
-  uint32_t NTSEG1 = BestNTQbits - NTSEG2 - MCAN_NSYNC;                   // NTSEG1  = NTQbits - NTSEG2 - 1 (NSYNC)
-  if (NTSEG1 < MCAN_NTSEG1_MIN) NTSEG1 = MCAN_NTSEG1_MIN;                // Correct NTSEG1 if < 1
-  if (NTSEG1 > MCAN_NTSEG1_MAX) NTSEG1 = MCAN_NTSEG1_MAX;                // Correct NTSEG1 if > 256
-  pConf->NTSEG1 = NTSEG1 - 1;                                            // ** Save the NTSEG1 in the configuration **
-  uint32_t NSJW = NTSEG2;                                                // Normally NSJW = NTSEG2, maximizing NSJW lessens the requirement for the oscillator tolerance
-  if (NTSEG1 < NTSEG2) NSJW = NTSEG1;                                    // But NSJW = min(NPHSEG1, NPHSEG2)
-  if (NSJW < MCAN_NSJW_MIN) NSJW = MCAN_NSJW_MIN;                        // Correct NSJW if < 1
-  if (NSJW > MCAN_NSJW_MAX) NSJW = MCAN_NSJW_MAX;                        // Correct NSJW if > 128
-  pConf->NSJW = NSJW - 1;                                                // ** Save the NSJW in the configuration **
+  pConf->NBRP = BestBRP - 1;                                                // ** Save the best NBRP in the configuration **
+  uint32_t NTSEG2 = (BestNTQbits * (100u - busConf->NominalSamplePoint));   // Calculate the Nominal Sample Point
+  NTSEG2 = (NTSEG2 + 50) / 100;                                             // Round Nominal Sample Point
+  if (NTSEG2 < MCAN_NTSEG2_MIN) NTSEG2 = MCAN_NTSEG2_MIN;                   // Correct NTSEG2 if < 1
+  if (NTSEG2 > MCAN_NTSEG2_MAX) NTSEG2 = MCAN_NTSEG2_MAX;                   // Correct NTSEG2 if > 128
+  pConf->NTSEG2 = NTSEG2 - 1;                                               // ** Save the NTSEG2 in the configuration **
+  uint32_t NTSEG1 = BestNTQbits - NTSEG2 - MCAN_NSYNC;                      // NTSEG1  = NTQbits - NTSEG2 - 1 (NSYNC)
+  if (NTSEG1 < MCAN_NTSEG1_MIN) NTSEG1 = MCAN_NTSEG1_MIN;                   // Correct NTSEG1 if < 1
+  if (NTSEG1 > MCAN_NTSEG1_MAX) NTSEG1 = MCAN_NTSEG1_MAX;                   // Correct NTSEG1 if > 256
+  pConf->NTSEG1 = NTSEG1 - 1;                                               // ** Save the NTSEG1 in the configuration **
+  uint32_t NSJW = NTSEG2;                                                   // Normally NSJW = NTSEG2, maximizing NSJW lessens the requirement for the oscillator tolerance
+  if (NTSEG1 < NTSEG2) NSJW = NTSEG1;                                       // But NSJW = min(NPHSEG1, NPHSEG2)
+  if (NSJW < MCAN_NSJW_MIN) NSJW = MCAN_NSJW_MIN;                           // Correct NSJW if < 1
+  if (NSJW > MCAN_NSJW_MAX) NSJW = MCAN_NSJW_MAX;                           // Correct NSJW if > 128
+  pConf->NSJW = NSJW - 1;                                                   // ** Save the NSJW in the configuration **
+  uint32_t tNPropSeg = 2 * ((MCAN_tBUS_CONV * busConf->BusMeters) + busConf->TransceiverDelay); // Formula is tNPROP_SEG(ns) = 2x((5ns * BusMeters) + tTXDtRXD)
+  const uint32_t NTQ = (((pConf->NBRP+1) * 10000000) / (periphClk / 1000)); // Nominal Time Quanta = 1/PERIPHCLK multiply by 1000000000 to get 10th of ns
+  uint32_t NPropSeg = (((tNPropSeg * 100) / NTQ) + 5) / 10;                 // Formula is PROP_SEG(bits) = ROUND_UP(tNPROP_SEG/TimeQuantum)
+  if (NPropSeg > NTSEG1) return ERR__BITTIME_ERROR;                         // Need sufficient propagation segment
+  pConf->NPRSEG = NPropSeg - 1;                                             // ** Save the NPRSEG in the configuration **
 
   //--- Calculate Data segments -----------------------------
-  pConf->DBRP = BestBRP - 1;                                          // ** Save the best DBRP in the configuration **
-  uint32_t DTSEG2 = (BestDTQbits * (100u - busConf.DataSamplePoint)); // Calculate the Data Sample Point
-  DTSEG2 = (DTSEG2 + 50) / 100;                                       // Round Data Sample Point
-  if (DTSEG2 < MCAN_NTSEG2_MIN) DTSEG2 = MCAN_NTSEG2_MIN;             // Correct DTSEG2 if < 1
-  if (DTSEG2 > MCAN_NTSEG2_MAX) DTSEG2 = MCAN_NTSEG2_MAX;             // Correct DTSEG2 if > 16
-  pConf->DTSEG2 = DTSEG2 - 1;                                         // ** Save the DTSEG2 in the configuration **
-  uint32_t DTSEG1 = BestDTQbits - DTSEG2 - MCAN_DSYNC;                // DTSEG1  = DTQbits - DTSEG2 - 1 (DSYNC)
-  if (DTSEG1 < MCAN_NTSEG1_MIN) DTSEG1 = MCAN_NTSEG1_MIN;             // Correct DTSEG1 if < 1
-  if (DTSEG1 > MCAN_NTSEG1_MAX) DTSEG1 = MCAN_NTSEG1_MAX;             // Correct DTSEG1 if > 32
-  pConf->DTSEG1 = DTSEG1 - 1;                                         // ** Save the DTSEG1 in the configuration **
-  uint32_t DSJW = DTSEG2;                                             // Normally DSJW = DTSEG2, maximizing DSJW lessens the requirement for the oscillator tolerance
-  if (DTSEG1 < DTSEG2) DSJW = DTSEG1;                                 // But DSJW = min(DPHSEG1, DPHSEG2)
-  if (DSJW < MCAN_DSJW_MIN) DSJW = MCAN_DSJW_MIN;                     // Correct DSJW if < 1
-  if (DSJW > MCAN_DSJW_MAX) DSJW = MCAN_DSJW_MAX;                     // Correct DSJW if > 128
-  pConf->DSJW = DSJW - 1;                                             // ** Save the DSJW in the configuration **
+  if (busConf->DesiredDataBitrate != CAN_NO_CANFD)
+  {
+    pConf->DBRP = BestBRP - 1;                                              // ** Save the best DBRP in the configuration **
+    uint32_t DTSEG2 = (BestDTQbits * (100u - busConf->DataSamplePoint));    // Calculate the Data Sample Point
+    DTSEG2 = (DTSEG2 + 50) / 100;                                           // Round Data Sample Point
+    if (DTSEG2 < MCAN_NTSEG2_MIN) DTSEG2 = MCAN_NTSEG2_MIN;                 // Correct DTSEG2 if < 1
+    if (DTSEG2 > MCAN_NTSEG2_MAX) DTSEG2 = MCAN_NTSEG2_MAX;                 // Correct DTSEG2 if > 16
+    pConf->DTSEG2 = DTSEG2 - 1;                                             // ** Save the DTSEG2 in the configuration **
+    uint32_t DTSEG1 = BestDTQbits - DTSEG2 - MCAN_DSYNC;                    // DTSEG1  = DTQbits - DTSEG2 - 1 (DSYNC)
+    if (DTSEG1 < MCAN_NTSEG1_MIN) DTSEG1 = MCAN_NTSEG1_MIN;                 // Correct DTSEG1 if < 1
+    if (DTSEG1 > MCAN_NTSEG1_MAX) DTSEG1 = MCAN_NTSEG1_MAX;                 // Correct DTSEG1 if > 32
+    pConf->DTSEG1 = DTSEG1 - 1;                                             // ** Save the DTSEG1 in the configuration **
+    uint32_t DSJW = DTSEG2;                                                 // Normally DSJW = DTSEG2, maximizing DSJW lessens the requirement for the oscillator tolerance
+    if (DTSEG1 < DTSEG2) DSJW = DTSEG1;                                     // But DSJW = min(DPHSEG1, DPHSEG2)
+    if (DSJW < MCAN_DSJW_MIN) DSJW = MCAN_DSJW_MIN;                         // Correct DSJW if < 1
+    if (DSJW > MCAN_DSJW_MAX) DSJW = MCAN_DSJW_MAX;                         // Correct DSJW if > 128
+    pConf->DSJW = DSJW - 1;                                                 // ** Save the DSJW in the configuration **
+    uint32_t tDPropSeg = ((MCAN_tBUS_CONV * busConf->BusMeters) + busConf->TransceiverDelay); // Formula is tDPROP_SEG(ns) = (5ns * BusMeters) + tTXDtRXD
+    const uint32_t DTQ = (((pConf->DBRP+1) * 10000000) / (periphClk / 1000)); // Data Time Quanta = 1/PERIPHCLK multiply by 1000000000 to get 10th of ns
+    uint32_t DPropSeg = (((tDPropSeg * 100) / DTQ) + 5) / 10;               // Formula is PROP_SEG(bits) = ROUND_UP(tDPROP_SEG/TimeQuantum)
+    if (DPropSeg > DTSEG1) return ERR__BITTIME_ERROR;                       // Need sufficient propagation segment
+    pConf->DPRSEG = DPropSeg - 1;                                           // ** Save the DPRSEG in the configuration **
 
-  //--- Calculate Transmitter Delay Compensation ----------
-  if (busConf.DesiredDataBitrate >= 1000000)                      // Enable Automatic TDC for DBR of 1Mbps and Higher
-       pConf->TDCmode = CAN_TDC_AUTO_MODE;                        // ** Set Automatic TDC measurement compensations for transmitter delay variations (Enable TCDC)
-  else pConf->TDCmode = CAN_TDC_DISABLED;                         // ** Set Manual; Don’t measure, use TDCV + TDCO from register (Disable TCDC)
-  const uint32_t SSP = BestBRP * DTSEG1;                          // In order to set the SSP, SSP = TDCO + TDCV. SSP is set to DBRP * (DPRSEG + DPHSEG1) = DBRP * DTSEG1
-  uint32_t TDCO = SSP;
-  if (TDCO > MCAN_TDCO_MAX) TDCO = MCAN_TDCO_MAX;                 // Correct TDCO if > 63
-  pConf->TDCO = TDCO;                                             // ** Save the TDCO in the configuration **
-  uint32_t TDCV = SSP - TDCO;                                     // TDCV is the remaining of SSP: TDCV = SSP - TDCO
+    //--- Calculate Transmitter Delay Compensation ----------
+    if (busConf->DesiredDataBitrate >= 1000000)                             // Enable Automatic TDC for DBR of 1Mbps and Higher
+         pConf->TDCmode = CAN_TDC_AUTO_MODE;                                // ** Set Automatic TDC measurement compensations for transmitter delay variations (Enable TCDC)
+    else pConf->TDCmode = CAN_TDC_DISABLED;                                 // ** Set Manual; Don’t measure, use TDCV + TDCO from register (Disable TCDC)
+    const uint32_t SSP = BestBRP * DTSEG1;                                  // In order to set the SSP, SSP = TDCO + TDCV. SSP is set to DBRP * (DPRSEG + DPHSEG1) = DBRP * DTSEG1
+    uint32_t TDCO = SSP;
+    if (TDCO > MCAN_TDCO_MAX) TDCO = MCAN_TDCO_MAX;                         // Correct TDCO if > 63
+    pConf->TDCO = TDCO;                                                     // ** Save the TDCO in the configuration **
+    uint32_t TDCV = SSP - TDCO;                                             // TDCV is the remaining of SSP: TDCV = SSP - TDCO
 #if defined(MCAN_TDCV_MIN) && defined(MCAN_TDCV_MAX)
-  if (TDCV > MCAN_TDCV_MAX) TDCV = MCAN_TDCV_MAX;                 // Correct TDCV if > 63
+    if (TDCV > MCAN_TDCV_MAX) TDCV = MCAN_TDCV_MAX;                         // Correct TDCV if > 63
 #endif
-  pConf->TDCV = TDCV;                                             // ** Save the TDCV in the configuration **
-
-  pConf->Valid = true;                                            // ** Set configuration as valid **
+    pConf->TDCV = TDCV;                                                     // ** Save the TDCV in the configuration **
+  }
+  else
+  {
+    pConf->DBRP     = 0x0;                                                  // ** Set the DBRP in the configuration **
+    pConf->DTSEG2   = 0x3;                                                  // ** Set the DTSEG2 in the configuration **
+    pConf->DTSEG1   = 0x0E;                                                 // ** Set the DTSEG1 in the configuration **
+    pConf->DSJW     = 0x3;                                                  // ** Set the DSJW in the configuration **
+    pConf->TDCmode  = CAN_TDC_AUTO_MODE;                                    // ** Set Automatic TDC measurement compensations for transmitter delay variations
+    pConf->TDCO     = 0x10;                                                 // ** Set the TDCO in the configuration **
+    pConf->TDCV     = 0x00;                                                 // ** Set the TDCV in the configuration **
+  }
+  pConf->CAN20only  = (busConf->DesiredDataBitrate == CAN_NO_CANFD);        // ** Set the CAN2.0 only in the configuration **
+  pConf->EdgeFilter = (busConf->DesiredDataBitrate != CAN_NO_CANFD);        // ** Edge Filtering enabled, according to ISO 11898-1:2015 **
+  pConf->SAMPL      = 1;                                                    // ** Set the Sampling Count in the configuration **
+  pConf->PS2mode    = CAN_PS2_BLT_PHSEG2;                                   // ** Set the Nominal Phase Seg2 BitTime Length Mode in the configuration **
+  pConf->Valid      = true;                                                 // ** Set configuration as valid **
   eERRORRESULT Error = ERR_NONE;
   if (pConf->Stats != NULL)
-    Error = MCANV71_CalculateBitrateStatistics(periphClk, pConf); // If statistics are necessary, then calculate them
-  return Error;                                                   // If there is an error while calling MCAN_CalculateBitrateStatistics() then return the error
+    Error = MCANV71_CalculateBitrateStatistics(periphClk, pConf);           // If statistics are necessary, then calculate them
+  return Error;                                                             // If there is an error while calling MCAN_CalculateBitrateStatistics() then return the error
 }
 
 
@@ -908,9 +924,9 @@ eERRORRESULT MCANV71_CalculateBitrateStatistics(const uint32_t periphClk, CAN_Bi
   uint32_t DTQbits = 0;
 
   //--- Calculate bus length & Nominal Sample Point ---------
-  const uint32_t NTQ = (((pConf->NBRP+1) * 1000000) / (periphClk / 1000));       // Nominal Time Quanta = 1/PERIPHCLK multiply by 1000000000 to get ns
-  const uint32_t NPRSEG  = (pConf->NTSEG1+1) - (pConf->NTSEG2+1);                // Here PHSEG2 (NTSEG2) should be equal to PHSEG1 so NPRSEG = NTSEG1 - NTSEG2
-  pConf->Stats->MaxBusLength = (uint32_t)(((NTQ * NPRSEG) - (2 * MCAN_tTXDtRXD_MAX)) / (2 * MCAN_tBUS_CONV)); // Formula is (2x(tTXD–RXD + (5*BusLen))/NTQ = NPRSEG => BusLen = ((NTQ*NPRESG)-(2*tTXD))/(2*5) in meter
+  const uint32_t NTQ = (((pConf->NBRP+1) * 10000000) / (periphClk / 1000));      // Nominal Time Quanta = 1/PERIPHCLK multiply by 1000000000 to get 10th of ns
+  const uint32_t NPRSEG = pConf->NPRSEG+1;                                       // Get NPRSEG
+  pConf->Stats->MaxBusLength = (uint32_t)(((NTQ * NPRSEG) - (20 * MCAN_tTXDtRXD_MAX)) / (2 * MCAN_tBUS_CONV * 10)); // Formula is (2x(tTXD–RXD + (5*BusLen))/NTQ = NPRSEG => BusLen = ((NTQ*NPRESG)-(2*tTXD))/(2*5) in meter
   const uint32_t NTQbits = (MCAN_NSYNC + (pConf->NTSEG1+1) + (pConf->NTSEG2+1)); // NTQ per bits = NSYNC + NTSEG1 + NTSEG2
   uint32_t SamplePoint = ((MCAN_NSYNC + (pConf->NTSEG1+1)) * 100) / NTQbits;     // Calculate actual nominal sample point
   pConf->Stats->NSamplePoint = (uint32_t)(SamplePoint * 100);                    // ** Save actual Nominal sample point with 2 digits after the decimal point (divide by 100 to get percentage)
@@ -921,7 +937,7 @@ eERRORRESULT MCANV71_CalculateBitrateStatistics(const uint32_t periphClk, CAN_Bi
   {
     DTQbits = (MCAN_DSYNC + (pConf->DTSEG1+1) + (pConf->DTSEG2+1));       // DTQ per bits = DSYNC + DTSEG1 + DTSEG2
     SamplePoint = ((MCAN_DSYNC + (pConf->DTSEG1+1)) * 100) / DTQbits;     // Calculate actual data sample point
-    pConf->Stats->DSamplePoint = (uint32_t)(SamplePoint * 100.0f);        // ** Save actual Data sample point with 2 digits after the decimal point (divide by 100 to get percentage)
+    pConf->Stats->DSamplePoint = (uint32_t)(SamplePoint * 100);           // ** Save actual Data sample point with 2 digits after the decimal point (divide by 100 to get percentage)
     pConf->Stats->DataBitrate  = (periphClk / (pConf->DBRP+1) / DTQbits); // ** Save actual Data Bitrate
   }
   else
@@ -972,12 +988,8 @@ eERRORRESULT MCANV71_SetBitTimeConfiguration(MCANV71 *pComp, const CAN_BitTimeCo
   MCAN_NBTP_Register Nconfig;
   Nconfig.NBTP = MCAN_NBTP_NBRP_SET(pConf->NBRP) | MCAN_NBTP_NTSEG1_SET(pConf->NTSEG1)    // Set Nominal Bit Time configuration
                | MCAN_NBTP_NTSEG2_SET(pConf->NTSEG2) | MCAN_NBTP_NSJW_SET(pConf->NSJW);
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_NBTP = Nconfig.NBTP;                        // Write configuration to the NBTP register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_NBTP, Nconfig.NBTP);             // Write configuration to the NBTP register of an external controller
+  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_NBTP, Nconfig.NBTP);             // Write configuration to the NBTP register
   if (Error != ERR_NONE) return Error;
-#endif
 
   if (pConf->CAN20only == false)
   {
@@ -986,12 +998,8 @@ eERRORRESULT MCANV71_SetBitTimeConfiguration(MCANV71 *pComp, const CAN_BitTimeCo
     Dconfig.DBTP = MCAN_DBTP_DBRP_SET(pConf->DBRP) | MCAN_DBTP_DTSEG1_SET(pConf->DTSEG1)  // Set Data Bit Time configuration
                  | MCAN_DBTP_DTSEG2_SET(pConf->DTSEG2) | MCAN_DBTP_DSJW_SET(pConf->DSJW);
     if (pConf->TDCmode != CAN_TDC_DISABLED) Dconfig.DBTP |= MCAN_DBTP_TDC_EN;             // Enable TDC mode if not disabled
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_DBTP = Dconfig.DBTP;                      // Write configuration to the DBTP register
-#else
-    Error = MCANV71_WriteREG32(pComp, RegMCAN_DBTP, Dconfig.DBTP);                        // Write configuration to the DBTP register of an external controller
+    Error = MCANV71_WriteREG32(pComp, RegMCAN_DBTP, Dconfig.DBTP);                        // Write configuration to the DBTP register
     if (Error != ERR_NONE) return Error;
-#endif
     pComp->InternalConfig |= MCAN_CANFD_ENABLED;                                          // CAN-FD is enable if Data Bitrate is set
   }
   else pComp->InternalConfig &= ~MCAN_CANFD_ENABLED;                                      // Set no CAN-FD
@@ -999,13 +1007,7 @@ eERRORRESULT MCANV71_SetBitTimeConfiguration(MCANV71 *pComp, const CAN_BitTimeCo
   //--- Write Transmitter Delay Compensation configuration ---
   MCAN_TDCR_Register Tconfig;
   Tconfig.TDCR = MCAN_TDCO_SET((pConf->TDCO < 0 ? 0 : pConf->TDCO)) | MCAN_TDCF_SET(pConf->TDCV); // Set Transmitter Delay Compensation configuration
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TDCR = Tconfig.TDCR;                        // Write configuration to the TDCR register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_TDCR, Tconfig.TDCR);                          // Write configuration to the TDCR register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TDCR, Tconfig.TDCR);                          // Write configuration to the TDCR register
 }
 
 
@@ -1022,39 +1024,25 @@ eERRORRESULT MCANV71_ConfigureWriteProtection(MCANV71 *pComp, bool enable, uint3
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
   if (pComp->fnGetCurrentms == NULL) return ERR__PARAMETER_ERROR;
 #endif
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   eERRORRESULT Error;
-#endif
   MCAN_CCCR_Register Reg;
 
   //--- Set register protection ---
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Reg.CCCR = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR;             // Read CCCR register
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);               // Read CCCR register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);               // Read CCCR register
   if (Error != ERR_NONE) return Error;
-#endif
   Reg.CCCR &= ~(MCAN_CCCR_INIT_STARTED | MCAN_CCCR_CONF_WRITE_PROTECT_EN | MCAN_CCCR_CLOCK_STOP_REQ); // Clear write protect bits
   Reg.CCCR |= (MCAN_CCCR_INIT_STARTED | MCAN_CCCR_CONF_WRITE_PROTECT_DIS); // Set default write protect bits
-  if (enable) Reg.CCCR |= MCAN_CCCR_CONF_WRITE_PROTECT_EN;                 // Set write protection if ask
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR = Reg.CCCR;             // Write configuration to the CCCR register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Reg.CCCR);               // Write configuration to the CCCR register of an external controller
+  if (enable == false) Reg.CCCR |= MCAN_CCCR_CONF_WRITE_PROTECT_DIS;       // Set write protection if ask
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Reg.CCCR);               // Write configuration to the CCCR register
   if (Error != ERR_NONE) return Error;
-#endif
 
   //--- Wait until correct configuration ---
   uint32_t Value = Reg.CCCR;
   uint32_t StartTime = pComp->fnGetCurrentms();                            // Start the timeout
   while (true)
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    Reg.CCCR = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR;           // Read CCCR register
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);             // Read CCCR register of an external device
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);             // Read CCCR register
     if (Error != ERR_NONE) return Error;
-#endif
     if (Reg.CCCR == Value) break;                                          // Check if the write protection is enable
     if (MCAN_TIME_DIFF(StartTime, pComp->fnGetCurrentms()) > 2)            // Wait at least 2ms due to the synchronization mechanism between the two clock domains
       return ERR__DEVICE_TIMEOUT;                                          // Timeout? return the error
@@ -1070,17 +1058,9 @@ eERRORRESULT MCANV71_ConfigureWriteProtection(MCANV71 *pComp, bool enable, uint3
 //=============================================================================
 eERRORRESULT MCANV71_GetActualOperationMode(MCANV71 *pComp, eMCAN_OperationMode* const actualMode)
 {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  eERRORRESULT Error;
-#endif
-  uint8_t Config;
-
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Config = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR; // Read actual configuration from the CCCR register
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Config);   // Read actual configuration from the CCCR register of an external device
+  uint32_t Config;
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Config);   // Read actual configuration from the CCCR register
   if (Error != ERR_NONE) return Error;
-#endif
   if ((Config & MCAN_CCCR_INIT_STARTED        ) > 0) *actualMode = MCAN_INITIALIZATION_MODE;
   if ((Config & MCAN_CCCR_NORMAL_CAN_OPERATION) > 0) *actualMode = MCAN_NORMAL_CAN20_MODE;
   if ((Config & MCAN_CCCR_CAN_FD_MODE_EN      ) > 0) *actualMode = MCAN_NORMAL_CANFD_MODE;
@@ -1091,12 +1071,8 @@ eERRORRESULT MCANV71_GetActualOperationMode(MCANV71 *pComp, eMCAN_OperationMode*
   if (*actualMode == MCAN_TEST_MODE)
   {
     if ((Config & MCAN_CCCR_BUS_MONITOR_EN    ) > 0) *actualMode = MCAN_INTERNAL_LOOPBACK_MODE;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    Config = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TEST; // Read actual configuration from the TEST register
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_TEST, &Config);   // Read actual configuration from the TEST register of an external device
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_TEST, &Config); // Read actual configuration from the TEST register
     if (Error != ERR_NONE) return Error;
-#endif
     if ((Config & MCAN_TEST_LOOPBACK_MODE_EN  ) > 0) *actualMode = MCAN_EXTERNAL_LOOPBACK_MODE;
   }
   return ERR_NONE;
@@ -1131,12 +1107,8 @@ eERRORRESULT MCANV71_RequestOperationMode(MCANV71 *pComp, eMCAN_OperationMode ne
   // CCCR.FDOE |    0   |   0  |  1 |      1     |    0   |   0  |     0    |     0    |
   // TEST.LBCK |    0   |   0  |  0 |      0     |    0   |   0  |     1    |     1    |
   Reg.CCCR |= (uint32_t)newMode & MCAN_CCCR_Mask;                // Apply the above table directly
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR = Reg.CCCR;   // Write configuration to the CCCR register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Reg.CCCR);     // Write configuration to the CCCR register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Reg.CCCR);     // Write configuration to the CCCR register
   if (Error != ERR_NONE) return Error;
-#endif
 
   //--- Set Test mode special configuration ---
   if ((newMode == MCAN_INTERNAL_LOOPBACK_MODE) || (newMode == MCAN_EXTERNAL_LOOPBACK_MODE))
@@ -1151,12 +1123,8 @@ eERRORRESULT MCANV71_RequestOperationMode(MCANV71 *pComp, eMCAN_OperationMode ne
   uint32_t StartTime = pComp->fnGetCurrentms();                  // Start the timeout
   while (true)
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    Reg.CCCR = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR; // Read CCCR register
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);   // Read CCCR register of an external device
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Reg.CCCR);   // Read CCCR register
     if (Error != ERR_NONE) return Error;
-#endif
     if (Reg.CCCR == Value) break;                                // Check if the write protection is enable
     if (MCAN_TIME_DIFF(StartTime, pComp->fnGetCurrentms()) > 2)  // Wait at least 2ms due to the synchronization mechanism between the two clock domains
       return ERR__DEVICE_TIMEOUT;                                // Timeout? return the error
@@ -1176,13 +1144,7 @@ eERRORRESULT MCANV71_ConfigureTest(MCANV71 *pComp, bool enableLoopback, eMCAN_Te
   MCAN_TEST_Register Reg;
   Reg.TEST = MCAN_TEST_TX_SET(txPinControl) | MCAN_TEST_LOOPBACK_MODE_DIS; // Configure register
   if (enableLoopback) Reg.TEST |= MCAN_TEST_LOOPBACK_MODE_EN;              // Enable loopback
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TEST = Reg.TEST;             // Write configuration to the TEST register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TEST, Reg.TEST);  // Write configuration to the TEST register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TEST, Reg.TEST);                // Write configuration to the TEST register
 }
 
 
@@ -1193,12 +1155,8 @@ eERRORRESULT MCANV71_ConfigureTest(MCANV71 *pComp, bool enableLoopback, eMCAN_Te
 eERRORRESULT MCANV71_GetTest(MCANV71 *pComp, eMCAN_TestRxPin* const rxPin, uint8_t* const txNumPrepared, bool* const preparedValid, uint8_t* const txNumStarted, bool* const startedValid)
 {
   MCAN_TEST_Register Reg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Reg.TEST = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TEST;            // Read the value to the TSCC register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TEST, &Reg.TEST); // Read the value to the TSCC register of an external controller
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_TEST, &Reg.TEST); // Read the value to the TSCC register
   if (Error != ERR_NONE) return Error;
-#endif
   if (rxPin         != NULL) *rxPin         = (eMCAN_TestRxPin)MCAN_TEST_RX_GET(Reg.TEST);
   if (txNumPrepared != NULL) *txNumPrepared = (uint8_t)MCAN_TEST_TXBNP_GET(Reg.TEST);
   if (preparedValid != NULL) *preparedValid = ((Reg.TEST & MCAN_TEST_PREPARE_VALID) > 0);
@@ -1220,30 +1178,23 @@ eERRORRESULT MCANV71_ConfigureCANController(MCANV71 *pComp, setMCAN_CANCtrlFlags
   eERRORRESULT Error;
   uint32_t Config;
 
-  Error = MCANV71_ConfigureWriteProtection(pComp, false, &Config);                                           // Disable write protection
-  if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_ConfigureWriteProtection() then return the error
-  if ((Config & MCAN_IN_INIT_AND_UNPROTECTED) != MCAN_IN_INIT_AND_UNPROTECTED) return ERR__NEED_CONFIG_MODE; // Device must be in initialization mode and unprotected to perform the configuration
-
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Config);                                                           // Read the CCCR register's configuration
+  if (Error != ERR_NONE) return Error;
   Config &= ~(MCAN_CCCR_NONISO_OPERATION_EN  | MCAN_CCCR_EXTERNAL_TIMESTAMP_TSU   | MCAN_CCCR_PROTOCOL_EXCEPTION_DIS // Clear by default all flags that can be changed
             | MCAN_CCCR_EDGE_FILTERING_EN    | MCAN_CCCR_8BIT_MESSAGE_MARKER_USED | MCAN_CCCR_AUTOMATIC_RETRANSMISSION_DIS
             | MCAN_CCCR_BITRATE_SWITCHING_EN | MCAN_CCCR_TRANSMIT_PAUSE_EN        | MCAN_MODE_CLEAR_MASK);
-  if ((flags & MCAN_CAN_EDGE_FILTERING_DISABLE          ) == 0) Config |= MCAN_CCCR_EDGE_FILTERING_EN;            // Set two consecutive dominant tq required to detect an edge f or hard synchronization
-  if ((flags & MCAN_CAN_TRANSMIT_PAUSE_DISABLE          ) == 0) Config |= MCAN_CCCR_TRANSMIT_PAUSE_EN;            // Set transmit pause enabled
-  if ((flags & MCAN_CAN_AUTOMATIC_RETRANSMISSION_DISABLE) >  0) Config |= MCAN_CCCR_AUTOMATIC_RETRANSMISSION_DIS; // Set automatic retransmission disabled
-  if ((flags & MCAN_CANFD_BITRATE_SWITCHING_DISABLE     ) == 0) Config |= MCAN_CCCR_BITRATE_SWITCHING_EN;         // Set bit rate switching for transmissions enabled
-  if ((flags & MCAN_CAN_PROTOCOL_EXCEPT_HANDLING_DISABLE) >  0) Config |= MCAN_CCCR_PROTOCOL_EXCEPTION_DIS;       // Set protocol exception handling disabled
-  if ((flags & MCAN_CANFD_USE_ISO_CRC                   ) == 0) Config |= MCAN_CCCR_NONISO_OPERATION_EN;          // Set CAN FD frame format according to ISO 11898-1:2015
-  if ((flags & MCAN_CAN_WIDE_MESSAGE_MARKER_16BIT       ) >  0) Config |= MCAN_CCCR_16BIT_MESSAGE_MARKER_USED;    // Set 16-bit Message Marker used, replacing 16-bit timestamps in Tx Event FIFO
-  if ((flags & MCAN_CAN_EXTERNAL_TIMESTAMPING_BY_TSU    ) >  0) Config |= MCAN_CCCR_EXTERNAL_TIMESTAMP_TSU;       // Set external time stamping by TSU
-  pComp->InternalConfig &= ~MCAN_16BIT_MM_ENABLED;                                                                // Clear the 16-bit Message Marker flag
-  if ((flags & MCAN_WIDE_MESSAGE_MARKER) > 0) pComp->InternalConfig |= MCAN_16BIT_MM_ENABLED;                     // Set the 16-bit Message Marker flag if wide message marker configured
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR = Config;                                                      // Write configuration to the CCCR register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Config);                                                        // Write configuration to the CCCR register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  Config |= MCAN_CCCR_INIT_STARTED | MCAN_CCCR_CONF_WRITE_PROTECT_DIS;                                               // Keep write protection
+  if ((flags & MCAN_CAN_EDGE_FILTERING_DISABLE          ) == 0) Config |= MCAN_CCCR_EDGE_FILTERING_EN;               // Set two consecutive dominant tq required to detect an edge f or hard synchronization
+  if ((flags & MCAN_CAN_TRANSMIT_PAUSE_DISABLE          ) == 0) Config |= MCAN_CCCR_TRANSMIT_PAUSE_EN;               // Set transmit pause enabled
+  if ((flags & MCAN_CAN_AUTOMATIC_RETRANSMISSION_DISABLE) >  0) Config |= MCAN_CCCR_AUTOMATIC_RETRANSMISSION_DIS;    // Set automatic retransmission disabled
+  if ((flags & MCAN_CANFD_BITRATE_SWITCHING_DISABLE     ) == 0) Config |= MCAN_CCCR_BITRATE_SWITCHING_EN;            // Set bit rate switching for transmissions enabled
+  if ((flags & MCAN_CAN_PROTOCOL_EXCEPT_HANDLING_DISABLE) >  0) Config |= MCAN_CCCR_PROTOCOL_EXCEPTION_DIS;          // Set protocol exception handling disabled
+  if ((flags & MCAN_CANFD_USE_ISO_CRC                   ) == 0) Config |= MCAN_CCCR_NONISO_OPERATION_EN;             // Set CAN FD frame format according to ISO 11898-1:2015
+  if ((flags & MCAN_CAN_WIDE_MESSAGE_MARKER_16BIT       ) >  0) Config |= MCAN_CCCR_16BIT_MESSAGE_MARKER_USED;       // Set 16-bit Message Marker used, replacing 16-bit timestamps in Tx Event FIFO
+  if ((flags & MCAN_CAN_EXTERNAL_TIMESTAMPING_BY_TSU    ) >  0) Config |= MCAN_CCCR_EXTERNAL_TIMESTAMP_TSU;          // Set external time stamping by TSU
+  pComp->InternalConfig &= ~MCAN_16BIT_MM_ENABLED;                                                                   // Clear the 16-bit Message Marker flag
+  if ((flags & MCAN_WIDE_MESSAGE_MARKER) > 0) pComp->InternalConfig |= MCAN_16BIT_MM_ENABLED;                        // Set the 16-bit Message Marker flag if wide message marker configured
+  return MCANV71_WriteREG32(pComp, RegMCAN_CCCR, Config);                                                            // Write configuration to the CCCR register
 }
 
 
@@ -1281,20 +1232,14 @@ eERRORRESULT MCANV71_IsDeviceInSleepMode(MCANV71 *pComp, bool* const isInSleepMo
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
 #endif
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   eERRORRESULT Error;
-#endif
 
   eMCAN_PowerStates LastPS = MCAN_DEV_PS_GET(pComp->InternalConfig);          // Get last power state
   if (LastPS == MCAN_DEVICE_SLEEP_NOT_CONFIGURED) return ERR__CONFIGURATION;  // No configuration available to enter sleep mode
   *isInSleepMode = true;
   uint32_t Config;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Config = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_CCCR;                  // Read the Oscillator Register configuration
-#else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Config);                    // Read the Oscillator Register configuration of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_CCCR, &Config);                    // Read the Oscillator Register configuration
   if (Error != ERR_NONE) return Error;
-#endif
   *isInSleepMode = ((Config & MCAN_CCCR_CLOCK_STOP_ACK) > 0);                 // Return the actual state of the sleep mode
   if (*isInSleepMode == false)
   {
@@ -1320,13 +1265,7 @@ eERRORRESULT MCANV71_ConfigureTimeStamp(MCANV71 *pComp, eMCAN_TimeStampSelect ti
 
   //--- Write Time Stamp configuration ----------------------
   Config.TSCC = MCAN_TSCC_TIMESTAMP_SELECT_SET(timestampSource) | MCAN_TSCC_TCP_SET(prescaler - 1); // Configure the register
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TSCC = Config.TSCC;                                   // Write configuration to the TSCC register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TSCC, Config.TSCC);                        // Write configuration to the TSCC register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TSCC, Config.TSCC);                                      // Write configuration to the TSCC register
 }
 
 
@@ -1337,20 +1276,14 @@ eERRORRESULT MCANV71_ConfigureTimeStamp(MCANV71 *pComp, eMCAN_TimeStampSelect ti
 //=============================================================================
 // Configure the Rx timeout counter in the MCAN peripheral
 //=============================================================================
-eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCAN_TimeoutSelect timeoutSelect, uint8_t period)
+eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCAN_TimeoutSelect timeoutSelect, uint16_t period)
 {
   MCAN_TOCC_Register Config;
 
   //--- Write Time Stamp configuration ----------------------
   Config.TOCC = MCAN_TOCC_TIMEOUT_COUNTER_DIS | MCAN_TOCC_TIMEOUT_SELECT_SET(timeoutSelect) | MCAN_TOCC_TIMEOUT_PERIOD_SET(period); // Configure the register
   if (enableTC) Config.TOCC |= MCAN_TOCC_TIMEOUT_COUNTER_EN;                 // Set enable if ask
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TOCC = Config.TOCC;            // Write configuration to the TOCC register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TOCC, Config.TOCC); // Write configuration to the TOCC register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TOCC, Config.TOCC); // Write configuration to the TOCC register
 }
 
 
@@ -1361,15 +1294,16 @@ eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCA
 //=============================================================================
 // [STATIC] Configure a FIFO of the MCAN peripheral
 //=============================================================================
-eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const startAddr, MCAN_FIFObuff* const confTxBuffers, MCAN_FIFObuff* const confTxFIFOTXQ)
+eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const startAddr, MCAN_FIFObuff* const confTxBuffers, MCAN_FIFObuff* const confTxFIFOTXQ, uint32_t* const totalSize)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
 #endif
+  uint32_t BytePerObj = 0, TotalObjSize = 0;
   MCAN_TXBC_Register TxConf;
 
   //--- Check configuration ---
-  uint32_t ElementsCount = 0;
+  uint32_t ElementsCount = 0, ElementCount;
   eMCAN_PayloadSize Payload = MCAN_8_BYTES;
   if (confTxBuffers != NULL)
   {
@@ -1383,44 +1317,46 @@ eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const st
     if (confTxFIFOTXQ->Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
     if (confTxFIFOTXQ->Payload > Payload) Payload = confTxFIFOTXQ->Payload;
   }
-  if (ElementsCount > MCAN_TX_ELEMENTS_SIZE_MAX) return ERR__CONFIGURATION; // Tx Buffers + Tx FIFO/TXQ shall be maximum 32
-  *startAddr += (ElementsCount * (MCAN_CAN_TX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(Payload))); // Update the address
-  if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;         // Check of configured memory
+  if (ElementsCount > MCAN_TX_ELEMENTS_SIZE_MAX) return ERR__CONFIGURATION;  // Tx Buffers + Tx FIFO/TXQ shall be maximum 32
+  BytePerObj = (MCAN_CAN_TX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(Payload)); // Get byte per object
+  if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;          // Check of configured memory
 
   //--- Configure MCAN Tx Buffer ---
   TxConf.TXBC = MCAN_TXBC_TX_BUFFERS_SA_SET(*startAddr) | MCAN_TXBC_TX_BUFFER_SIZE_SET(0) | MCAN_TXBC_TX_FIFO_QUEUE_SIZE_SET(0) | MCAN_TXBC_TX_FIFO_OPERATION; // Init TXBC register value
   if (confTxBuffers != NULL)
   {
     if (confTxBuffers->Name != MCAN_TX_BUFFER) return ERR__PARAMETER_ERROR;
-    TxConf.TXBC |= MCAN_TXBC_TX_BUFFER_SIZE_SET(confTxBuffers->Size > MCAN_TX_BUFFER_SIZE_MAX ? MCAN_TX_BUFFER_SIZE_MAX : confTxBuffers->Size);
+    ElementCount = (confTxBuffers->Size > MCAN_TX_BUFFER_SIZE_MAX ? MCAN_TX_BUFFER_SIZE_MAX : confTxBuffers->Size);
+    TotalObjSize = (ElementCount * BytePerObj);                              // Get total object size
+    *totalSize  += TotalObjSize;                                             // Add object size to the total
+    if (confTxBuffers->RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(confTxBuffers->RAMInfos), CAN_TxBUFFER(0), BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+    *startAddr  += (ElementCount * BytePerObj);                              // Update the address
+    TxConf.TXBC |= MCAN_TXBC_TX_BUFFER_SIZE_SET(ElementCount);
     if ((confTxBuffers->ControlFlags & MCAN_TXQ_MODE) > 0) TxConf.TXBC |= MCAN_TXBC_TX_QUEUE_OPERATION;
   }
   if (confTxFIFOTXQ != NULL)
   {
     if (confTxFIFOTXQ->Name != MCAN_TXQ_FIFO) return ERR__PARAMETER_ERROR;
-    TxConf.TXBC |= MCAN_TXBC_TX_FIFO_QUEUE_SIZE_SET(confTxFIFOTXQ->Size > MCAN_TX_FIFO_TXQ_SIZE_MAX ? MCAN_TX_FIFO_TXQ_SIZE_MAX : confTxFIFOTXQ->Size);
+    ElementCount = (confTxFIFOTXQ->Size > MCAN_TX_FIFO_TXQ_SIZE_MAX ? MCAN_TX_FIFO_TXQ_SIZE_MAX : confTxFIFOTXQ->Size);
+    TotalObjSize = (ElementCount * BytePerObj);                              // Get total object size
+    *totalSize  += TotalObjSize;                                             // Add object size to the total
+    if (confTxFIFOTXQ->RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(confTxFIFOTXQ->RAMInfos), CAN_TXQ, BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+    *startAddr  += (ElementCount * BytePerObj);                              // Update the address
+    TxConf.TXBC |= MCAN_TXBC_TX_FIFO_QUEUE_SIZE_SET(ElementCount);
   }
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBC = TxConf.TXBC;            // Write configuration to the TXBC register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBC, TxConf.TXBC); // Write configuration to the TXBC register of an external controller
+  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBC, TxConf.TXBC); // Write configuration to the TXBC register
   if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   pComp->__RegCache[MCAN_CACHE_TXBC] = TxConf.TXBC;                          // Write in cache
-#  endif
 #endif
 
   //--- Configure MCAN Tx Buffer Element Size ---
   MCAN_TXESC_Register RegTXESC;
   RegTXESC.TXESC = MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_SET(Payload);
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXESC = RegTXESC.TXESC;       // Write configuration to the TXESC register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXESC, RegTXESC.TXESC);         // Write configuration to the TXESC register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXESC, RegTXESC.TXESC);          // Write configuration to the TXESC register
   if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_TXESC] = TxConf.TXESC;                       // Write in cache
-#  endif
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_TXESC] = TxConf.TXESC;                        // Write in cache
 #endif
 
   return ERR_NONE;
@@ -1431,16 +1367,18 @@ eERRORRESULT __MCANV71_ConfigureTxFIFObuffers(MCANV71 *pComp, uint32_t* const st
 //=============================================================================
 // [STATIC] Configure a FIFO list of the MCAN peripheral
 //=============================================================================
-eERRORRESULT __MCANV71_ConfigureFIFOList(MCANV71 *pComp, uint32_t* const startAddr, const MCAN_FIFObuff* const listFIFO, size_t count)
+eERRORRESULT __MCANV71_ConfigureFIFOList(MCANV71 *pComp, uint32_t* const startAddr, const MCAN_FIFObuff* const listObj, size_t count)
 {
 #ifdef CHECK_NULL_PARAM
-  if (listFIFO == NULL) return ERR__PARAMETER_ERROR;
+  if (listObj == NULL) return ERR__PARAMETER_ERROR;
 #endif
   if (count == 0) return ERR_NONE;
   if (count > MCAN_FIFO_CONF_MAX) return ERR__OUT_OF_RANGE;
   MCAN_RXESC_Register ESCconf;
   ESCconf.RXESC = MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_SET(MCAN_8_BYTES) | MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_SET(MCAN_8_BYTES) | MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_SET(MCAN_8_BYTES); // Init RXESC register value
   MCAN_IE_Register INTconf; INTconf.IE = 0;
+  uint32_t TotalSize = MCANV71_GetSIDfilterTotalByteSize(pComp) + MCANV71_GetEIDfilterTotalByteSize(pComp);
+  uint32_t BytePerObj = 0, TotalObjSize = 0;
   eERRORRESULT Error;
 
   //--- Device in Configuration Mode ---
@@ -1449,148 +1387,140 @@ eERRORRESULT __MCANV71_ConfigureFIFOList(MCANV71 *pComp, uint32_t* const startAd
   if (Error != ERR_NONE) return Error;                                                // If there is an error while calling MCAN_GetActualOperationMode() then return the error
   if (OpMode != MCAN_INITIALIZATION_MODE) return ERR__NEED_CONFIG_MODE;               // Device must be in Configuration Mode to perform the configuration
 
+  //--- Configure Rx FIFO0 ---
+  uint32_t ElementCount = 0;
+  MCAN_RXF0C_Register RxFIFO0conf;
+  RxFIFO0conf.RXF0C = MCAN_RXF0C_RX_FIFO0_SA_SET(*startAddr) | MCAN_RXF0C_RX_FIFO0_SIZE_SET(0) | MCAN_RXF0C_RX_FIFO0_WATERMARK_SET(0) | MCAN_RXF0C_RX_FIFO0_BLOCKING_MODE; // Init RXF0C register value
+  for (size_t z = 0; z < count; ++z)
+    if (listObj[z].Name == MCAN_RX_FIFO0)
+    {
+      ElementCount = (listObj[z].Size > MCAN_RX_FIFO0_SIZE_MAX ? MCAN_RX_FIFO0_SIZE_MAX : listObj[z].Size);
+      if (listObj[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
+      BytePerObj   = (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listObj[z].Payload));                 // Get byte per object
+      TotalObjSize = (ElementCount * BytePerObj);                                                                   // Get total object size
+      TotalSize   += ElementCount;                                                                                  // Add object size to the total
+      ESCconf.RXESC |= MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_SET(listObj[z].Payload);                                 // Configure the payload configuration
+      RxFIFO0conf.RXF0C |= MCAN_RXF0C_RX_FIFO0_SIZE_SET(ElementCount)                                               // Configure the element size
+                        |  MCAN_RXF0C_RX_FIFO0_WATERMARK_SET(listObj[z].WatermarkLevel);                            // Configure the watermark
+      if ((listObj[z].ControlFlags & MCAN_RX_FIFO_OVERWRITE_MODE) > 0) RxFIFO0conf.RXF0C |= MCAN_RXF0C_RX_FIFO0_OVERWRITE_MODE;
+      if (listObj[z].RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(listObj[z].RAMInfos), CAN_RxFIFO(0), BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+      *startAddr += TotalObjSize;                                                                                   // Update the address
+      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                             // Check of configured memory
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_RF0N_EN; // Enable the Receive FIFO 0 New Message Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_RF0W_EN; // Enable the Receive FIFO 0 Watermark Reached Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_RF0F_EN; // Enable the Receive FIFO 0 Full Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_RF0L_EN; // Enable the Receive FIFO 0 Message Lost Interrupt
+    }
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXF0C, RxFIFO0conf.RXF0C);                                              // Write configuration to the RXF0C register
+  if (Error != ERR_NONE) return Error;
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_RXF0C] = RxFIFO0conf.RXF0C;                                                          // Write in cache
+#endif
+
+  //--- Configure Rx FIFO1 ---
+  ElementCount = 0;
+  MCAN_RXF1C_Register RxFIFO1conf;
+  RxFIFO1conf.RXF1C = MCAN_RXF1C_RX_FIFO1_SA_SET(*startAddr) | MCAN_RXF1C_RX_FIFO1_SIZE_SET(0) | MCAN_RXF1C_RX_FIFO1_WATERMARK_SET(0) | MCAN_RXF1C_RX_FIFO1_BLOCKING_MODE; // Init RXF1C register value
+  for (size_t z = 0; z < count; ++z)
+    if (listObj[z].Name == MCAN_RX_FIFO1)
+    {
+      ElementCount = listObj[z].Size > MCAN_RX_FIFO1_SIZE_MAX ? MCAN_RX_FIFO1_SIZE_MAX : listObj[z].Size;
+      if (listObj[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
+      BytePerObj   = (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listObj[z].Payload));                 // Get byte per object
+      TotalObjSize = (ElementCount * BytePerObj);                                                                   // Get total object size
+      TotalSize   += TotalObjSize;                                                                                  // Add object size to the total
+      ESCconf.RXESC |= MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_SET(listObj[z].Payload);                                 // Configure the payload configuration
+      RxFIFO1conf.RXF1C |= MCAN_RXF1C_RX_FIFO1_SIZE_SET(ElementCount)                                               // Configure the element size
+                        |  MCAN_RXF1C_RX_FIFO1_WATERMARK_SET(listObj[z].WatermarkLevel);                            // Configure the watermark
+      if ((listObj[z].ControlFlags & MCAN_RX_FIFO_OVERWRITE_MODE) > 0) RxFIFO1conf.RXF1C |= MCAN_RXF1C_RX_FIFO1_OVERWRITE_MODE;
+      if (listObj[z].RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(listObj[z].RAMInfos), CAN_RxFIFO(1), BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+      *startAddr += (ElementCount * BytePerObj);                                                                    // Update the address
+      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                             // Check of configured memory
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_RF1N_EN; // Enable the Receive FIFO 1 New Message Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_RF1W_EN; // Enable the Receive FIFO 1 Watermark Reached Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_RF1F_EN; // Enable the Receive FIFO 1 Full Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_RF1L_EN; // Enable the Receive FIFO 1 Message Lost Interrupt
+    }
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXF1C, RxFIFO1conf.RXF1C);                                              // Write configuration to the RXF1C register
+  if (Error != ERR_NONE) return Error;
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_RXF1C] = RxFIFO1conf.RXF1C;                                                          // Write in cache
+#endif
+
+  //--- Configure Rx Buffer ---
+  ElementCount = 0;
+  MCAN_RXBC_Register RxBufferConf;
+  RxBufferConf.RXBC = MCAN_RXBC_RX_BUFFER_SA_SET(*startAddr);                                                       // Init RXBC register value
+  for (size_t z = 0; z < count; ++z)
+    if (listObj[z].Name == MCAN_RX_BUFFER)
+    {
+      ElementCount = listObj[z].Size > MCAN_RX_BUFFER_SIZE_MAX ? MCAN_RX_BUFFER_SIZE_MAX : listObj[z].Size;
+      if (listObj[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
+      TotalSize += TotalObjSize;                                                                                    // Add object size to the total
+      ESCconf.RXESC |= MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_SET(listObj[z].Payload);                                // Configure the payload configuration
+      MCAN_RX_BUFFERS_SIZE_CLEAR(pComp->InternalConfig);                                                            // Clear the previous configuration. The Rx Buffer is a little bid weird since the is no Element Size configuration
+      pComp->InternalConfig |= MCAN_RX_BUFFERS_SIZE_SET(ElementCount);                                              // Save size in the InternalConfig
+      if (listObj[z].RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(listObj[z].RAMInfos), CAN_RxBUFFER(0), BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+      *startAddr += (ElementCount * (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listObj[z].Payload))); // Update the address
+      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                             // Check of configured memory
+    }
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXBC, RxBufferConf.RXBC);                                               // Write configuration to the RXBC register
+  if (Error != ERR_NONE) return Error;
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_RXBC] = RxFIFO1conf.RXBC;                                                            // Write in cache
+#endif
+
+  //--- Find and configure the TEF ---
+  ElementCount = 0;
+  MCAN_TXEFC_Register TEFconf;
+  TEFconf.TXEFC = MCAN_TXEFC_EVENT_FIFO_SA_SET(*startAddr) | MCAN_TXEFC_EVENT_FIFO_SIZE_SET(0) | MCAN_TXEFC_EVENT_FIFO_WATERMARK_SET(0); // Init TXEFC register value
+  for (size_t z = 0; z < count; ++z)
+    if (listObj[z].Name == MCAN_TEF)
+    {
+      ElementCount = listObj[z].Size > MCAN_TX_EVENT_FIFO_SIZE_MAX ? MCAN_TX_EVENT_FIFO_SIZE_MAX : listObj[z].Size;
+      BytePerObj   = MCAN_CAN_TX_EVENTOBJECT_SIZE;                                                                  // Get byte per object
+      TotalObjSize = (ElementCount * BytePerObj);                                                                   // Get total object size
+      TotalSize   += TotalObjSize;                                                                                  // Add object size to the total
+      TEFconf.TXEFC |= MCAN_TXEFC_EVENT_FIFO_SIZE_SET(listObj[z].Size) | MCAN_TXEFC_EVENT_FIFO_WATERMARK_SET(listObj[z].WatermarkLevel);
+      if (listObj[z].RAMInfos != NULL) CAN_RAM_CONFIG_OBJECT_SET(*(listObj[z].RAMInfos), CAN_TEF, BytePerObj, *startAddr, TotalObjSize); // If RAMInfos structure attached, set configuration
+      *startAddr += (ElementCount * BytePerObj);                                                                    // Update the address
+      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                             // Check of configured memory
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_EVENT_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_TEFN_EN;   // Enable the Tx Event FIFO New Entry Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_EVENT_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_TEFW_EN;   // Enable the Tx Event FIFO Watermark Reached Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_EVENT_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_TEFF_EN;   // Enable the Tx Event FIFO Full Interrupt
+      if ((listObj[z].InterruptFlags & MCAN_FIFO_EVENT_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_TEFL_EN;   // Enable the Tx Event FIFO Event Lost Interrupt
+    }
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXEFC, TEFconf.TXEFC);                                                  // Write configuration to the TXEFC register
+  if (Error != ERR_NONE) return Error;
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_TXEFC] = TEFconf.TXEFC;                                                              // Write in cache
+#endif
+
   //--- Find and configure Tx Buffer + Tx FIFO/TXQ ---
   MCAN_FIFObuff* pTxBuffer  = NULL;
   MCAN_FIFObuff* pTxFIFOTXQ = NULL;
   for (size_t z = 0; z < count; ++z)
   {
-    if (listFIFO[z].Name == MCAN_TX_BUFFER) pTxBuffer = (MCAN_FIFObuff*)&listFIFO[z]; // Get the Tx Buffer
-    if (listFIFO[z].Name == MCAN_TXQ_FIFO )
+    if (listObj[z].Name == MCAN_TX_BUFFER) pTxBuffer = (MCAN_FIFObuff*)&listObj[z];                                 // Get the Tx Buffer
+    if (listObj[z].Name == MCAN_TXQ_FIFO )
     {
-      pTxFIFOTXQ = (MCAN_FIFObuff*)&listFIFO[z];                                      // Get the Tx FIFO/TXQ
-      if (((listFIFO[z].InterruptFlags & MCAN_FIFO_TRANSMIT_FIFO_EMPTY_INT) > 0)
-        /*&& ((listFIFO[z].ControlFlags & MCAN_TX_FIFO_MODE) > 0)*/) INTconf.IE |= MCAN_IE_TFE_EN; // Enable the Tx FIFO Empty Interrupt
+      pTxFIFOTXQ = (MCAN_FIFObuff*)&listObj[z];                                                                     // Get the Tx FIFO/TXQ
+      if (((listObj[z].InterruptFlags & MCAN_FIFO_TRANSMIT_FIFO_EMPTY_INT) > 0)
+        /*&& ((listFIFO[z].ControlFlags & MCAN_TX_FIFO_MODE) > 0)*/) INTconf.IE |= MCAN_IE_TFE_EN;                  // Enable the Tx FIFO Empty Interrupt
     }
   }
-  Error = __MCANV71_ConfigureTxFIFObuffers(pComp, startAddr, pTxBuffer, pTxFIFOTXQ);  // Configure the Tx Buffers/FIFO/TXQ
+  Error = __MCANV71_ConfigureTxFIFObuffers(pComp, startAddr, pTxBuffer, pTxFIFOTXQ, &TotalSize);                    // Configure the Tx Buffers/FIFO/TXQ
   if (Error != ERR_NONE) return Error;
-
-  //--- Find and configure the TEF ---
-  uint32_t ElementSize = MCAN_CAN_TX_EVENTOBJECT_SIZE;
-  MCAN_TXEFC_Register TEFconf;
-  TEFconf.TXEFC = MCAN_TXEFC_EVENT_FIFO_SA_SET(*startAddr) | MCAN_TXEFC_EVENT_FIFO_SIZE_SET(0) | MCAN_TXEFC_EVENT_FIFO_WATERMARK_SET(0); // Init TXEFC register value
-  for (size_t z = 0; z < count; ++z)
-    if (listFIFO[z].Name == MCAN_TEF)
-    {
-      TEFconf.TXEFC |= MCAN_TXEFC_EVENT_FIFO_SIZE_SET(listFIFO[z].Size) | MCAN_TXEFC_EVENT_FIFO_WATERMARK_SET(listFIFO[z].WatermarkLevel);
-      *startAddr += (ElementSize * MCAN_CAN_TX_EVENTOBJECT_SIZE);                     // Update the address
-      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;               // Check of configured memory
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_EVENT_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_TEFN_EN; // Enable the Tx Event FIFO New Entry Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_EVENT_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_TEFW_EN; // Enable the Tx Event FIFO Watermark Reached Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_EVENT_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_TEFF_EN; // Enable the Tx Event FIFO Full Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_EVENT_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_TEFL_EN; // Enable the Tx Event FIFO Event Lost Interrupt
-    }
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXEFC = TEFconf.TXEFC;                  // Write configuration to the TXEFC register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXEFC, TEFconf.TXEFC);                    // Write configuration to the TXEFC register of an external controller
-  if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_TXEFC] = TEFconf.TXEFC;                                // Write in cache
-#  endif
-#endif
-
-  //--- Configure Rx FIFO0 ---
-  ElementSize = 0;
-  MCAN_RXF0C_Register RxFIFO0conf;
-  RxFIFO0conf.RXF0C = MCAN_RXF0C_RX_FIFO0_SA_SET(*startAddr) | MCAN_RXF0C_RX_FIFO0_SIZE_SET(0) | MCAN_RXF0C_RX_FIFO0_WATERMARK_SET(0) | MCAN_RXF0C_RX_FIFO0_BLOCKING_MODE; // Init RXF0C register value
-  for (size_t z = 0; z < count; ++z)
-    if (listFIFO[z].Name == MCAN_RX_FIFO0)
-    {
-      ElementSize = listFIFO[z].Size > MCAN_RX_FIFO0_SIZE_MAX ? MCAN_RX_FIFO0_SIZE_MAX : listFIFO[z].Size;
-      if (listFIFO[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
-      ESCconf.RXESC |= MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_SET(listFIFO[z].Payload);      // Configure the payload configuration
-      RxFIFO0conf.RXF0C |= MCAN_RXF0C_RX_FIFO0_SIZE_SET(ElementSize)                      // Configure the element size
-                        |  MCAN_RXF0C_RX_FIFO0_WATERMARK_SET(listFIFO[z].WatermarkLevel); // Configure the watermark
-      if ((listFIFO[z].ControlFlags & MCAN_RX_FIFO_OVERWRITE_MODE) > 0) RxFIFO0conf.RXF0C |= MCAN_RXF0C_RX_FIFO0_OVERWRITE_MODE;
-      *startAddr += (ElementSize * (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listFIFO[z].Payload)));  // Update the address
-      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                              // Check of configured memory
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_RF0N_EN; // Enable the Receive FIFO 0 New Message Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_RF0W_EN; // Enable the Receive FIFO 0 Watermark Reached Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_RF0F_EN; // Enable the Receive FIFO 0 Full Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_RF0L_EN; // Enable the Receive FIFO 0 Message Lost Interrupt
-    }
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF0C = RxFIFO0conf.RXF0C;              // Write configuration to the RXF0C register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXF0C, RxFIFO0conf.RXF0C);                // Write configuration to the RXF0C register of an external controller
-  if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_RXF0C] = RxFIFO0conf.RXF0C;                            // Write in cache
-#  endif
-#endif
-
-  //--- Configure Rx FIFO1 ---
-  ElementSize = 0;
-  MCAN_RXF1C_Register RxFIFO1conf;
-  RxFIFO1conf.RXF1C = MCAN_RXF1C_RX_FIFO1_SA_SET(*startAddr) | MCAN_RXF1C_RX_FIFO1_SIZE_SET(0) | MCAN_RXF1C_RX_FIFO1_WATERMARK_SET(0) | MCAN_RXF1C_RX_FIFO1_BLOCKING_MODE; // Init RXF1C register value
-  for (size_t z = 0; z < count; ++z)
-    if (listFIFO[z].Name == MCAN_RX_FIFO1)
-    {
-      ElementSize = listFIFO[z].Size > MCAN_RX_FIFO1_SIZE_MAX ? MCAN_RX_FIFO1_SIZE_MAX : listFIFO[z].Size;
-      if (listFIFO[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
-      ESCconf.RXESC |= MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_SET(listFIFO[z].Payload);      // Configure the payload configuration
-      RxFIFO1conf.RXF1C |= MCAN_RXF1C_RX_FIFO1_SIZE_SET(ElementSize)                      // Configure the element size
-                        |  MCAN_RXF1C_RX_FIFO1_WATERMARK_SET(listFIFO[z].WatermarkLevel); // Configure the watermark
-      if ((listFIFO[z].ControlFlags & MCAN_RX_FIFO_OVERWRITE_MODE) > 0) RxFIFO1conf.RXF1C |= MCAN_RXF1C_RX_FIFO1_OVERWRITE_MODE;
-      *startAddr += (ElementSize * (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listFIFO[z].Payload)));  // Update the address
-      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;                                              // Check of configured memory
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT      ) > 0) INTconf.IE |= MCAN_IE_RF1N_EN; // Enable the Receive FIFO 1 New Message Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_WATERMARK_REACHED_INT) > 0) INTconf.IE |= MCAN_IE_RF1W_EN; // Enable the Receive FIFO 1 Watermark Reached Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_FULL_INT             ) > 0) INTconf.IE |= MCAN_IE_RF1F_EN; // Enable the Receive FIFO 1 Full Interrupt
-      if ((listFIFO[z].InterruptFlags & MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT     ) > 0) INTconf.IE |= MCAN_IE_RF1L_EN; // Enable the Receive FIFO 1 Message Lost Interrupt
-    }
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF1C = RxFIFO1conf.RXF1C;              // Write configuration to the RXF1C register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXF1C, RxFIFO1conf.RXF1C);                // Write configuration to the RXF1C register of an external controller
-  if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_RXF1C] = RxFIFO1conf.RXF1C;                            // Write in cache
-#  endif
-#endif
-
-  //--- Configure Rx Buffer ---
-  ElementSize = 0;
-  MCAN_RXBC_Register RxBufferConf;
-  RxBufferConf.RXBC = MCAN_RXBC_RX_BUFFER_SA_SET(*startAddr);                         // Init RXBC register value
-  for (size_t z = 0; z < count; ++z)
-    if (listFIFO[z].Name == MCAN_RX_BUFFER)
-    {
-      ElementSize = listFIFO[z].Size > MCAN_RX_BUFFER_SIZE_MAX ? MCAN_RX_BUFFER_SIZE_MAX : listFIFO[z].Size;
-      if (listFIFO[z].Payload > MCAN_PAYLOAD_COUNT) return ERR__CONFIGURATION;
-      ESCconf.RXESC |= MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_SET(listFIFO[z].Payload); // Configure the payload configuration
-      MCAN_RX_BUFFERS_SIZE_CLEAR(pComp->InternalConfig);                              // Clear the previous configuration. The Rx Buffer is a little bid weird since the is no Element Size configuration
-      pComp->InternalConfig |= MCAN_RX_BUFFERS_SIZE_SET(ElementSize);                 // Save size in the InternalConfig
-      *startAddr += (ElementSize * (MCAN_CAN_RX_MESSAGE_HEADER_SIZE + MCANV71_PayloadToByte(listFIFO[z].Payload))); // Update the address
-      if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;               // Check of configured memory
-    }
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXBC = RxBufferConf.RXBC;               // Write configuration to the RXBC register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXBC, RxBufferConf.RXBC);                 // Write configuration to the RXBC register of an external controller
-  if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_RXBC] = RxFIFO1conf.RXBC;                              // Write in cache
-#  endif
-#endif
+  if (TotalSize > pComp->RAMsize) return ERR__OUT_OF_MEMORY;
 
   //--- Configure RXESC and IE registers ---
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXESC = ESCconf.RXESC;                  // Write configuration to the RXESC register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXESC, ESCconf.RXESC);                    // Write configuration to the RXESC register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_RXESC, ESCconf.RXESC);                                                  // Write configuration to the RXESC register
   if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
-  pComp->__RegCache[MCAN_CACHE_RXESC] = ESCconf.RXESC;                                // Write in cache
-#  endif
+#if defined(MCAN_USE_CACHE) & !defined(MCAN_INTERNAL_CAN_CONTROLLER)
+  pComp->__RegCache[MCAN_CACHE_RXESC] = ESCconf.RXESC;                                                              // Write in cache
 #endif
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IE = INTconf.IE;                        // Write configuration to the IE register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_IE, INTconf.IE);                          // Write configuration to the IE register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_IE, INTconf.IE);                                                        // Write configuration to the IE register
   if (Error != ERR_NONE) return Error;
-#endif
   pComp->InternalConfig |= MCAN_FIFOS_BUFF_CONFIG_FLAG;
   return ERR_NONE;
 }
@@ -1607,9 +1537,6 @@ eERRORRESULT MCANV71_GetFIFOStatus(MCANV71 *pComp, eMCAN_FIFObuffer name, setMCA
 #endif
   uint32_t Flags = 0 ,Level, ConfRegister, BufferSize, NewDataIdx0_31, NewDataIdx32_63, Count1;
   uint32_t* pNewDataIdx32_63 = NULL;
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  uint32_t Address = 0;
-#endif
   eERRORRESULT Error;
 
   //--- Get FIFO/Buffer status ---
@@ -1637,7 +1564,7 @@ eERRORRESULT MCANV71_GetFIFOStatus(MCANV71 *pComp, eMCAN_FIFObuffer name, setMCA
   }
   if (name != MCAN_RX_BUFFER)
   {
-    Error = MCANV71_ReadREG32(pComp, Address, &Flags);   // Read FIFO/Buffer/TXQ status but not for the Rx Buffer of an external controller
+    Error = MCANV71_ReadREG32(pComp, Address, &Flags);   // Read FIFO/Buffer/TXQ status but not for the Rx Buffer
     if (Error != ERR_NONE) return Error;
   }
 #endif
@@ -1679,12 +1606,10 @@ eERRORRESULT MCANV71_GetFIFOStatus(MCANV71 *pComp, eMCAN_FIFObuffer name, setMCA
 
     case MCAN_TX_BUFFER: // TX buffer
     case MCAN_TXQ_FIFO : // TXQ/FIFO - Transmit Queue or Tx FIFO
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-      ConfRegister = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBC;                  // Read Tx Buffer Configuration internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
       ConfRegister = pComp->__RegCache[MCAN_CACHE_TXBC];                                // Read Tx Buffer Configuration in cache
 #else
-      Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBC, &ConfRegister);                    // Read Tx Buffer Configuration of an external device
+      Error = MCANV71_ReadREG32(pComp, RegMCAN_TXBC, &ConfRegister);                    // Read Tx Buffer Configuration
       if (Error != ERR_NONE) return Error;
 #endif
       Level = MCAN_TXFQS_TX_FIFO_FREE_LEVEL_GET(Flags);
@@ -1735,7 +1660,7 @@ eERRORRESULT MCANV71_GetNextMessageAddressFIFO(MCANV71 *pComp, eMCAN_FIFObuffer 
     case MCAN_TXQ_FIFO : Address = RegMCAN_TXFQS; break; // TXQ/FIFO - Transmit Queue or Tx FIFO
     default: return ERR__PARAMETER_ERROR;
   }
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, Address, &Status); // Read FIFO/Buffer/TXQ status of an external controller
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, Address, &Status); // Read FIFO/Buffer/TXQ status
   if (Error != ERR_NONE) return Error;
 #endif
 
@@ -1768,12 +1693,13 @@ eERRORRESULT MCANV71_GetNextMessageAddressFIFO(MCANV71 *pComp, eMCAN_FIFObuffer 
 //=============================================================================
 eERRORRESULT MCANV71_AcknowledgeFIFO(MCANV71 *pComp, eMCAN_FIFObuffer name, uint32_t acknowledgeIndex)
 {
+  eERRORRESULT Error = ERR_NONE;
 #ifdef MCAN_INTERNAL_CAN_CONTROLLER
   switch (name)
   {
-    case MCAN_TEF     : ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXEFA = MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_SET(acknowledgeIndex); break; // TEF - Transmit Event FIFO
-    case MCAN_RX_FIFO0: ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF0A = MCAN_RXF0A_RX_FIFO0_ACK_INDEX_SET(acknowledgeIndex);   break; // RX FIFO 0
-    case MCAN_RX_FIFO1: ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF1A = MCAN_RXF1A_RX_FIFO1_ACK_INDEX_SET(acknowledgeIndex);   break; // RX FIFO 1
+    case MCAN_TEF      : ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXEFA = MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_SET(acknowledgeIndex); break; // TEF - Transmit Event FIFO
+    case MCAN_RX_FIFO0 : ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF0A = MCAN_RXF0A_RX_FIFO0_ACK_INDEX_SET(acknowledgeIndex);   break; // RX FIFO 0
+    case MCAN_RX_FIFO1 : ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_RXF1A = MCAN_RXF1A_RX_FIFO1_ACK_INDEX_SET(acknowledgeIndex);   break; // RX FIFO 1
     case MCAN_RX_BUFFER: return ERR__CONFIGURATION; // RX buffer
     case MCAN_TX_BUFFER: return ERR__CONFIGURATION; // TX buffer
     case MCAN_TXQ_FIFO : return ERR__CONFIGURATION; // TXQ/FIFO - Transmit Queue or Tx FIFO
@@ -1806,26 +1732,9 @@ eERRORRESULT MCANV71_AcknowledgeFIFO(MCANV71 *pComp, eMCAN_FIFObuffer name, uint
   }
 
   //--- Set FIFO/TEF acknowledge ---
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, Address, RegData); // Write configuration to an external controller
-  if (Error != ERR_NONE) return Error;
+  Error = MCANV71_WriteREG32(pComp, Address, RegData); // Write configuration
 #endif
-  return ERR_NONE;
-}
-
-
-
-//=============================================================================
-// Set multiple Tx Buffer cancellation request of the MCAN peripheral
-//=============================================================================
-eERRORRESULT MCANV71_SetMultipleTxBufferCancellationRequest(MCANV71 *pComp, uint32_t multipleRequest)
-{
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBCR = multipleRequest;            // Write configuration to the TXBCR register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBCR, multipleRequest); // Write configuration to the TXBCR register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -1844,13 +1753,7 @@ eERRORRESULT MCANV71_ConfigureGlobalFilters(MCANV71 *pComp, bool rejectAllStanda
               | (rejectAllExtendedIDs ? MCAN_GFC_REJECT_REMOTE_FRAMES_EXTENDED_ID : 0) // Set Reject Remote Frames Extended if wanted
               | MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_SET(nonMatchingStandardID)       // Set Accept Non-matching Frames Standard
               | MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_SET(nonMatchingExtendedID);      // Set Accept Non-matching Frames Extended
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_GFC = RegConf.GFC;                       // Write configuration to the GFC register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_GFC, RegConf.GFC);            // Write configuration to the GFC register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_GFC, RegConf.GFC);                          // Write configuration to the GFC register
 }
 
 
@@ -1863,6 +1766,7 @@ eERRORRESULT __MCANV71_ConfigureFiltersMRAM(MCANV71 *pComp, uint32_t* const star
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
 #endif
+  pComp->InternalConfig &= ~(MCAN_FILTERS_CONFIG_FLAG | MCAN_FILTER_SID_SIZE_Mask | MCAN_FILTER_EID_SIZE_Mask);
   eERRORRESULT Error;
 
   //--- Device in Configuration Mode ---
@@ -1872,34 +1776,31 @@ eERRORRESULT __MCANV71_ConfigureFiltersMRAM(MCANV71 *pComp, uint32_t* const star
   if (OpMode != MCAN_INITIALIZATION_MODE) return ERR__NEED_CONFIG_MODE; // Device must be in Configuration Mode to perform the configuration
 
   //--- Configure SID filters MRAM ---
+  const uint32_t SIDelementsCount = (sidElementsCount > MCAN_SID_FILTERS_MAX ? MCAN_SID_FILTERS_MAX : sidElementsCount);
+  pComp->InternalConfig |= MCAN_FILTER_SID_SIZE_SET(SIDelementsCount);
   MCAN_SIDFC_Register SIDconf;
-  SIDconf.SIDFC = MCAN_SIDFC_FILTER_LIST_SA_SET(*startAddr) | MCAN_SIDFC_LIST_SIZE_SET(sidElementsCount > MCAN_SID_FILTERS_MAX ? MCAN_SID_FILTERS_MAX : sidElementsCount);
+  SIDconf.SIDFC = MCAN_SIDFC_FILTER_LIST_SA_SET(*startAddr) | MCAN_SIDFC_LIST_SIZE_SET(SIDelementsCount);
   *startAddr += (sidElementsCount * MCAN_CAN_STANDARD_FILTER_SIZE);     // Update the address
   if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;     // Check of configured memory
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_SIDFC = SIDconf.SIDFC;    // Write configuration to the XIDAM register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_SIDFC, SIDconf.SIDFC);      // Write configuration to the XIDAM register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_SIDFC, SIDconf.SIDFC);      // Write configuration to the SIDFC register
   if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   pComp->__RegCache[MCAN_CACHE_SIDFC] = SIDconf.SIDFC;                  // Write in cache
-#  endif
 #endif
 
   //--- Configure EID filters MRAM ---
+  const uint32_t EIDelementsCount = (eidElementsCount > MCAN_EID_FILTERS_MAX ? MCAN_EID_FILTERS_MAX : eidElementsCount);
+  pComp->InternalConfig |= MCAN_FILTER_EID_SIZE_SET(EIDelementsCount);
   MCAN_XIDFC_Register EIDconf;
-  EIDconf.XIDFC = MCAN_XIDFC_FILTER_LIST_SA_SET(*startAddr) | MCAN_XIDFC_LIST_SIZE_SET(eidElementsCount > MCAN_EID_FILTERS_MAX ? MCAN_EID_FILTERS_MAX : eidElementsCount);
+  EIDconf.XIDFC = MCAN_XIDFC_FILTER_LIST_SA_SET(*startAddr) | MCAN_XIDFC_LIST_SIZE_SET(EIDelementsCount);
   *startAddr += (eidElementsCount * MCAN_CAN_EXTENDED_FILTER_SIZE);     // Update the address
   if (*startAddr > MCAN_RAM_END_ADDRESS) return ERR__OUT_OF_MEMORY;     // Check of configured memory
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_XIDFC = EIDconf.XIDFC;    // Write configuration to the XIDAM register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_XIDFC, EIDconf.XIDFC);      // Write configuration to the XIDAM register of an external controller
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_XIDFC, EIDconf.XIDFC);      // Write configuration to the XIDFC register
   if (Error != ERR_NONE) return Error;
-#  ifdef MCAN_USE_CACHE
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   pComp->__RegCache[MCAN_CACHE_XIDFC] = EIDconf.XIDFC;                  // Write in cache
-#  endif
 #endif
+  pComp->InternalConfig |= MCAN_FILTERS_CONFIG_FLAG;
   return ERR_NONE;
 }
 
@@ -1916,15 +1817,13 @@ eERRORRESULT MCANV71_ConfigureSIDfilter(MCANV71 *pComp, const MCAN_Filter* const
   if (MCAN_FILTERS_CONFIGURED(pComp->InternalConfig) == false) return ERR__NOT_INITIALIZED; // If filters elements count in RAM is not configured, return an error
   if (confFilter->Filter > MCAN_SID_FILTERS_MAX) return ERR__OUT_OF_RANGE;
   MCAN_SIDFC_Register RegSIDFC;
-  eERRORRESULT Error;
+  eERRORRESULT Error = ERR_NONE;
 
   //--- Get 11-bit filters RAM configuration ---
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  RegSIDFC.SIDFC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_SIDFC; // Read internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   RegSIDFC.SIDFC = pComp->__RegCache[MCAN_CACHE_SIDFC];               // Read in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_SIDFC, &RegSIDFC.SIDFC);   // Read register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_SIDFC, &RegSIDFC.SIDFC);   // Read register
   if (Error != ERR_NONE) return Error;
 #endif
 
@@ -1990,10 +1889,9 @@ eERRORRESULT MCANV71_ConfigureSIDfilter(MCANV71 *pComp, const MCAN_Filter* const
     if (MCAN_CAN_FILTS0_SFEC_GET(FilterConf.S0) != MCAN_STORE_RX_BUFFER_OR_AS_DEBUG_MSG) FilterConf.S0 |= MCAN_CAN_FILTS0_SFID2_SET(confFilter->DualID.AcceptanceID2); // Set second SID
 
     //=== Configure Filter control ===
-    Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_STANDARD_FILTER_SIZE); // Write the new flags configuration in the SID reserved space in the RAM allocation
-    if (Error != ERR_NONE) return Error;                                                              // If there is an error while calling MCANV71_WriteRAM() then return the error
+    Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_STANDARD_FILTER_SIZE); // Write the new flags configuration in the SID reserved space in the RAM allocation                                                            // If there is an error while calling MCANV71_WriteRAM() then return the error
   }
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -2007,16 +1905,14 @@ eERRORRESULT MCANV71_ConfigureEIDfilter(MCANV71 *pComp, const MCAN_Filter* const
   if (confFilter == NULL) return ERR__PARAMETER_ERROR;
 #endif
   if (MCAN_FILTERS_CONFIGURED(pComp->InternalConfig) == false) return ERR__NOT_INITIALIZED; // If filters elements count in RAM is not configured, return an error
-  eERRORRESULT Error;
+  eERRORRESULT Error = ERR_NONE;
 
   //--- Get 29-bit filters RAM configuration ---
   MCAN_XIDFC_Register RegXIDFC;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  RegXIDFC.XIDFC = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_XIDFC;    // Read internal register
-#elif defined(MCAN_USE_CACHE)
+#if defined(MCAN_USE_CACHE) && !defined(MCAN_INTERNAL_CAN_CONTROLLER)
   RegXIDFC.XIDFC = pComp->__RegCache[MCAN_CACHE_XIDFC];                  // Read in cache
 #else
-  Error = MCANV71_ReadREG32(pComp, RegMCAN_XIDFC, &RegXIDFC.XIDFC);      // Read register of an external device
+  Error = MCANV71_ReadREG32(pComp, RegMCAN_XIDFC, &RegXIDFC.XIDFC);      // Read register
   if (Error != ERR_NONE) return Error;
 #endif
 
@@ -2090,9 +1986,8 @@ eERRORRESULT MCANV71_ConfigureEIDfilter(MCANV71 *pComp, const MCAN_Filter* const
 
     //=== Configure Filter control ===
     Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_EXTENDED_FILTER_SIZE); // Write the new flags configuration in the EID reserved space in the RAM allocation
-    if (Error != ERR_NONE) return Error;                                                              // If there is an error while calling MCANV71_WriteRAM() then return the error
   }
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -2119,7 +2014,6 @@ eERRORRESULT MCANV71_ConfigureFilterList(MCANV71 *pComp, MCAN_Filter* const list
     }
     if (Error != ERR_NONE) return Error; // If there is an error while calling MCANV71_ConfigureFilter() functions then return the error
   }
-
   return ERR_NONE;
 }
 
@@ -2161,58 +2055,13 @@ eERRORRESULT MCANV71_ConfigureInterrupt(MCANV71 *pComp, setMCAN_InterruptEvents 
 {
   //--- Configure IE register ---
   uint32_t Reg;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Reg = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IE;                                                              // Read configuration from the IE register
-  Reg &= MCAN_IR_FIFO_BUFF_TEF_FLAGS;                                                                                // Keep FIFO/Buffers/TEF flags only
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IE = Reg | ((uint32_t)interruptsFlags & ~MCAN_IR_FIFO_BUFF_TEF_FLAGS); // Write configuration to the IE register          
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_IE, &Reg);                                                   // Read configuration from the IE register of an external controller
-  Reg &= MCAN_IR_FIFO_BUFF_TEF_FLAGS;                                                                                // Keep FIFO/Buffers/TEF flags only
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_IE, Reg | ((uint32_t)interruptsFlags & ~MCAN_IR_FIFO_BUFF_TEF_FLAGS));   // Write configuration to the IE register of an external controller
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_IE, &Reg);                                                 // Read configuration from the IE register
+  Reg &= MCAN_IR_FIFO_BUFF_TEF_FLAGS;                                                                              // Keep FIFO/Buffers/TEF flags only
+  Error = MCANV71_WriteREG32(pComp, RegMCAN_IE, Reg | ((uint32_t)interruptsFlags & ~MCAN_IR_FIFO_BUFF_TEF_FLAGS)); // Write configuration to the IE register
   if (Error != ERR_NONE) return Error;
-#endif
 
   //--- Configure ILS register ---
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_ILS = (uint32_t)intLineSelect; // Write configuration to the ILS register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_ILS, (uint32_t)intLineSelect);   // Write configuration to the ILS register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
-}
-
-
-
-//=============================================================================
-// Get interrupt events of the MCAN peripheral
-//=============================================================================
-eERRORRESULT MCANV71_GetInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents* interruptsFlags)
-{
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  *interruptsFlags = (setMCAN_InterruptEvents)(((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IR); // Read all interrupt flags status
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_IR, (uint32_t*)interruptsFlags);        // Read all interrupt flags status of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
-}
-
-
-
-//=============================================================================
-// Clear interrupt events of the MCAN peripheral
-//=============================================================================
-eERRORRESULT MCANV71_ClearInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvents interruptsFlags)
-{
-
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_IR = (uint32_t)interruptsFlags;            // Write configuration to the IR register
-#else
-  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_IR, (uint32_t)interruptsFlags); // Write configuration to the IR register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_ILS, (uint32_t)intLineSelect); // Write configuration to the ILS register
 }
 
 
@@ -2223,17 +2072,12 @@ eERRORRESULT MCANV71_ClearInterruptEvents(MCANV71 *pComp, setMCAN_InterruptEvent
 eERRORRESULT MCANV71_GetHighPriorityMessageStatus(MCANV71 *pComp, eMCAN_MessageStorageIndicator* const messageIndicator, bool* const isExtended, uint8_t* const bufferIndex, uint8_t* const filterIndex)
 {
   MCAN_HPMS_Register Status;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  Status.HPMS = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_HPMS;            // Read high priority message status
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_HPMS, &Status.HPMS); // Read high priority message status of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
+  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_HPMS, &Status.HPMS); // Read high priority message status
   if (messageIndicator != NULL) *messageIndicator = (eMCAN_MessageStorageIndicator)MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_GET(Status.HPMS); // Get message storage indicator
   if (isExtended       != NULL) *isExtended       = ((Status.HPMS & MCAN_HPMS_EXTENDED_FILTER_LIST) > 0);                                // Is the filter list of the matching filter element extended?
   if (bufferIndex      != NULL) *bufferIndex      = (uint8_t)MCAN_HPMS_BUFFER_INDEX_GET(Status.HPMS);                                    // Get buffer index
   if (filterIndex      != NULL) *filterIndex      = (uint8_t)MCAN_HPMS_FILTER_INDEX_GET(Status.HPMS);                                    // Get filter index
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -2243,28 +2087,16 @@ eERRORRESULT MCANV71_GetHighPriorityMessageStatus(MCANV71 *pComp, eMCAN_MessageS
 //=============================================================================
 eERRORRESULT MCANV71_GetRxBufferNewDataFlag(MCANV71 *pComp, uint32_t* const newDataIdx0_31, uint32_t* const newDataIdx32_63)
 {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  eERRORRESULT Error;
-#endif
-  if (newDataIdx0_31  != NULL)
+  eERRORRESULT Error = ERR_NONE;
+  if (newDataIdx0_31 != NULL)
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    *newDataIdx0_31 = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_NDAT1; // Get New Data flags index 0 to 31
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_NDAT1, newDataIdx0_31);     // Get New Data flags index 0 to 31 of an external controller
-    if (Error != ERR_NONE) return Error;
-#endif
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_NDAT1, newDataIdx0_31);  // Get New Data flags index 0 to 31
   }
   if (newDataIdx32_63 != NULL)
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    *newDataIdx32_63 = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_NDAT2; // Get New Data flags index 32 to 63
-#else
-    Error = MCANV71_ReadREG32(pComp, RegMCAN_NDAT2, newDataIdx32_63);     // Get New Data flags index 32 to 63 of an external controller
-    if (Error != ERR_NONE) return Error;
-#endif
+    Error = MCANV71_ReadREG32(pComp, RegMCAN_NDAT2, newDataIdx32_63); // Get New Data flags index 32 to 63
   }
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -2274,28 +2106,16 @@ eERRORRESULT MCANV71_GetRxBufferNewDataFlag(MCANV71 *pComp, uint32_t* const newD
 //=============================================================================
 eERRORRESULT MCANV71_ClearRxBufferNewDataFlag(MCANV71 *pComp, uint8_t index)
 {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  eERRORRESULT Error;
-#endif
+  eERRORRESULT Error = ERR_NONE;
   if (index < 32)
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_NDAT1 = (1 << (index -  0)); // Write configuration to the NDAT1 register
-#else
-    Error = MCANV71_WriteREG32(pComp, RegMCAN_NDAT1, (1 << (index -  0)));   // Write configuration to the NDAT1 register of an external controller
-    if (Error != ERR_NONE) return Error;
-#endif
+    Error = MCANV71_WriteREG32(pComp, RegMCAN_NDAT1, (1 << (index -  0))); // Write configuration to the NDAT1 register
   }       
   else
   {
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-    ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_NDAT2 = (1 << (index - 32)); // Write configuration to the NDAT2 register
-#else
-    Error = MCANV71_WriteREG32(pComp, RegMCAN_NDAT2, (1 << (index - 32)));   // Write configuration to the NDAT2 register of an external controller
-    if (Error != ERR_NONE) return Error;
-#endif
+    Error = MCANV71_WriteREG32(pComp, RegMCAN_NDAT2, (1 << (index - 32))); // Write configuration to the NDAT2 register
   }    
-  return ERR_NONE;
+  return Error;
 }
 
 
@@ -2305,22 +2125,9 @@ eERRORRESULT MCANV71_ClearRxBufferNewDataFlag(MCANV71 *pComp, uint8_t index)
 //=============================================================================
 eERRORRESULT MCANV71_ConfigureTxBufferInterrupts(MCANV71 *pComp, uint32_t transmitEnable, uint32_t cancelFinishEnable)
 {
-#if !defined(MCAN_INTERNAL_CAN_CONTROLLER)
-  eERRORRESULT Error;
-#endif
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBTIE = transmitEnable; // Write configuration to the TXBTIE register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBTIE, transmitEnable);   // Write configuration to the TXBTIE register of an external controller
+  eERRORRESULT Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBTIE, transmitEnable); // Write configuration to the TXBTIE register
   if (Error != ERR_NONE) return Error;
-#endif
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_TXBCIE = cancelFinishEnable; // Write configuration to the TXBCIE register
-#else
-  Error = MCANV71_WriteREG32(pComp, RegMCAN_TXBCIE, cancelFinishEnable);   // Write configuration to the TXBCIE register of an external controller
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return MCANV71_WriteREG32(pComp, RegMCAN_TXBCIE, cancelFinishEnable);           // Write configuration to the TXBCIE register
 }
 
 
@@ -2341,36 +2148,12 @@ eERRORRESULT MCANV71_GetTransmitReceiveErrorCountAndStatus(MCANV71 *pComp, uint8
 #endif
 
   MCAN_ECR_Register RegValue;
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  RegValue.ECR = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_ECR;            // Read value of the ECR register
-#else
   eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_ECR, &RegValue.ECR); // Read value of the ECR register
-  if (Error != ERR_NONE) return Error;
-#endif
   if (transmitErrorCount  != NULL) *transmitErrorCount  = MCAN_ECR_TRANSMIT_ERROR_COUNTER_GET(RegValue.ECR);           // Get Transmit Error Counter
   if (receiveErrorCount   != NULL) *receiveErrorCount   = MCAN_ECR_RECEIVE_ERROR_COUNTER_GET(RegValue.ECR);            // Get Receive Error Counter
   if (receiveErrorPassive != NULL) *receiveErrorPassive = ((RegValue.ECR & MCAN_ECR_RECEIVE_ERROR_REACH_PASSIVE) > 0); // Get Sub-step of Core Release
   if (canErrorLogging     != NULL) *canErrorLogging     = MCAN_ECR_CAN_ERROR_LOGGING_GET(RegValue.ECR);                // Get CAN Error Logging (cleared by the reading of the ECR register)
-  return ERR_NONE;
-}
-
-
-
-//=============================================================================
-// Get Bus diagnostic of the MCAN peripheral
-//=============================================================================
-eERRORRESULT MCANV71_GetBusDiagnostic(MCANV71 *pComp, MCAN_PSR_Register* const busDiagnostic)
-{
-#ifdef CHECK_NULL_PARAM
-  if (busDiagnostic == NULL) return ERR__PARAMETER_ERROR;
-#endif
-#ifdef MCAN_INTERNAL_CAN_CONTROLLER
-  busDiagnostic->PSR = ((MCAN_HardReg*)(pComp->Instance))->RegMCAN_PSR;                      // Read value of the PSR register
-#else
-  eERRORRESULT Error = MCANV71_ReadREG32(pComp, RegMCAN_PSR, (uint32_t*)busDiagnostic->PSR); // Read value of the PSR register
-  if (Error != ERR_NONE) return Error;
-#endif
-  return ERR_NONE;
+  return Error;
 }
 
 
