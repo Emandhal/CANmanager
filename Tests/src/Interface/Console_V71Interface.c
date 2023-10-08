@@ -25,6 +25,36 @@ extern "C" {
 
 
 //**********************************************************************************************************************************************************
+//=============================================================================
+// Handler for Console USART interrupt.
+//=============================================================================
+void USART1_Handler(void)
+{
+  //--- Transmission interrupts ---
+  #ifdef USE_CONSOLE_TX
+  if ((CONSOLE_UART->US_CSR & (US_CSR_TXRDY | US_CSR_TXEMPTY)) > 0) // Transmit interrupt rises
+  {
+    CONSOLE_UART->US_IDR = (US_IDR_TXRDY | US_IDR_TXEMPTY);         // Disable interrupts
+    TrySendingNextCharToConsole(CONSOLE_TX);
+  }
+  #endif
+
+  //--- Reception interrupts ---
+  #ifdef USE_CONSOLE_RX
+  if ((CONSOLE_UART->US_CSR & US_CSR_RXRDY) > 0)                    // Receive interrupt rises
+  {
+    ConsoleRx_ReceiveChar(CONSOLE_RX);
+  }
+  #endif
+}
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//**********************************************************************************************************************************************************
 //********************************************************************************************************************
 // UART of V71
 //********************************************************************************************************************
@@ -64,7 +94,7 @@ void ConsoleUART_TxInit_V71(void)
   usart_enable_tx(CONSOLE_UART);
 
   //--- Configure and enable interrupt of USART ---
-  usart_disable_interrupt(CONSOLE_UART, US_IER_TXRDY | US_IER_TXEMPTY);
+  usart_enable_interrupt(CONSOLE_UART, US_IER_TXRDY | US_IER_TXEMPTY);
   NVIC_EnableIRQ(USART1_IRQn);                                          // *** USE WITH INTERRUPT CHAR SEND. IN SEND WHILE IDLE (while(true) in the main()) COMMENT THIS LINE
 }
 
@@ -137,35 +167,6 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size
   *actuallyReceived = 1;                            // Always 1 by 1 with this USART
   *lastCharError = pUART->US_CSR & 0xE4;            // Get only Rx errors
   return ERR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-
-
-//! The current Command Input buffer
-CommandInputBuf CommandInput;
-
-//=============================================================================
-// Handler for Console USART interrupt.
-//=============================================================================
-void USART1_Handler(void)
-{
-  //--- Transmission interrupts ---
-#ifdef USE_CONSOLE_TX
-  if ((CONSOLE_UART->US_CSR & (US_CSR_TXRDY | US_CSR_TXEMPTY)) > 0) // Transmit interrupt rises
-  {
-    CONSOLE_UART->US_IDR = (US_IDR_TXRDY | US_IDR_TXEMPTY);         // Disable interrupts
-    TrySendingNextCharToConsole(CONSOLE_TX);
-  }
-#endif
-
-  //--- Reception interrupts ---
-#ifdef USE_CONSOLE_RX
-  if ((CONSOLE_UART->US_CSR & US_CSR_RXRDY) > 0)                    // Receive interrupt rises
-  {
-    ConsoleRx_ReceiveChar(CONSOLE_RX);
-  }
-#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -88,7 +88,7 @@ eERRORRESULT InitConsoleTx(ConsoleTx* pApi)
   if (pApi == NULL) return ERR__PARAMETER_ERROR;
 #endif
 
-  // Initialize the print buffer
+  //--- Initialize the print buffer ---
   if (pApi->Buffer == NULL) return ERR__NULL_BUFFER;
   if (pApi->BufferSize == 0) return ERR__BAD_DATA_SIZE;
   pApi->InPos  = 0;
