@@ -192,9 +192,9 @@ eERRORRESULT Init_MCP251XFD(MCP251XFD *pComp, const MCP251XFD_Config* const pCon
 #if defined(SJA1000_AUTOMATIC_BITRATE_CALCULUS) || defined(CAN_AUTOMATIC_BITRATE_CALCULUS)
   CAN_BitTimeConfig BitTimeConfig;
   ConfBitTime = &BitTimeConfig;
+  ConfBitTime->Stats = pConf->BitTimeStats;
   Error = MCP251XFD_CalculateBitTimeConfiguration(pConf->XtalFreq, pConf->BusConfig, ConfBitTime);       // Calculate Bit Time
   if (Error != ERR_NONE) return Error;                                                                   // If there is an error while calling MCP251XFD_CalculateBitTimeConfiguration() then return the error
-  ConfBitTime->Stats = pConf->BitTimeStats;
 #else
   ConfBitTime = &pConf->BitTimeConfig;
 #endif

@@ -122,9 +122,9 @@ eERRORRESULT Init_SJA1000(SJA1000 *pComp, const SJA1000_Config* pConf)
 #if defined(SJA1000_AUTOMATIC_BITRATE_CALCULUS) || defined(CAN_AUTOMATIC_BITRATE_CALCULUS)
   CAN_BitTimeConfig BitTimeConfig;
   ConfBitTime = &BitTimeConfig;
+  ConfBitTime->Stats = pConf->BitTimeStats;
   Error = SJA1000_CalculateBitTimeConfiguration(pConf->XtalFreq, pConf->BusConfig, ConfBitTime); // Calculate Bit Time
   __SJA1000_CHECK_ERROR;
-  ConfBitTime->Stats = pConf->BitTimeStats;
 #else
   ConfBitTime = &pConf->BitTimeConfig;
 #endif

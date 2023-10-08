@@ -76,9 +76,9 @@ eERRORRESULT Init_MCP251X(MCP251X *pComp, const MCP251X_Config* pConf)
 #if defined(MCP251X_AUTOMATIC_BITRATE_CALCULUS) || defined(CAN_AUTOMATIC_BITRATE_CALCULUS)
   CAN_BitTimeConfig BitTimeConfig;
   ConfBitTime = &BitTimeConfig;
+  ConfBitTime->Stats = pConf->BitTimeStats;
   Error = MCP251X_CalculateBitTimeConfiguration(pConf->XtalFreq, pConf->BusConfig, ConfBitTime); // Calculate Bit Time
   if (Error != ERR_NONE) return Error;                         // If there is an error while calling MCP251X_CalculateBitTimeConfiguration() then return the Error
-  ConfBitTime->Stats = pConf->BitTimeStats;
 #else
   ConfBitTime = &pConf->BitTimeConfig;
 #endif
