@@ -190,6 +190,8 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCANV71_Config* const pConf, con
   //--- CAN configuration -----------------------------------
   Error = MCANV71_ConfigureCANController(pComp, pConf->ControlFlags);                                        // Set the CAN configuration
   if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_ConfigureCANController() then return the error
+  Error = MCANV71_ConfigureGlobalFilters(pComp, pConf->RejectAllStandardIDs, pConf->RejectAllExtendedIDs, pConf->NonMatchingStandardID, pConf->NonMatchingExtendedID); // Configure global filters
+  if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_ConfigureGlobalFilters() then return the error
   Error = MCANV71_SetEIDrangeFilterMask(pComp, pConf->ExtendedIDrangeMask);                                  // Set the MCAN Extended ID AND Mask
   if (Error != ERR_NONE) return Error;                                                                       // If there is an error while calling MCANV71_SetEIDrangeFilterMask() then return the error
 
@@ -1263,7 +1265,7 @@ eERRORRESULT MCANV71_ConfigureTimeStamp(MCANV71 *pComp, eMCAN_TimeStampSelect ti
   if (prescaler > (MCAN_TSCC_TCP_MAXVALUE + 1)) return ERR__PARAMETER_ERROR;
   MCAN_TSCC_Register Config;
 
-  //--- Write Time Stamp configuration ----------------------
+  //--- Write Time Stamp configuration ---
   Config.TSCC = MCAN_TSCC_TIMESTAMP_SELECT_SET(timestampSource) | MCAN_TSCC_TCP_SET(prescaler - 1); // Configure the register
   return MCANV71_WriteREG32(pComp, RegMCAN_TSCC, Config.TSCC);                                      // Write configuration to the TSCC register
 }
@@ -1280,7 +1282,7 @@ eERRORRESULT MCANV71_ConfigureTimeoutCounter(MCANV71 *pComp, bool enableTC, eMCA
 {
   MCAN_TOCC_Register Config;
 
-  //--- Write Time Stamp configuration ----------------------
+  //--- Write Time Stamp configuration ---
   Config.TOCC = MCAN_TOCC_TIMEOUT_COUNTER_DIS | MCAN_TOCC_TIMEOUT_SELECT_SET(timeoutSelect) | MCAN_TOCC_TIMEOUT_PERIOD_SET(period); // Configure the register
   if (enableTC) Config.TOCC |= MCAN_TOCC_TIMEOUT_COUNTER_EN;                 // Set enable if ask
   return MCANV71_WriteREG32(pComp, RegMCAN_TOCC, Config.TOCC); // Write configuration to the TOCC register
@@ -1844,7 +1846,6 @@ eERRORRESULT MCANV71_ConfigureSIDfilter(MCANV71 *pComp, const MCAN_Filter* const
     //--- Check values ---
     if (confFilter->Type == MCAN_FILTER_MATCH_ID_RANGE_MASK) return ERR__NOT_SUPPORTED; // Only supported with Extended Message ID Filter Elements
     if ((confFilter->DualID.AcceptanceID1 & ~MCAN_CAN_FILTER_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
-    if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
 
     //=== Fill Filter Object register ===
     FilterConf.S0 = MCAN_CAN_FILTS0_SFT_SET(confFilter->Type) | MCAN_CAN_FILTS0_SFID1_SET(confFilter->DualID.AcceptanceID1);
@@ -1879,17 +1880,22 @@ eERRORRESULT MCANV71_ConfigureSIDfilter(MCANV71 *pComp, const MCAN_Filter* const
       case MCAN_FILTER_SET_PRIORITY:
         switch (confFilter->PointTo)
         {
-          default:                return ERR__NOT_SUPPORTED;
+          default:
+          case MCAN_RX_BUFFER   : return ERR__NOT_SUPPORTED;
           case MCAN_NO_FIFO_BUFF: FilterConf.S0 |= MCAN_CAN_FILTS0_SFEC_SET(MCAN_SET_PRIORITY);                    break;
           case MCAN_RX_FIFO0    : FilterConf.S0 |= MCAN_CAN_FILTS0_SFEC_SET(MCAN_SET_PRIORITY_STORE_TO_RX_FIFO_0); break;
           case MCAN_RX_FIFO1    : FilterConf.S0 |= MCAN_CAN_FILTS0_SFEC_SET(MCAN_SET_PRIORITY_STORE_TO_RX_FIFO_1); break;
         }
         break;
     }
-    if (MCAN_CAN_FILTS0_SFEC_GET(FilterConf.S0) != MCAN_STORE_RX_BUFFER_OR_AS_DEBUG_MSG) FilterConf.S0 |= MCAN_CAN_FILTS0_SFID2_SET(confFilter->DualID.AcceptanceID2); // Set second SID
+    if (MCAN_CAN_FILTS0_SFEC_GET(FilterConf.S0) != MCAN_STORE_RX_BUFFER_OR_AS_DEBUG_MSG)
+    {
+      if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
+      FilterConf.S0 |= MCAN_CAN_FILTS0_SFID2_SET(confFilter->DualID.AcceptanceID2); // Set second SID
+    }      
 
     //=== Configure Filter control ===
-    Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_STANDARD_FILTER_SIZE); // Write the new flags configuration in the SID reserved space in the RAM allocation                                                            // If there is an error while calling MCANV71_WriteRAM() then return the error
+    Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_STANDARD_FILTER_SIZE); // Write the new flags configuration in the SID reserved space in the RAM allocation
   }
   return Error;
 }
@@ -1932,17 +1938,17 @@ eERRORRESULT MCANV71_ConfigureEIDfilter(MCANV71 *pComp, const MCAN_Filter* const
   {
     //--- Check values ---
     if ((confFilter->DualID.AcceptanceID1 & ~MCAN_CAN_FILTER_EID_AND_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
-    if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_EID_AND_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
 
     //=== Fill Filter Object register ===
     FilterConf.F0.F0 = MCAN_CAN_FILTF0_EFID1_SET(confFilter->DualID.AcceptanceID1);
     FilterConf.F1.F1 = 0;
     switch (confFilter->Type)                                           // Set Extended Filter Type (EFT)
     {
-      case MCAN_FILTER_MATCH_ID_RANGE     : FilterConf.F1.F1 = MCAN_CAN_FILTF1_EFT_SET(MCAN_RANGE_FROM_FID1_TO_FDI2_NO_MASK);
+      default:
       case MCAN_FILTER_MATCH_DUAL_ID      :
-      case MCAN_FILTER_MATCH_ID_MASK      : FilterConf.F1.F1 = MCAN_CAN_FILTF1_EFT_SET(confFilter->Type);
-      case MCAN_FILTER_MATCH_ID_RANGE_MASK: FilterConf.F1.F1 = MCAN_CAN_FILTF1_EFT_SET(MCAN_RANGE_FROM_FID1_TO_FDI2);
+      case MCAN_FILTER_MATCH_ID_MASK      : FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFT_SET(confFilter->Type);                     break;
+      case MCAN_FILTER_MATCH_ID_RANGE     : FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFT_SET(MCAN_RANGE_FROM_FID1_TO_FDI2_NO_MASK); break;
+      case MCAN_FILTER_MATCH_ID_RANGE_MASK: FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFT_SET(MCAN_RANGE_FROM_FID1_TO_FDI2);         break;
     }
     switch (confFilter->Config)                                         // Set Filter configuration (EFEC)
     {
@@ -1982,7 +1988,11 @@ eERRORRESULT MCANV71_ConfigureEIDfilter(MCANV71 *pComp, const MCAN_Filter* const
         }
         break;
     }
-    if (MCAN_CAN_FILTF0_EFEC_GET(FilterConf.F0.F0) != MCAN_STORE_RX_BUFFER_OR_AS_DEBUG_MSG) FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFID2_SET(confFilter->DualID.AcceptanceID2); // Set second EID
+    if (MCAN_CAN_FILTF0_EFEC_GET(FilterConf.F0.F0) != MCAN_STORE_RX_BUFFER_OR_AS_DEBUG_MSG)
+    {
+      if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_EID_AND_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
+      FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFID2_SET(confFilter->DualID.AcceptanceID2); // Set second EID
+    }    
 
     //=== Configure Filter control ===
     Error = MCANV71_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_EXTENDED_FILTER_SIZE); // Write the new flags configuration in the EID reserved space in the RAM allocation
@@ -2009,8 +2019,8 @@ eERRORRESULT MCANV71_ConfigureFilterList(MCANV71 *pComp, MCAN_Filter* const list
     switch (listFilter[zFilter].Match)
     {
       case MCAN_FILTER_MATCH_ONLY_SID: Error = MCANV71_ConfigureSIDfilter(pComp, &listFilter[zFilter]); break;
-      case MCAN_FILTER_MATCH_ONLY_EID: Error = MCANV71_ConfigureEIDfilter(pComp, &listFilter[zFilter]); break;
-      case MCAN_FILTER_MATCH_SID_EID : return ERR__NOT_SUPPORTED;
+//      case MCAN_FILTER_MATCH_ONLY_EID: return ERR__NOT_SUPPORTED;
+      case MCAN_FILTER_MATCH_SID_EID : Error = MCANV71_ConfigureEIDfilter(pComp, &listFilter[zFilter]); break;
     }
     if (Error != ERR_NONE) return Error; // If there is an error while calling MCANV71_ConfigureFilter() functions then return the error
   }

@@ -156,6 +156,7 @@ typedef enum
   MCAN_TREAT_AS_DEBUG_MESSAGE_A = 0b01, //!< Treated as debug message A
   MCAN_TREAT_AS_DEBUG_MESSAGE_B = 0b10, //!< Treated as debug message B
   MCAN_TREAT_AS_DEBUG_MESSAGE_C = 0b11, //!< Treated as debug message C
+  MCAN_TREAT_AS_DEBUG_MESSAGE_COUNT,    // KEEP LAST!
 } eMCAN_FilterDebugMessage;
 
 
@@ -266,8 +267,8 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_ExtendedFilterIdentifier1, 4);
 
 #define MCAN_CAN_FILTF0_EFID1_Pos         0
 #define MCAN_CAN_FILTF0_EFID1_Mask        (MCAN_CAN_FILTER_EID_AND_SID_MASK << MCAN_CAN_FILTF0_EFID1_Pos)
-#define MCAN_CAN_FILTF0_EFID1_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTF0_EFID1_Pos) & MCAN_CAN_FILTS0_SFID1_Mask) //!< Set Extended Filter ID 1
-#define MCAN_CAN_FILTF0_EFID1_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTS0_SFID1_Mask) >> MCAN_CAN_FILTF0_EFID1_Pos) //!< Get Extended Filter ID 1
+#define MCAN_CAN_FILTF0_EFID1_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTF0_EFID1_Pos) & MCAN_CAN_FILTF0_EFID1_Mask) //!< Set Extended Filter ID 1
+#define MCAN_CAN_FILTF0_EFID1_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTF0_EFID1_Mask) >> MCAN_CAN_FILTF0_EFID1_Pos) //!< Get Extended Filter ID 1
 #define MCAN_CAN_FILTF0_EFEC_Pos          29
 #define MCAN_CAN_FILTF0_EFEC_Mask         (0x7u << MCAN_CAN_FILTF0_EFEC_Pos)
 #define MCAN_CAN_FILTF0_EFEC_SET(value)   (((uint32_t)(value) << MCAN_CAN_FILTF0_EFEC_Pos) & MCAN_CAN_FILTF0_EFEC_Mask) //!< Set Extended Filter Element Configuration
@@ -3684,7 +3685,7 @@ typedef struct MCAN_FIFObuff
 typedef enum
 {
   MCAN_FILTER_MATCH_ONLY_SID = 0x0, //!< Match only messages with standard identifier (+SID11 in FD mode if configured and available in the driver)
-  MCAN_FILTER_MATCH_ONLY_EID = 0x1, //!< Match only messages with extended identifier
+//  MCAN_FILTER_MATCH_ONLY_EID = 0x1, //!< Match only messages with extended identifier
   MCAN_FILTER_MATCH_SID_EID  = 0x2, //!< Match both standard and extended message frames
 } eMCAN_FilterMatch;
 
@@ -3702,7 +3703,7 @@ typedef enum
 {
   MCAN_FILTER_NO_CONFIG        = 0x0, //!< No specific configuration
   MCAN_FILTER_REJECT_ID        = 0x1, //!< Reject ID if filter matches
-  MCAN_FILTER_SET_PRIORITY     = 0x2, //!< Set priority if filter matches
+  MCAN_FILTER_SET_PRIORITY     = 0x2, //!< Set High Priority Message interrupt flag (IR.HPM) if filter matches
   MCAN_FILTER_AS_DEBUG_MESSAGE = 0x3, //!< Store as debug message
 } eMCAN_FilterConfig;
 
@@ -3730,8 +3731,8 @@ typedef struct MCAN_FilterID
 typedef struct MCAN_FilterDebugID
 {
   uint32_t AcceptanceID;   //!< Message Filter Acceptance SID+(SID11 in FD mode if supported and activated)+EID
-  uint16_t DebugMessage;   //!< Debug message to store in the Rx Buffer
   uint16_t BufferPosition; //!< Position in the Rx Buffer
+  uint16_t DebugMessage;   //!< Debug message to store in the Rx Buffer
 } MCAN_FilterDebugID;
 
 //! MCAN classic filter with ID and Mask structure

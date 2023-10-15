@@ -176,7 +176,7 @@ typedef struct MCANV71_Config
   uint8_t EIDelementsCount;                      //!< Extended ID Number of Filter Elements in RAM (0 to 64 elements)
 
   //--- CAN configuration ---
-  uint32_t ExtendedIDrangeMask;                  //!< MCAN Extended ID AND Mask
+  uint32_t ExtendedIDrangeMask;                  //!< MCAN Extended ID AND (range) Mask
   bool RejectAllStandardIDs;                     //!< Set to 'true' to reject remote frames with 11-bit standard IDs, else set to 'false' to filter remote frames with 11-bit standard IDs
   bool RejectAllExtendedIDs;                     //!< Set to 'true' to reject remote frames with 29-bit extended IDs, else set to 'false' to filter remote frames with 29-bit extended IDs
   eMCAN_AcceptNonMatching NonMatchingStandardID; //!< Accept Non-matching Frames Standard (11-bit standard IDs)
