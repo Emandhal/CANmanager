@@ -179,53 +179,15 @@ typedef struct CAN_BitTimeConfig
 
 
 //********************************************************************************************************************
-// CAN RAM configuration Commons
-//********************************************************************************************************************
-
-//! CAN RAM element type enumerator
-typedef enum
-{
-  CAN_RAM_OBJECTS_ARE_FILTERS_SID,   //!< RAM Objects type are 11-bit filter
-  CAN_RAM_OBJECTS_ARE_FILTERS_EID,   //!< RAM Objects type are 29-bit filter
-  CAN_RAM_OBJECTS_ARE_RX_FIFO_0,     //!< RAM Objects type are Rx FIFO 0
-  CAN_RAM_OBJECTS_ARE_RX_FIFO_1,     //!< RAM Objects type are Rx FIFO 1
-  CAN_RAM_OBJECTS_ARE_RX_BUFFER,     //!< RAM Objects type are Rx buffer
-  CAN_RAM_OBJECTS_ARE_TX_EVENT_FIFO, //!< RAM Objects type are Tx event FIFO
-  CAN_RAM_OBJECTS_ARE_TX_QUEUE,      //!< RAM Objects type are Tx queue
-  CAN_RAM_OBJECTS_ARE_TX_BUFFER,     //!< RAM Objects type are Tx buffer
-} eCAN_RAMelementType;
-
-//-----------------------------------------------------------------------------
-
-#define CAN_RAM_OBJECTS_COUNT_FOR_MCAN  ( 8 )
-
-//-----------------------------------------------------------------------------
-
-//! CAN common RAM configuration structure
-typedef struct CAN_RAMconfig
-{
-  uint16_t RAMStartAddress;        //!< RAM Start Address of the RAM range
-  uint16_t ByteSize;               //!< Total number of bytes that RAM range takes in RAM
-  uint8_t BytePerObject;           //!< How many bytes in an object of the RAM range
-  eCAN_RAMelementType ObjectsType; //!< Type of objects in this RAM range
-} CAN_RAMconfig;
-
-#define CAN_RAM_CONFIG_OBJECT_SET(obj,type,sa,count,bpo)  do { (obj).RAMStartAddress = (sa); (obj).ByteSize = (count) * (bpo); (obj).BytePerObject = (bpo); (obj).ObjectsType = (type); } while(0)
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
-//********************************************************************************************************************
 // CAN Message Commons
 //********************************************************************************************************************
 
-#define CAN_SID_Size  11
-#define CAN_SID_Mask  ((1 << CAN_SID_Size) - 1)
-#define CAN_EID_Size  18
-#define CAN_EID_Mask  ((1 << CAN_EID_Size) - 1)
+#define CAN_SID_Size      11
+#define CAN_SID_Mask      ( (1 << CAN_SID_Size) - 1 )
+#define CAN_EID_Size      18
+#define CAN_EID_Mask      ( (1 << CAN_EID_Size) - 1 )
+#define CAN_SID_EID_Size  ( CAN_SID_Size + CAN_EID_Size )
+#define CAN_SID_EID_Mask  ( (1 << CAN_SID_EID_Size) - 1 )
 
 //-----------------------------------------------------------------------------
 
@@ -358,6 +320,29 @@ typedef enum
 #define CAN_RxBUFFER(idx)  ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_RECEIVE ) | CAN_DATA_STRUCT_TYPE_SET(CAN_BUFFER_TYPE) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Rx Buffer data structure
 #define CAN_TxFIFO(idx)    ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_TRANSMIT) | CAN_DATA_STRUCT_TYPE_SET(CAN_FIFO_TYPE  ) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Tx FIFO data structure
 #define CAN_RxFIFO(idx)    ( CAN_DATA_STRUCT_DIR_SET(CAN_DATA_STRUCT_RECEIVE ) | CAN_DATA_STRUCT_TYPE_SET(CAN_FIFO_TYPE  ) | CAN_DATA_STRUCT_INDEX_SET(idx) ) //!< Rx FIFO data structure
+
+typedef uint16_t eCAN_RAMelementType; //!< CAN RAM element type (enumerator like)
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
+// CAN RAM configuration Commons
+//********************************************************************************************************************
+
+//! CAN common RAM configuration structure
+typedef struct CAN_RAMconfig
+{
+  eCAN_RAMelementType ObjectsType; //!< Type of objects in this RAM range
+  uint16_t RAMStartAddress;        //!< RAM Start Address of the RAM range
+  uint16_t TotalByteSize;          //!< Total number of bytes that RAM range takes in RAM
+  uint8_t BytePerObject;           //!< How many bytes in an object of the RAM range
+} CAN_RAMconfig;
+
+#define CAN_RAM_CONFIG_OBJECT_SET(obj,type,bpo,sa,tsize)  do { (obj).ObjectsType = (type); (obj).BytePerObject = (bpo); (obj).RAMStartAddress = (sa); (obj).TotalByteSize = (tsize); } while(0)
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
