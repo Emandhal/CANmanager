@@ -15,21 +15,16 @@
 #include <asf.h> // Use Atmel Software Framework (ASF)
 #include "conf_board.h"
 //-----------------------------------------------------------------------------
+#include "CAN_Shield_V71Interface.h"
+#include "Ultra_V71Interfaces.h"
+//-----------------------------------------------------------------------------
 #ifdef USE_CONSOLE_GPIO_COMMANDS
-#  include "CAN_Shield_V71Interface.h"
 
 extern PORT_Interface* const PORTAtoZ[]; //!< Description of each PORTs A to Z available on the V71 Xplained Ultra board
 # define PORTSAtoZ_COUNT  ( sizeof(*PORTAtoZ) / sizeof(*PORTAtoZ[0]) ) //!< Count of PORTs A to Z available on the V71 Xplained Ultra board
 
 extern PORT_Interface* const PORT0to9[]; //!< Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
 # define PORTS0to9_COUNT  ( sizeof(*PORT0to9) / sizeof(*PORT0to9[0]) ) //!< Count of PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
-#endif
-//-----------------------------------------------------------------------------
-#ifdef USE_CONSOLE_EEPROM_COMMANDS
-# include "Ultra_V71Interfaces.h"
-
-extern EEPROM* const EEPROMdevices[]; //!< Description of each EEPROM devices on the V71 Xplained Ultra board
-# define EEPROM_DEVICE_COUNT  ( sizeof(*EEPROMdevices) / sizeof(*EEPROMdevices[0]) ) //!< Count of EEPROMs available on the V71 Xplained Ultra board
 #endif
 //-----------------------------------------------------------------------------
 
@@ -65,6 +60,13 @@ extern volatile uint32_t msCount;       //!< Milli-seconds count from start of t
                                  ioport_set_pin_sense_mode(GPIO_PUSH_BUTTON_2, GPIO_PUSH_BUTTON_2_SENSE); \
                                } while (0)
 #define USER_BUTTON2_GetState  (ioport_get_pin_level(GPIO_PUSH_BUTTON_2) ? 0 : 1) // Default state of button 2 will return '0'
+
+//-----------------------------------------------------------------------------
+
+#define CAN_SHIELD_BITRATE    1000000 //!< Nominal Bitrate to 1Mbps
+#define CANFD_SHIELD_BITRATE  2000000 //!< Data Bitrate to 2Mbps
+
+#define MCAN_EID_AND_RANGE_MASK  (MCAN_FILTER_ACCEPT_ALL_MESSAGES)
 
 //-----------------------------------------------------------------------------
 #endif /* MAIN_H_ */

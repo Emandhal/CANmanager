@@ -51,49 +51,62 @@
 
 #ifdef USE_CONSOLE_TX
 
-//! Log Title, use it instead of LOG!
-#  define LOGTITLE(format, ...)           LOG(CONSOLE_TX, lsTitle, format, ##__VA_ARGS__)
-//! Log Fatal, use it instead of LOG!
-#  define LOGFATAL(format, ...)           LOG(CONSOLE_TX, lsFatal, format, ##__VA_ARGS__)
-//! Log Error, use it instead of LOG!
-#  define LOGERROR(format, ...)           LOG(CONSOLE_TX, lsError, format, ##__VA_ARGS__)
-//! Log Warning, use it instead of LOG!
-#  define LOGWARN(format, ...)            LOG(CONSOLE_TX, lsWarning, format, ##__VA_ARGS__)
-//! Log Information, use it instead of LOG!
-#  define LOGINFO(format, ...)            LOG(CONSOLE_TX, lsInfo, format, ##__VA_ARGS__)
-//! Log Trace, use it instead of LOG!
-#  define LOGTRACE(format, ...)           LOG(CONSOLE_TX, lsTrace, format, ##__VA_ARGS__)
-//! Log Debug, use it instead of LOG!
-#  define LOGDEBUG(format, ...)           LOG(CONSOLE_TX, lsDebug, format, ##__VA_ARGS__)
-//! Log Special, use it instead of LOG!
-#  define LOGSPECIAL(format, ...)         LOG(CONSOLE_TX, lsSpecial, format, ##__VA_ARGS__)
-//! Hexadecimal dump of memory
-#  define HEXDUMP(context, src, size)     __HexDump(CONSOLE_TX, context, src, size)
-//! Binary dump of memory
-#  define BINDUMP(context, src, size)     __BinDump(CONSOLE_TX, context, src, size)
+#  define LOGTITLE(format, ...)            LOG(CONSOLE_TX, LogSeverity_Title,   LogMode_Line, format, ##__VA_ARGS__) //!< Log Title
+#  define LOGFATAL(format, ...)            LOG(CONSOLE_TX, LogSeverity_Fatal,   LogMode_Line, format, ##__VA_ARGS__) //!< Log Fatal
+#  define LOGERROR(format, ...)            LOG(CONSOLE_TX, LogSeverity_Error,   LogMode_Line, format, ##__VA_ARGS__) //!< Log Error
+#  define LOGWARN(format, ...)             LOG(CONSOLE_TX, LogSeverity_Warning, LogMode_Line, format, ##__VA_ARGS__) //!< Log Warning
+#  define LOGINFO(format, ...)             LOG(CONSOLE_TX, LogSeverity_Info,    LogMode_Line, format, ##__VA_ARGS__) //!< Log Information
+#  define LOGTRACE(format, ...)            LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_Line, format, ##__VA_ARGS__) //!< Log Trace
+#  if (defined(DEBUG) || defined(_DEBUG))
+#    define LOGDEBUG(format, ...)          LOG(CONSOLE_TX, LogSeverity_Debug,   LogMode_Line, format, ##__VA_ARGS__) //!< Log Debug
+#    define LOGSPECIAL(format, ...)        LOG(CONSOLE_TX, LogSeverity_Special, LogMode_Line, format, ##__VA_ARGS__) //!< Log Special
+#    define HEXDUMP(context, src, size)    __HexDump(CONSOLE_TX, context, src, size) //!< Hexadecimal dump of memory
+#    define BINDUMP(context, src, size)    __BinDump(CONSOLE_TX, context, src, size) //!< Binary dump of memory
+#  else
+#    define LOGDEBUG(api, format, ...)
+#    define LOGSPECIAL(api, format, ...)
+#    define HEXDUMP(api, context, src, size)
+#    define BINDUMP(api, context, src, size)
+#  endif
+
+#  define LOG_START_INFO(format, ...)      LOG(CONSOLE_TX, LogSeverity_Info,    LogMode_StartPartial, format, ##__VA_ARGS__) //!< Start partial Log Information
+#  define LOG_START_TRACE(format, ...)     LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_StartPartial, format, ##__VA_ARGS__) //!< Start partial Log Trace
+#  define LOG_START_PARTIAL_INFO           LOG(CONSOLE_TX, LogSeverity_Info,    LogMode_StartPartial, "%s", "")              //!< Start partial Log Information, no string
+#  define LOG_START_PARTIAL_TRACE          LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_StartPartial, "%s", "")              //!< Start partial Log Trace, no string
+#  define LOG_PARTIAL(format, ...)         LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_Partial,      format, ##__VA_ARGS__) //!< Continue partial Log
+#  define LOG_END(format, ...)             LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_EndPartial,   format, ##__VA_ARGS__) //!< End partial Log
+#  define LOG_END_PARTIAL                  LOG(CONSOLE_TX, LogSeverity_Trace,   LogMode_EndPartial,   "%s", "")              //!< End partial Log, no string
+#  if (defined(DEBUG) || defined(_DEBUG))
+#    define LOG_START_DEBUG(format, ...)   LOG(CONSOLE_TX, LogSeverity_Debug,   LogMode_StartPartial, format, ##__VA_ARGS__) //!< Start partial Log Debug
+#    define LOG_START_PARTIAL_DEBUG        LOG(CONSOLE_TX, LogSeverity_Debug,   LogMode_StartPartial, "%s", "")              //!< Start partial Log Debug, no string
+#  else
+#    define LOG_START_DEBUG(format, ...)   //!< No start partial Log Debug
+#    define LOG_START_PARTIAL_DEBUG        //!< No start partial Log Debug, no string
+#  endif
 
 #else
 
-//! Log Title, use it instead of LOG!
-#  define LOGTITLE(format, ...)
-//! Log Fatal, use it instead of LOG!
-#  define LOGFATAL(format, ...)
-//! Log Error, use it instead of LOG!
-#  define LOGERROR(format, ...)
-//! Log Warning, use it instead of LOG!
-#  define LOGWARN(format, ...)
-//! Log Information, use it instead of LOG!
-#  define LOGINFO(format, ...)
-//! Log Trace, use it instead of LOG!
-#  define LOGTRACE(format, ...)
-//! Log Debug, use it instead of LOG!
-#  define LOGDEBUG(format, ...)
-//! Log Special, use it instead of LOG!
-#  define LOGSPECIAL(format, ...)
-//! Hexadecimal dump of memory
-#  define HEXDUMP(context, src, size)
-//! Binary dump of memory
-#  define BINDUMP(context, src, size)
+#  define LOGTITLE(format, ...)         //!< No Log Title
+#  define LOGFATAL(format, ...)         //!< No Log Fatal
+#  define LOGERROR(format, ...)         //!< No Log Error
+#  define LOGWARN(format, ...)          //!< No Log Warning
+#  define LOGINFO(format, ...)          //!< No Log Information
+#  define LOGTRACE(format, ...)         //!< No Log Trace
+#  define LOGDEBUG(format, ...)         //!< No Log Debug
+#  define LOGSPECIAL(format, ...)       //!< No Log Special
+#  define HEXDUMP(context, src, size)   //!< Hexadecimal dump of memory
+#  define BINDUMP(context, src, size)   //!< Binary dump of memory
+
+#  define LOG_START_INFO(format, ...)   //!< No Start partial Log Information
+#  define LOG_START_TRACE(format, ...)  //!< No Start partial Log Trace
+#  define LOG_START_DEBUG(format, ...)  //!< No Start partial Log Debug
+#  define LOG_START_PARTIAL_INFO        //!< No start partial Log Information, no string
+#  define LOG_START_PARTIAL_TRACE       //!< No start partial Log Trace, no string
+#  define LOG_START_PARTIAL_DEBUG       //!< No start partial Log Debug, no string
+
+#  define LOG_PARTIAL(format, ...)      //!< No continue partial Log
+#  define LOG_END(format, ...)          //!< No End partial Log
+#  define LOG_END_PARTIAL               //!< End partial Log, no string
 
 #endif
 //-----------------------------------------------------------------------------

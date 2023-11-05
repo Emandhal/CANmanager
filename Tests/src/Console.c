@@ -48,30 +48,30 @@ void SetConsoleColor(int text, int fond)
   SetConsoleTextAttribute(H, (fond << 4) + text);
 }
 
-const int SeverityColors[(size_t)lsLast_] =
+const int SeverityColors[(size_t)LOGSEVERITY_COUNT] =
 {
-  lsTitle   = wccLIME  , // lsTitle   -> Color: Text=green  ; Background=black
-  lsFatal   = wccRED   , // lsFatal   -> Color: Text=red    ; Background=black
-  lsError   = wccRED   , // lsError   -> Color: Text=red    ; Background=black
-  lsWarning = wccYELLOW, // lsWarning -> Color: Text=yellow ; Background=black
-  lsInfo    = wccAQUA  , // lsInfo    -> Color: Text=blue   ; Background=black
-  lsTrace   = wccWHITE , // lsTrace   -> Color: Text=white  ; Background=black
-  lsDebug   = wccGRAY  , // lsDebug   -> Color: Text=grey   ; Background=black
-  lsSpecial = wccOLIVE , // lsSpecial -> Color: Text=kaki   ; Background=black
+  LogSeverity_Title   = wccLIME  , // LogSeverity_Title   -> Color: Text=green  ; Background=black
+  LogSeverity_Fatal   = wccRED   , // LogSeverity_Fatal   -> Color: Text=red    ; Background=black
+  LogSeverity_Error   = wccRED   , // LogSeverity_Error   -> Color: Text=red    ; Background=black
+  LogSeverity_Warning = wccYELLOW, // LogSeverity_Warning -> Color: Text=yellow ; Background=black
+  LogSeverity_Info    = wccAQUA  , // LogSeverity_Info    -> Color: Text=blue   ; Background=black
+  LogSeverity_Trace   = wccWHITE , // LogSeverity_Trace   -> Color: Text=white  ; Background=black
+  LogSeverity_Debug   = wccGRAY  , // LogSeverity_Debug   -> Color: Text=grey   ; Background=black
+  LogSeverity_Special = wccOLIVE , // LogSeverity_Special -> Color: Text=kaki   ; Background=black
 };
 
 #else
 
-const char* SeverityColors[(size_t)lsLast_] =
+const char* SeverityColors[(size_t)LOGSEVERITY_COUNT] =
 {
-  "\x001B[1;32m", // lsTitle   -> Color: Text=green         ; Background=black ; Bold
-  "\x001B[1;91m", // lsFatal   -> Color: Text=red bright    ; Background=black ; Bold
-  "\x001B[0;91m", // lsError   -> Color: Text=red bright    ; Background=black
-  "\x001B[0;93m", // lsWarning -> Color: Text=yellow bright ; Background=black
-  "\x001B[0;36m", // lsInfo    -> Color: Text=cyan          ; Background=black
-  "\x001B[0;97m", // lsTrace   -> Color: Text=white         ; Background=black
-  "\x001B[0;37m", // lsDebug   -> Color: Text=grey "white"  ; Background=black
-  "\x001B[0;33m", // lsSpecial -> Color: Text=yellow        ; Background=black
+  "\x001B[1;32m", // LogSeverity_Title   -> Color: Text=green         ; Background=black ; Bold
+  "\x001B[1;91m", // LogSeverity_Fatal   -> Color: Text=red bright    ; Background=black ; Bold
+  "\x001B[0;91m", // LogSeverity_Error   -> Color: Text=red bright    ; Background=black
+  "\x001B[0;93m", // LogSeverity_Warning -> Color: Text=yellow bright ; Background=black
+  "\x001B[0;36m", // LogSeverity_Info    -> Color: Text=cyan          ; Background=black
+  "\x001B[0;97m", // LogSeverity_Trace   -> Color: Text=white         ; Background=black
+  "\x001B[0;37m", // LogSeverity_Debug   -> Color: Text=grey "white"  ; Background=black
+  "\x001B[0;33m", // LogSeverity_Special -> Color: Text=yellow        ; Background=black
 };
 
 #endif
@@ -180,37 +180,47 @@ bool TrySendingNextCharToConsole(ConsoleTx* pApi)
 //=============================================================================
 // Send a formated Logs to console (DO NOT USE DIRECTLY, use LOG*() instead)
 //=============================================================================
-void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, const char* format, va_list args)
+void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, eLogMode logMode, const char* format, va_list args)
 {
   const char* const FormatLine   = "%s [%u:%02u:%02u:%02u] ";
   const char* const WhiteTextStr = "\x001B[0m";
   const char* const NewLine      = "\r\n";
+  uint64_t Val = 0u;
+  uint32_t Time = 0u, NewTime = 0u, d = 0u, Sec = 0, Min = 0, Hor = 0;
 
-  // Fast div 1000 (+/- one unit error is not critical for logging purpose)
-  uint64_t Val = msCount;
-  uint32_t Time = (uint32_t)((Val * 0x00418937) >> 32); // Magic number : Here 0x418937 is 0xFFFFFFFF / 1000d. This is the overflow limit of an uint32
-  uint32_t NewTime;
-  // Extract fields
-  NewTime = (Time / 60); uint32_t Sec = Time - (NewTime * 60); Time = NewTime;
-  NewTime = (Time / 60); uint32_t Min = Time - (NewTime * 60); Time = NewTime;
-  NewTime = (Time / 24); uint32_t Hor = Time - (NewTime * 24); Time = NewTime;
-  uint32_t d = Time;
+  if ((logMode == LogMode_Line) || (logMode == LogMode_StartPartial))
+  {
+    // Fast div 1000 (+/- one unit error is not critical for logging purpose)
+    Val = msCount;
+    Time = (uint32_t)((Val * 0x00418937) >> 32); // Magic number : Here 0x418937 is 0xFFFFFFFF / 1000d. This is the overflow limit of an uint32
+    // Extract fields
+    NewTime = (Time / 60); Sec = Time - (NewTime * 60); Time = NewTime;
+    NewTime = (Time / 60); Min = Time - (NewTime * 60); Time = NewTime;
+    NewTime = (Time / 24); Hor = Time - (NewTime * 24); Time = NewTime;
+    d = Time;
+  }    
 
 
 #ifndef __cplusplus
 # define LOG_BUFFER_SIZE  200
   char TmpBuff[LOG_BUFFER_SIZE];
-  siprintf(TmpBuff, FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
-  SetStrToConsoleBuffer(pApi, TmpBuff);
-  if (whiteText) SetStrToConsoleBuffer(pApi, WhiteTextStr);
-  vsiprintf(TmpBuff, format, args);
-  SetStrToConsoleBuffer(pApi, TmpBuff);
-  SetStrToConsoleBuffer(pApi, NewLine);
+  if ((logMode == LogMode_Line) || (logMode == LogMode_StartPartial))
+  {
+    siprintf(TmpBuff, FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
+    SetStrToConsoleBuffer(pApi, TmpBuff);
+    if (whiteText) SetStrToConsoleBuffer(pApi, WhiteTextStr);
+  }
+  if (logMode != LogMode_EndPartial)
+  {
+    vsiprintf(TmpBuff, format, args);
+    SetStrToConsoleBuffer(pApi, TmpBuff);
+  }    
+  if ((logMode == LogMode_Line) || (logMode == LogMode_EndPartial)) SetStrToConsoleBuffer(pApi, NewLine);
   TrySendingNextCharToConsole(pApi);
 #else
-  printf(FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
-  vprintf(format, args);
-  printf(NewLine);
+  if ((logMode == LogMode_Line) || (logMode == LogMode_StartPartial)) printf(FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
+  if (logMode != LogMode_EndPartial) vprintf(format, args);
+  if ((logMode == LogMode_Line) || (logMode == LogMode_EndPartial)) printf(NewLine);
 #endif
 }
 
@@ -220,7 +230,7 @@ void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, const char* for
 //=============================================================================
 // Send a formated Logs to console
 //=============================================================================
-void LOG(ConsoleTx* pApi, eSeverity severity, const char* format, ...)
+void LOG(ConsoleTx* pApi, eLogSeverity severity, eLogMode logMode, const char* format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -231,8 +241,8 @@ void LOG(ConsoleTx* pApi, eSeverity severity, const char* format, ...)
   SetStrToConsoleBuffer(pApi, SeverityColors[(size_t)severity]);
 #endif
 
-  bool KeepColorFor = (severity == lsFatal) || (severity == lsDebug);
-  __LOG(pApi, "DEMO", !KeepColorFor, format, args);
+  bool KeepColorFor = (severity == LogSeverity_Fatal) || (severity == LogSeverity_Debug);
+  __LOG(pApi, "DEMO", !KeepColorFor, logMode, format, args);
 
   va_end(args);
 }
@@ -290,7 +300,7 @@ void __HexDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
   char HexaDump[ROW_LENGTH * 3]; // [2 digit hexa + space] - 1 space + 1 zero terminal
   char HexaChar[ROW_LENGTH + 1]; // [1 char] + 1 zero terminal
 
-  LOGDEBUG_(pApi, "Dump %d bytes at 0x%08X - %s", size, (unsigned int)src, context);
+  LOG(pApi, LogSeverity_Debug, LogMode_Line, "Dump %d bytes at 0x%08X - %s", size, (unsigned int)src, context);
 
   unsigned char* pSrc = (unsigned char*)src;
   HexaChar[ROW_LENGTH] = 0;
@@ -327,7 +337,7 @@ void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
   char BinDump[ROW_LENGTH * 9]; // [8 digit bin  + space] - 1 space + 1 zero terminal
   char BinHexa[ROW_LENGTH * 3]; // [2 digit hexa + space] - 1 space + 1 zero terminal
 
-  LOGDEBUG_(pApi, "Dump %d bytes at 0x%08X - %s", size, (unsigned int)src, context);
+  LOG(pApi, LogSeverity_Debug, LogMode_Line, "Dump %d bytes at 0x%08X - %s", size, (unsigned int)src, context);
 
   unsigned char* pSrc = (unsigned char*)src;
   BinHexa[ROW_LENGTH] = 0;
@@ -397,7 +407,7 @@ static int32_t __strscmp(const uint8_t* str1, const char* str2);
  * @return Returns the value extracted from string
  */
 static int32_t __strtcmp(const uint8_t** str1, const char* str2);
-/*! @brief Convert a string to int float
+/*! @brief Convert a string to an unsigned int
  * This function will stop parsing at first char:
  *  - That is not in '0'..'9' in case of decimal string
  *  - That is not in '0'..'9', 'a'..'f', 'A'..'F' in case of hexadecimal string (starting with "0x" or "0X")
@@ -503,7 +513,12 @@ eERRORRESULT ConsoleRx_ReceiveChar(ConsoleRx* pApi)
 # endif
   if (pUART->fnUART_Receive == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  if (pApi->RxIdx >= CONSOLE_RX_CURRENT_BUFFER_SIZE) return ERR__BUFFER_FULL;
+//  if (pApi->RxIdx >= CONSOLE_RX_CURRENT_BUFFER_SIZE) return ERR__BUFFER_FULL;
+  if (pApi->RxIdx >= CONSOLE_RX_CURRENT_BUFFER_SIZE)
+  {
+    pApi->RxIdx = CONSOLE_RX_CURRENT_BUFFER_SIZE - 1;
+    pApi->ProcessIdx = pApi->RxIdx;
+  }    
   eERRORRESULT Error;
 
   //--- Receive char from UART ---
@@ -566,6 +581,9 @@ eERRORRESULT ConsoleRx_ProcessReceivedChars(ConsoleRx* pApi)
           if (ProcessIdx > 0)
           {
             pApi->CurrentBuff[ProcessIdx] = CONSOLE_NULL;                                                                       // Force a NULL terminal string
+#ifdef USE_CONSOLE_TX
+            SetStrToConsoleBuffer(pApi->pUART_Tx, "\r\n");                                                                      // Send line return
+#endif
             Error = __InternalProcessReceivedCommand(&pApi->CurrentBuff[0], ProcessIdx);                                        // Call to a weak function: Process received command Callback
           }
           //--- Prepare next command ---
@@ -586,7 +604,7 @@ eERRORRESULT ConsoleRx_ProcessReceivedChars(ConsoleRx* pApi)
         ++pApi->CursorIdx;
         ++ProcessIdx;
 #ifdef USE_CONSOLE_TX
-//        if ((CurrentData != '\r') && (CurrentData != '\n')) SetCharToConsoleBuffer(CONSOLE_TX, CurrentData);                    // Display received char <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        if ((CurrentData != '\r') && (CurrentData != '\n')) SetCharToConsoleBuffer(pApi->pUART_Tx, CurrentData);                // Display received char
 #endif
         break;
     }
@@ -669,7 +687,7 @@ eERRORRESULT ConsoleRx_ProcessReceivedCommandCallBack(const uint8_t* pCmd, size_
 //=============================================================================
 // [STATIC] Compare 2 ANSI strings by only the size of the str2
 //=============================================================================
-int32_t __strscmp(const uint8_t* pStr1, const char* pStr2)
+static int32_t __strscmp(const uint8_t* pStr1, const char* pStr2)
 {
   int32_t Result = 0;
 
@@ -684,12 +702,13 @@ int32_t __strscmp(const uint8_t* pStr1, const char* pStr2)
   if (*pStr2 == 0) return 0;
   return Result;
 }
+#endif // USE_CONSOLE_GPIO_COMMANDS || USE_CONSOLE_EEPROM_COMMANDS
 
-
+#if defined(USE_CONSOLE_GPIO_COMMANDS)
 //=============================================================================
 // [STATIC] Compare 2 ANSI strings by only the size of the Str2 and update Str1 pointer only if strings are identical
 //=============================================================================
-int32_t __strtcmp(const uint8_t** pStr1, const char* pStr2)
+static int32_t __strtcmp(const uint8_t** pStr1, const char* pStr2)
 {
   const uint8_t* pStr = *pStr1;
   int32_t Result = 0;
@@ -711,12 +730,13 @@ int32_t __strtcmp(const uint8_t** pStr1, const char* pStr2)
   }
   return Result;
 }
+#endif // USE_CONSOLE_GPIO_COMMANDS
 
-
+#if defined(USE_CONSOLE_GPIO_COMMANDS) || defined(USE_CONSOLE_EEPROM_COMMANDS)
 //=============================================================================
 // [STATIC] Convert a string to int
 //=============================================================================
-uint32_t __StringToUint(const uint8_t** pStr)
+static uint32_t __StringToUint(const uint8_t** pStr)
 {
   uint32_t Result = 0;
   if (((*pStr)[0] >= '0') && ((*pStr)[0] <= '9')) // Is a digit?
@@ -879,7 +899,7 @@ eERRORRESULT __ProcessGPIOcommand(const uint8_t* pCmd, size_t size)
   return ERR_NONE;
 }
 
-#if !defined(_MSC_VER)
+/*#if !defined(_MSC_VER)
 //==============================================================================
 // Process GPIO command Callback
 //==============================================================================
@@ -892,7 +912,7 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
   (void)mask;
   // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
 }
-#endif // !_MSC_VER
+#endif // !_MSC_VER*/
 #endif // USE_CONSOLE_GPIO_COMMANDS
 
 //-----------------------------------------------------------------------------
@@ -967,7 +987,7 @@ eERRORRESULT __ProcessEEPROMcommand(const uint8_t* pCmd, size_t size)
   return ERR_NONE;
 }
 
-#if !defined(_MSC_VER)
+/*#if !defined(_MSC_VER)
 //==============================================================================
 // Process EEPROM command Callback
 //==============================================================================
@@ -980,7 +1000,7 @@ void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint
   (void)data;
   // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
 }
-#endif // !_MSC_VER
+#endif // !_MSC_VER*/
 #endif
 
 //-----------------------------------------------------------------------------

@@ -62,15 +62,25 @@ PORT_Interface* const PORT0to9[] =
 
 #endif
 //-----------------------------------------------------------------------------
-#ifdef USE_CONSOLE_EEPROM_COMMANDS
 
+typedef union
+{
+  unsigned int Uint32[AT24MAC402_SERIALNUMBER_LEN / sizeof(unsigned int)];
+  uint8_t      Bytes[AT24MAC402_SERIALNUMBER_LEN  / sizeof(uint8_t)];
+} AT24_SN;
+
+//-----------------------------------------------------------------------------
+#ifdef USE_CONSOLE_EEPROM_COMMANDS
+#include "EEPROM.h"
 //! Description of each EEPROM devices on the V71 Xplained Ultra board
 EEPROM* const EEPROMdevices[] =
 {
-  &AT24MAC402_V71.Eeprom
+  &AT24MAC402_V71.Eeprom,
 };
-
+const size_t EEPROM_DEVICE_COUNT = ( sizeof(EEPROMdevices) / sizeof(EEPROMdevices[0]) ); //!< Count of EEPROMs available on the V71 Xplained Ultra board
 #endif // USE_CONSOLE_EEPROM_COMMANDS
+
+#include "Console_V71Interface.h"
 //-----------------------------------------------------------------------------
 
 
@@ -97,11 +107,11 @@ int main (void)
   wdt_disable(WDT);
 
   //--- Configure system clock --------------------------
-	sysclk_init();
+  sysclk_init();
   SystemCoreClock = sysclk_get_cpu_hz();
 
   //--- Initialize board --------------------------------
-	board_init();
+  board_init();
   // Configure the push button 2
   ioport_set_pin_dir(GPIO_PUSH_BUTTON_2, IOPORT_DIR_INPUT);
   ioport_set_pin_mode(GPIO_PUSH_BUTTON_2, GPIO_PUSH_BUTTON_2_FLAGS);
@@ -114,9 +124,11 @@ int main (void)
 
   //--- Initialize the console UART ---------------------
 #ifdef USE_CONSOLE_TX
+  ConsoleUART_TxInit_V71();
   InitConsoleTx(CONSOLE_TX);
 #endif
 #ifdef USE_CONSOLE_RX
+  ConsoleUART_RxInit_V71();
   InitConsoleRx(CONSOLE_RX);
 #endif
 
@@ -131,8 +143,8 @@ int main (void)
   wdt_restart(WDT);
 
   //--- Log ---------------------------------------------
-	LOGTRACE("Initialization complete");
-	SetSystemLEDblinkMode(BLINK_STAY_ON);
+  LOGTRACE("Initialization complete");
+  SetSystemLEDblinkMode(BLINK_STAY_ON);
 
   //=== The main loop ===================================
   while(1)

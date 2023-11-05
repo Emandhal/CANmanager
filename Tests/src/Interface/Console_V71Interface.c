@@ -11,6 +11,7 @@
 
 //-----------------------------------------------------------------------------
 #include "Console_V71Interface.h"
+#include "StringTools.h"
 //-----------------------------------------------------------------------------
 #if !defined(__cplusplus)
 #  include <asf.h>
@@ -31,21 +32,25 @@ extern "C" {
 void USART1_Handler(void)
 {
   //--- Transmission interrupts ---
-  #ifdef USE_CONSOLE_TX
+#ifdef USE_CONSOLE_TX
   if ((CONSOLE_UART->US_CSR & (US_CSR_TXRDY | US_CSR_TXEMPTY)) > 0) // Transmit interrupt rises
   {
     CONSOLE_UART->US_IDR = (US_IDR_TXRDY | US_IDR_TXEMPTY);         // Disable interrupts
     TrySendingNextCharToConsole(CONSOLE_TX);
   }
-  #endif
+#endif
 
   //--- Reception interrupts ---
-  #ifdef USE_CONSOLE_RX
+#ifdef USE_CONSOLE_RX
   if ((CONSOLE_UART->US_CSR & US_CSR_RXRDY) > 0)                    // Receive interrupt rises
   {
-    ConsoleRx_ReceiveChar(CONSOLE_RX);
+    if (ConsoleRx_ReceiveChar(CONSOLE_RX) != ERR_NONE)
+    {
+      char Dummy = (char)(CONSOLE_UART->US_RHR & US_RHR_RXCHR_Msk); // Get the char
+      (void)Dummy;
+    }
   }
-  #endif
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -87,7 +92,7 @@ void ConsoleUART_TxInit_V71(void)
   sysclk_enable_peripheral_clock(CONSOLE_UART_ID);
 
   //--- Configure console UART ---
-  //  usart_serial_init(CONSOLE_UART, &uart_serial_options); // For Console API
+//  usart_serial_init(CONSOLE_UART, &uart_serial_options); // For Console API
   stdio_serial_init(CONSOLE_UART, &uart_serial_options); // For printf
 
   //--- Enable Tx function ---
@@ -146,6 +151,8 @@ void ConsoleUART_RxInit_V71(void)
 
   //--- Configure and enable interrupt of USART ---
   usart_enable_interrupt(CONSOLE_UART, US_IER_RXRDY);
+#define NVIC_PRIORITYGROUP_4   ((uint32_t)0x00000003)
+  NVIC_SetPriority(USART1_IRQn, NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 1, 0)); // Very high priority
   NVIC_EnableIRQ(USART1_IRQn);
 }
 
@@ -231,6 +238,9 @@ ConsoleRx Console_RxConf =
     UART_MEMBER(Channel)         0,
   },
 #endif
+#ifdef USE_CONSOLE_TX
+  UART_MEMBER(pUART_Tx) &Console_TxConf,
+#endif
 
 #ifdef CONSOLE_RX_USE_COMMAND_RECALL
   //--- Command buffer ---
@@ -303,6 +313,115 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
 //**********************************************************************************************************************************************************
 #ifdef USE_CONSOLE_EEPROM_COMMANDS
 
+#include "EEPROM.h"
+extern EEPROM* const EEPROMdevices[]; //!< Description of each EEPROM devices on the V71 Xplained Ultra board
+extern const size_t EEPROM_DEVICE_COUNT; //!< Count of EEPROMs available on the V71 Xplained Ultra board
+
+//=============================================================================
+// [STATIC] Read data to EEPROM
+//=============================================================================
+static void __ReadDataToEEPROM(uint8_t index, uint32_t address, uint32_t size, char* data)
+{
+  uint8_t ReadBuffer[16];
+  char ResultBuffer[16*2+1];
+  bool IsHexData = false;
+  eERRORRESULT Error;
+
+  if (data != NULL)
+  {
+    if (data[0] == '0')
+    {
+      IsHexData = ((data[1] == 'x') || (data[1] == 'X')); // Start with "0x" or "0X"? This is an Hex data
+      if (IsHexData) data += 2;                           // Hex data? Pass these chars
+    }
+    else
+    {
+      IsHexData = ((data[0] == 'x') || (data[0] == 'X')); // Start with 'x' or 'X'? This is an Hex data
+      if (IsHexData) ++data;                              // Hex data? Pass this char
+    }
+  }
+  LOG_START_PARTIAL_TRACE;
+  uint32_t RemainSize = EEPROMdevices[index]->Conf->TotalByteSize - address;
+  if (size < RemainSize) RemainSize = size;               // Here is the size that could be read
+  while (size > 0)
+  {
+    const size_t BytesToRead = (RemainSize > sizeof(ReadBuffer) ? sizeof(ReadBuffer) : RemainSize);
+    Error = EEPROM_ReadData(EEPROMdevices[index], address, &ReadBuffer[0], BytesToRead);
+    if (Error != ERR_NONE)
+    {
+      LOG_END_PARTIAL;
+      LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
+      return;
+    }
+    if (IsHexData)
+         Uint8Buffer_ToHexString(&ReadBuffer[0], BytesToRead, &ResultBuffer[0], sizeof(ResultBuffer));
+    else for (size_t z = 0; z < BytesToRead; ++z) ResultBuffer[z] = (char)ReadBuffer[z];
+    ResultBuffer[(BytesToRead * 2) - 1] = '\0';           // Force zero terminal
+    LOG_PARTIAL("%s", ResultBuffer);                      // Write partial string
+    address += BytesToRead;
+    RemainSize -= BytesToRead;
+  }
+  LOG_END_PARTIAL;
+}
+
+
+//=============================================================================
+// [STATIC] Write data to EEPROM
+//=============================================================================
+static void __WriteDataToEEPROM(uint8_t index, uint32_t address, uint32_t size, char* data)
+{
+  if (data == NULL) return;
+  uint8_t WriteBuffer[16];
+  size_t BytesWritten = 0;
+  bool IsHexData = false;
+  eERRORRESULT Error;
+  
+  if (data[0] == '0')
+  {
+    IsHexData = ((data[1] == 'x') || (data[1] == 'X')); // Start with "0x" or "0X"? This is an Hex data
+    if (IsHexData) data += 2;                           // Hex data? Pass these chars
+  }
+  else
+  {
+    IsHexData = ((data[0] == 'x') || (data[0] == 'X')); // Start with 'x' or 'X'? This is an Hex data
+    if (IsHexData) ++data;                              // Hex data? Pass this char
+  }
+  if (IsHexData)
+  {
+    while (*data != '\0')
+    {
+      size_t DataToWrite = HexString_ToUint8Buffer(data, &WriteBuffer[0], sizeof(WriteBuffer));
+      Error = EEPROM_WriteData(EEPROMdevices[index], address, &WriteBuffer[0], DataToWrite);
+      if (Error != ERR_NONE)
+      {
+        LOGERROR("Unable to write EEPROM memory (error code: %u)", (unsigned int)Error);
+        return;
+      }
+      data += DataToWrite;
+      BytesWritten += DataToWrite;
+      address += sizeof(WriteBuffer);
+    }
+  }
+  else
+  {
+    if (*data == '\"') ++data; // Start with a double quote? Pass this char
+    while (*data != '\0')
+    {
+      size_t DataToWrite = 0;
+      while ((DataToWrite < sizeof(WriteBuffer)) && (*data != '\0')) WriteBuffer[DataToWrite++] = *data++; // Copy string to buffer
+      Error = EEPROM_WriteData(EEPROMdevices[index], address, &WriteBuffer[0], DataToWrite);
+      if (Error != ERR_NONE)
+      {
+        LOGERROR("Unable to write EEPROM memory (error code: %u)", (unsigned int)Error);
+        return;
+      }
+      BytesWritten += DataToWrite;
+      address += sizeof(WriteBuffer);
+    }
+  }
+  LOGTRACE("Bytes written: %u", (unsigned int)BytesWritten);
+}
+
 // Generate a lookup table for 8-bits integers
 #define B2(n) n, n + 1, n + 1, n + 2
 #define B4(n) B2(n), B2(n + 1), B2(n + 1), B2(n + 2)
@@ -312,14 +431,14 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
 uint8_t Uint8_1Count_LUT[256] = { B6(0), B6(1), B6(1), B6(2) };
 
 //=============================================================================
-// Show the device memory
+// [STATIC] Show the device memory
 //=============================================================================
 static void __ShowEEPROMmapping(uint8_t index)
 {
-  eERRORRESULT Error = ERR_OK;
+  eERRORRESULT Error = ERR_NONE;
   volatile uint32_t OneBitsCount = 0;
   uint8_t  PageBuffer[8];
-  uint32_t EepromSize     = EEPROMdevices[index]->Conf->ArrayByteSize; // Get EEPROM total size
+  uint32_t EepromSize     = EEPROMdevices[index]->Conf->TotalByteSize; // Get EEPROM total size
   uint32_t EepromPageSize = EEPROMdevices[index]->Conf->PageSize;      // Get EEPROM page size
   if (EepromSize == EepromPageSize)                                    // The EEPROM does not have pages, the memory is in one bloc
   {                                                                    // Search a pseudo page division
@@ -334,6 +453,8 @@ static void __ShowEEPROMmapping(uint8_t index)
 
   //--- Read page per page and create mapping ---
   LOGINFO("Visual mapping of device %u, page size %u:", (unsigned int)(index), (unsigned int)EepromPageSize);
+  
+  LOG_START_PARTIAL_INFO;
   for (size_t zMem = 0; zMem < (EepromSize / EepromPageSize); ++zMem)
   {
     OneBitsCount = 0;
@@ -342,8 +463,9 @@ static void __ShowEEPROMmapping(uint8_t index)
     {
       //--- Read a page ---
       Error = EEPROM_ReadData(EEPROMdevices[index], (zMem * EepromPageSize) + (zPage * sizeof(PageBuffer)), &PageBuffer[0], sizeof(PageBuffer));
-      if (Error != ERR_OK)
+      if (Error != ERR_NONE)
       {
+        LOG_END_PARTIAL;
         LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
         return;
       }
@@ -357,35 +479,35 @@ static void __ShowEEPROMmapping(uint8_t index)
     if (OneBitsCount >= (EepromPageSize * 4)) CharToSend = (char)177; // Char partially filled
     if (OneBitsCount >= (EepromPageSize * 6)) CharToSend = (char)178; // Char filled mostly
     if (OneBitsCount >= (EepromPageSize * 8)) CharToSend = (char)219; // Char fully filled
-    SetCharToConsoleBuffer(CONSOLE_TX, CharToSend);
+    LOG_PARTIAL("%c", CharToSend);
   }
+  LOG_END_PARTIAL;
 }
 
 
 //=============================================================================
-// Dump the device memory
+// [STATIC] Dump the device memory
 //=============================================================================
 static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
 {
-  eERRORRESULT Error = ERR_OK;
+  eERRORRESULT Error = ERR_NONE;
   static const char* Hexa = "0123456789ABCDEF";
   uint8_t ReadBuffer[16];
   
 #define ROW_LENGTH  16           // 16 bytes per row
   char HexaDump[ROW_LENGTH * 3]; // [2 digit hexa + space] - 1 space + 1 zero terminal
   char HexaChar[ROW_LENGTH + 1]; // [1 char] + 1 zero terminal
-  size_t SizeToRead = (size_t)(EEPROMdevices[index]->Conf->ArrayByteSize - address); // Set the full device size by default
-  if (SizeToRead > size) SizeToRead = size;
+  size_t SizeToRead = (size_t)(EEPROMdevices[index]->Conf->TotalByteSize - address); // Set the full device size by default
+  if (size < SizeToRead) SizeToRead = size;
   LOGINFO("Dump %d bytes at 0x%04X", SizeToRead, (unsigned int)address);
 
   //--- Dump the data read ---
-  uint8_t* pSrc = &ReadBuffer[0];
   HexaChar[ROW_LENGTH] = 0;
-  for (int32_t i = ((SizeToRead+ROW_LENGTH-1) / ROW_LENGTH); --i >= 0; pSrc += ROW_LENGTH, SizeToRead -= ROW_LENGTH, address += ROW_LENGTH)
+  for (int32_t i = ((SizeToRead+ROW_LENGTH-1) / ROW_LENGTH); --i >= 0; SizeToRead -= ROW_LENGTH, address += ROW_LENGTH)
   {
     //--- Read the memory ---
     Error = EEPROM_ReadData(EEPROMdevices[index], address, &ReadBuffer[0], (SizeToRead >= ROW_LENGTH ? ROW_LENGTH : SizeToRead));
-    if (Error != ERR_OK)
+    if (Error != ERR_NONE)
     {
       LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
       return;
@@ -396,10 +518,10 @@ static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
     memset(HexaChar, '.', ROW_LENGTH);
     for (int j = (SizeToRead >= ROW_LENGTH ? ROW_LENGTH : SizeToRead); --j >= 0;)
     {
-      HexaDump[j * 3 + 0] = Hexa[(pSrc[j] >> 4) & 0xF];
-      HexaDump[j * 3 + 1] = Hexa[(pSrc[j] >> 0) & 0xF];
+      HexaDump[j * 3 + 0] = Hexa[(ReadBuffer[j] >> 4) & 0xF];
+      HexaDump[j * 3 + 1] = Hexa[(ReadBuffer[j] >> 0) & 0xF];
       //HexaDump[j * 3 + 2] = ' ';
-      HexaChar[j] = (pSrc[j] < 0x20) ? '.' : pSrc[j];
+      HexaChar[j] = (ReadBuffer[j] < 0x20) ? '.' : ReadBuffer[j];
     }
     HexaDump[ROW_LENGTH * 3 - 1] = 0;
     LOGINFO("  %04X : %s \"%s\"", (unsigned int)address, HexaDump, HexaChar);
@@ -408,13 +530,17 @@ static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
 }
 
 
+
 //=============================================================================
 // Process EEPROM command Callback
 //=============================================================================
 void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data)
 {
   if (index >= EEPROM_DEVICE_COUNT) { LOGERROR("EEPROM index out of range"); return; } // Check index
+  const uint32_t ARRAY_BYTE_SIZE = EEPROMdevices[index]->Conf->TotalByteSize;
   eERRORRESULT Error;
+  uint8_t WriteBuffer[16];
+  uint32_t zMem = 0;
   
   switch (action)
   {
@@ -423,27 +549,28 @@ void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint
       break;
 
     case Action_Read:
+      __ReadDataToEEPROM(index, address, size, data);
       break;
 
     case Action_Write:
+      __WriteDataToEEPROM(index, address, size, data);
       break;
 
     case Action_Clear:
+      memset(&WriteBuffer[0], 0xFF, sizeof(WriteBuffer));
+      while (zMem < ARRAY_BYTE_SIZE)
       {
-        uint8_t WriteBuffer[16];
-        memset(&WriteBuffer[0], 0xFF, sizeof(WriteBuffer));
-        for (size_t zMem = 0; zMem < (EEPROMdevices[index]->Conf->ArrayByteSize / sizeof(WriteBuffer)); ++zMem)
+        //--- Write buffer ---
+        const size_t BytesToWrite = ((ARRAY_BYTE_SIZE - zMem) > sizeof(WriteBuffer) ? sizeof(WriteBuffer) : (ARRAY_BYTE_SIZE - zMem));
+        Error = EEPROM_WriteData(EEPROMdevices[index], zMem, &WriteBuffer[0], BytesToWrite);
+        if (Error != ERR_NONE)
         {
-          //--- Write buffer ---
-          Error = EEPROM_WriteData(EEPROMdevices[index], (zMem * sizeof(WriteBuffer)), &WriteBuffer[0], sizeof(WriteBuffer));
-          if (Error != ERR_OK)
-          {
-            LOGERROR("Unable to write EEPROM memory (error code: %u)", (unsigned int)Error);
-            return;
-          }
+          LOGERROR("Unable to write EEPROM memory (error code: %u)", (unsigned int)Error);
+          return;
         }
-        LOGINFO("The memory has been cleared");
+        zMem += sizeof(WriteBuffer);
       }
+      LOGINFO("The memory has been cleared");
       break;
 
     case Action_Show:

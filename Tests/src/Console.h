@@ -63,6 +63,8 @@
 # define __FORMATPRINTF30__    __attribute__((__format__(__printf__, 3, 0))) // 3: Format at third argument  ; 0: for va_list
 # define __FORMATPRINTF34__    __attribute__((__format__(__printf__, 3, 4))) // 3: Format at third  argument ; 4: args at fourth argument (...)
 # define __FORMATPRINTF40__    __attribute__((__format__(__printf__, 4, 0))) // 4: Format at fourth argument ; 0: for va_list
+# define __FORMATPRINTF45__    __attribute__((__format__(__printf__, 4, 5))) // 4: Format at fourth argument ; 5: args at fifth argument (...)
+# define __FORMATPRINTF50__    __attribute__((__format__(__printf__, 5, 0))) // 5: Format at fifth argument  ; 0: for va_list
 # define vprintf               viprintf
 #else
 # define CONSOLE_MEMBER(name)
@@ -79,6 +81,8 @@
 # define __FORMATPRINTF30__
 # define __FORMATPRINTF34__
 # define __FORMATPRINTF40__
+# define __FORMATPRINTF45__
+# define __FORMATPRINTF50__
 #endif
 
 //-----------------------------------------------------------------------------
@@ -176,19 +180,28 @@ inline uint32_t CharToDigit(const char aChar)
 
 //-----------------------------------------------------------------------------
 
-//! Log type, sorted by severity.
+//! Log type, sorted by severity
 typedef enum
 {
-  lsTitle,   //!< Show a title
-  lsFatal,   //!< Fatal error! application will abort shortly
-  lsError,   //!< Error! the application may work improperly
-  lsWarning, //!< Warning! There's something wrong
-  lsInfo,    //!< For your information, the application is safe
-  lsTrace,   //!< Trace log only
-  lsDebug,   //!< For Debugging purpose. Emitted only when DEBUG is defined
-  lsSpecial, //!< For Debugging purpose. Emitted only when DEBUG is defined
-  lsLast_,   //!< Special value. Do not use and keep this the last value
-} eSeverity;
+  LogSeverity_Title,   //!< Show a title
+  LogSeverity_Fatal,   //!< Fatal error! application will abort shortly
+  LogSeverity_Error,   //!< Error! the application may work improperly
+  LogSeverity_Warning, //!< Warning! There's something wrong
+  LogSeverity_Info,    //!< For your information, the application is safe
+  LogSeverity_Trace,   //!< Trace log only
+  LogSeverity_Debug,   //!< For Debugging purpose. Emitted only when DEBUG is defined
+  LogSeverity_Special, //!< For Debugging purpose. Emitted only when DEBUG is defined
+  LOGSEVERITY_COUNT,   //!< Special value. Do not use and keep this the last value
+} eLogSeverity;
+
+//! Log mode
+typedef enum
+{
+  LogMode_Line,         //!< Show the log in 1 line (Context + Color + Time + String + Endline)
+  LogMode_StartPartial, //!< Start a partial log, will not end the line after this (Context + Color + Time + String)
+  LogMode_Partial,      //!< Continue to fill data in the line (String)
+  LogMode_EndPartial,   //!< End a partial log (Endline)
+} eLogMode;
 
 //! Windows console colors
 typedef enum
@@ -219,21 +232,23 @@ typedef enum
  *
  * @note DO NOT USE DIRECTLY, use LOG*() instead.
  * @param[in] *pApi Is the Console transmit API to work with
- * @param[in] *context Context string (usually, the system name emitting the log).
+ * @param[in] *context Context string (usually, the system name emitting the log)
  * @param[in] whiteText If the text after the time counter change to white
- * @param[in] *format Format string (printf format), followed by arguments.
+ * @param[in] logMode Indicates the type of log
+ * @param[in] *format Format string (printf format), followed by arguments
  * @param[in] args Arguments for format specification
  */
-void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, const char* format, va_list args) __FORMATPRINTF40__;
+void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, eLogMode logMode, const char* format, va_list args) __FORMATPRINTF50__;
 
 /*! @brief Send a formated Logs to console
  *
  * @param[in] *pApi Is the Console transmit API to work with
- * @param[in] severity This is the log severity.
- * @param[in] *format Format string (printf format), followed by arguments.
+ * @param[in] severity This is the log severity
+ * @param[in] logMode Indicates the type of log
+ * @param[in] *format Format string (printf format), followed by arguments
  * @param[in] ... Arguments for format specification
  */
-void LOG(ConsoleTx* pApi, eSeverity severity, const char* format, ...) __FORMATPRINTF34__;
+void LOG(ConsoleTx* pApi, eLogSeverity severity, eLogMode logMode, const char* format, ...) __FORMATPRINTF45__;
 
 //-----------------------------------------------------------------------------
 
@@ -276,59 +291,6 @@ void __HexDump(ConsoleTx* pApi, const char* context, const void* src, unsigned i
  */
 void __BinDump(ConsoleTx* pApi, const char* context, const void* src, unsigned int size);
 #endif
-
-//-----------------------------------------------------------------------------
-
-//! Log Title, use it instead of LOG!
-#define LOGTITLE_(api, format, ...)            LOG(api, lsTitle, format, ##__VA_ARGS__)
-//! Log Fatal, use it instead of LOG!
-#define LOGFATAL_(api, format, ...)            LOG(api, lsFatal, format, ##__VA_ARGS__)
-//! Log Error, use it instead of LOG!
-#define LOGERROR_(api, format, ...)            LOG(api, lsError, format, ##__VA_ARGS__)
-//! Log Warning, use it instead of LOG!
-#define LOGWARN_(api, format, ...)             LOG(api, lsWarning, format, ##__VA_ARGS__)
-//! Log Information, use it instead of LOG!
-#define LOGINFO_(api, format, ...)             LOG(api, lsInfo, format, ##__VA_ARGS__)
-//! Log Trace, use it instead of LOG!
-#define LOGTRACE_(api, format, ...)            LOG(api, lsTrace, format, ##__VA_ARGS__)
-#if (defined(DEBUG) || defined(_DEBUG))
-    //! Log Debug, use it instead of LOG!
-#   define LOGDEBUG_(api, format, ...)         LOG(api, lsDebug, format, ##__VA_ARGS__)
-    //! Log Special, use it instead of LOG!
-#   define LOGSPECIAL_(api, format, ...)       LOG(api, lsSpecial, format, ##__VA_ARGS__)
-    //! Hexadecimal dump of memory
-#   define HEXDUMP_(api, context, src, size)   __HexDump(api, context, src, size)
-    //! Binary dump of memory
-#   define BINDUMP_(api, context, src, size)   __BinDump(api, context, src, size)
-#else
-#   define LOGDEBUG_(api, format, ...)         do{}while(false)
-#   define LOGSPECIAL_(api, format, ...)       do{}while(false)
-#   define HEXDUMP_(api, context, src, size)   do{}while(false)
-#   define BINDUMP_(api, context, src, size)   do{}while(false)
-#endif
-
-#else /* USE_CONSOLE_TX */
-
-//! Log Title, use it instead of LOG!
-#define LOGTITLE_(api, format, ...)            do{}while(false)
-//! Log Fatal, use it instead of LOG!
-#define LOGFATAL_(api, format, ...)            do{}while(false)
-//! Log Error, use it instead of LOG!
-#define LOGERROR_(api, format, ...)            do{}while(false)
-//! Log Warning, use it instead of LOG!
-#define LOGWARN_(api, format, ...)             do{}while(false)
-//! Log Information, use it instead of LOG!
-#define LOGINFO_(api, format, ...)             do{}while(false)
-//! Log Trace, use it instead of LOG!
-#define LOGTRACE_(api, format, ...)            do{}while(false)
-//! Log Debug, use it instead of LOG!
-#define LOGDEBUG_(api, format, ...)            do{}while(false)
-//! Log Special, use it instead of LOG!
-#define LOGSPECIAL_(api, format, ...)          do{}while(false)
-//! Hexadecimal dump of memory
-#define HEXDUMP_(api, context, src, size)      do{}while(false)
-//! Binary dump of memory
-#define BINDUMP_(api, context, src, size)      do{}while(false)
 
 //-----------------------------------------------------------------------------
 #endif /* USE_CONSOLE_TX */
@@ -439,6 +401,9 @@ struct ConsoleRx
   UART_Interface* UART;       //!< This is the UART_RxInterface descriptor pointer that will be used to communicate with the device
 #else
   UART_Interface  UART;       //!< This is the UART_RxInterface descriptor that will be used to communicate with the device
+#endif
+#ifdef USE_CONSOLE_TX
+  ConsoleTx* pUART_Tx;        //!< This is the ConsoleTx descriptor pointer that will be used to return data on console
 #endif
 
   //--- Receive buffer ---
@@ -574,7 +539,7 @@ typedef enum
  * @param[in] value Is the GPIO command value decoded
  * @param[in] mask Is the GPIO command value mask decoded
  */
-CONSOLE_EXTERN void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask) CONSOLE_WEAK;
+void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask);
 #endif // USE_CONSOLE_GPIO_COMMANDS
 
 #ifdef USE_CONSOLE_EEPROM_COMMANDS
@@ -582,17 +547,18 @@ CONSOLE_EXTERN void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_
 /*! @brief Process EEPROM command Callback
  * @note This function is weak. Thus the used shall implement is own function
  * @details EEPROM Commands parsed are the following:
- * EEPROM<x> <action>[ <address>][ <size>][ <data>]
+ * EEPROM<x> <action>[ <address>][ <size>][ <format>][<data>]
  * Where:
- *  - <x> is the eeprom index to use. The default value is 0
+ *  - <x> is the EEPROM index to use. The default value is 0
  *  - <action> can be:
- *    - RD, READ: Read EEPROMx at <Address>, <size> bytes
- *    - WR, WRITE: Write <data> to EEPROMx at <Address>
+ *    - RD, READ: Read EEPROMx at <Address>, <size> bytes with <format> formated data
+ *    - WR, WRITE: Write <data> with <format> formated data to EEPROMx at <Address>
  *    - CLR, CLEAR: Clear the entire EEPROMx
  *    - SHOW: Show the entire EEPROMx with shaded blocks elements of pages
  *    - DUMP: Dump EEPROMx at <Address>, <size> bytes and show data in an hexadecimal editor representation
  *  - <address> is the address of data to read, write or dump. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value is 0
  *  - <size> is the size of data to read or dump. The value can be binary (0b prefix), decimal, hexadecimal (0x prefix). The default value is UINT32_MAX
+ *  - <format> is the format of the string to write in case of read or write. Nothing or a '\"' (double quote char) means the data is a string, a '0x', '0X', 'x', or 'X' means the data is an array of hex bytes
  *  - <data> is the data to apply in case of write. The data will end at a '\0' string terminal
  *
  * @param[in] action Is the EEPROM command action decoded
@@ -601,7 +567,7 @@ CONSOLE_EXTERN void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_
  * @param[in] size Is the size of data to read/dump
  * @param[in] *data Is the EEPROM command data to write
  */
-CONSOLE_EXTERN void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data) CONSOLE_WEAK;
+void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint32_t address, uint32_t size, char* data);
 #endif // USE_CONSOLE_EEPROM_COMMANDS
 
 //-----------------------------------------------------------------------------
