@@ -1556,7 +1556,7 @@ struct SJA1000
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define SJA1000_UNIQUE_ID  ( (((uint32_t)'S' << 0) ^ ((uint32_t)'J' << 4) ^ ((uint32_t)'A' << 8) ^ ((uint32_t)'1' << 14) ^ ((uint32_t)'0' << 18) ^ ((uint32_t)'0' << 22) ^ ((uint32_t)'0' << 26)) + __LINE__ + (sizeof(struct SJA1000) << 19) )
+#define SJA1000_UNIQUE_ID  ( (((uint32_t)'S' << 0) ^ ((uint32_t)'J' << 4) ^ ((uint32_t)'A' << 8) ^ ((uint32_t)'1' << 14) ^ ((uint32_t)'0' << 18) ^ ((uint32_t)'0' << 22) ^ ((uint32_t)'0' << 26)) + (sizeof(struct SJA1000) << 19) )
 
 //-----------------------------------------------------------------------------
 

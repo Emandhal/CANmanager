@@ -1187,7 +1187,7 @@ typedef union __MCP251X_PACKED__ MCP251X_TXBnCTRL_Register
   {
     uint8_t TXP  : 2; //!< 0-1 - Transmit Buffer Priority
     uint8_t      : 1; //!< 2
-    uint8_t TXREQ: 1; //!< 3   - Message Transmit Request: '1' = Buffer is currently pending transmission (MCU sets this bit to request message be transmitted – bit is automatically cleared when the message is sent) ; '0' = Buffer is not currently pending transmission (MCU can clear this bit to request a message abort)
+    uint8_t TXREQ: 1; //!< 3   - Message Transmit Request: '1' = Buffer is currently pending transmission (MCU sets this bit to request message be transmitted ï¿½ bit is automatically cleared when the message is sent) ; '0' = Buffer is not currently pending transmission (MCU can clear this bit to request a message abort)
     uint8_t TXERR: 1; //!< 4   - Transmission Error Detected: '1' = A bus error occurred while the message was being transmitted ; '0' = No bus error occurred while the message was being transmitted
     uint8_t MLOA : 1; //!< 5   - Message Lost Arbitration: '1' = Message lost arbitration while being sent ; '0' = Message did not lose arbitration while being sent
     uint8_t ABTF : 1; //!< 6   - Message Aborted Flag: '1' = Message was aborted ; '0' = Message completed transmission successfully
@@ -1610,7 +1610,7 @@ struct MCP251X
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define MCP251X_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 14) ^ ((uint32_t)'5' << 18) ^ ((uint32_t)'1' << 22) ^ ((uint32_t)'X' << 26)) + __LINE__ + (sizeof(struct MCP251X) << 19) )
+#define MCP251X_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 14) ^ ((uint32_t)'5' << 18) ^ ((uint32_t)'1' << 22) ^ ((uint32_t)'X' << 26)) + (sizeof(struct MCP251X) << 19) )
 
 //-----------------------------------------------------------------------------
 

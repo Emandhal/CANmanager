@@ -204,7 +204,7 @@ typedef struct TWIHS_TransferStruct
 //-----------------------------------------------------------------------------
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define TWIHS_UNIQUE_ID  ( (((uint32_t)'T' << 0) ^ ((uint32_t)'W' << 4) ^ ((uint32_t)'I' << 8) ^ ((uint32_t)'H' << 12) ^ ((uint32_t)'S' << 16) ^ ((uint32_t)'V' << 20) ^ ((uint32_t)'7' << 24) ^ ((uint32_t)'1' << 28)) + __LINE__ + (sizeof(struct TWIHS_TransferStruct) << 19) )
+#define TWIHS_UNIQUE_ID  ( (((uint32_t)'T' << 0) ^ ((uint32_t)'W' << 4) ^ ((uint32_t)'I' << 8) ^ ((uint32_t)'H' << 12) ^ ((uint32_t)'S' << 16) ^ ((uint32_t)'V' << 20) ^ ((uint32_t)'7' << 24) ^ ((uint32_t)'1' << 28)) + (sizeof(struct TWIHS_TransferStruct) << 19) )
 
 //-----------------------------------------------------------------------------
 

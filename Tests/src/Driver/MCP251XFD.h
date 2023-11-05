@@ -3392,7 +3392,7 @@ struct MCP251XFD
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define MCP251XFD_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 3) ^ ((uint32_t)'P' << 6) ^ ((uint32_t)'2' << 9) ^ ((uint32_t)'5' << 12) ^ ((uint32_t)'1' << 15) ^ ((uint32_t)'X' << 18) ^ ((uint32_t)'F' << 21) ^ ((uint32_t)'D' << 23)) + __LINE__ + (sizeof(struct MCP251XFD) << 19) )
+#define MCP251XFD_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 3) ^ ((uint32_t)'P' << 6) ^ ((uint32_t)'2' << 9) ^ ((uint32_t)'5' << 12) ^ ((uint32_t)'1' << 15) ^ ((uint32_t)'X' << 18) ^ ((uint32_t)'F' << 21) ^ ((uint32_t)'D' << 23)) + (sizeof(struct MCP251XFD) << 19) )
 
 //-----------------------------------------------------------------------------
 
@@ -4850,7 +4850,7 @@ class MCP251XFD_Component
      * @see #Init_MCP251XFD
      */
     eERRORRESULT Init(const MCP251XFD_Config& pConf) { return Init_MCP251XFD(&Comp, &pConf); };
-    
+
     /*! @brief RAM initialization of the MCP251XFD
      * @see #MCP251XFD_InitRAM
      */

@@ -52,10 +52,6 @@
 #  include "GPIO_Interface.h"
 #endif
 //-----------------------------------------------------------------------------
-#ifdef __cplusplus
-extern "C" {
-#endif
-//-----------------------------------------------------------------------------
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +70,12 @@ extern "C" {
 #define MCP230XX_CONTROL_ITEM_SIZE(item, size)  enum { item##_size_must_be_##size##_bytes = 1 / (int)(!!(sizeof(item) == size)) }
 
 //-----------------------------------------------------------------------------
+
+
+
+//********************************************************************************************************************
+// MCP230XX limits definitions
+//********************************************************************************************************************
 
 // Limits definitions
 #define MCP23008_I2CCLOCK_MAX   ( 1700000u ) //!< MCP23008 Max I2C clock frequency
@@ -105,8 +107,6 @@ extern "C" {
 #define MCP230XX_ADDR_RES(R1, R2)  ( (uint8_t)((((8u * (uint32_t)(R2)) / ((uint32_t)(R1) + (uint32_t)(R2))) << 1) & MCP230XX_CHIPADDRESS_MASK) )
 
 //-----------------------------------------------------------------------------
-
-
 
 
 
@@ -194,8 +194,6 @@ typedef enum
 } eMCP230XX_Registers;
 
 //-----------------------------------------------------------------------------
-
-
 
 
 
@@ -411,8 +409,6 @@ typedef struct MCP230XX_RegLinks
 
 
 
-
-
 //********************************************************************************************************************
 // MCP230XX Driver API
 //********************************************************************************************************************
@@ -473,7 +469,7 @@ struct MCP230XX
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define MCP230XX_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 12) ^ ((uint32_t)'3' << 16) ^ ((uint32_t)'0' << 20) ^ ((uint32_t)'X' << 24) ^ ((uint32_t)'X' << 28)) + __LINE__ + (sizeof(struct MCP230XX) << 19) )
+#define MCP230XX_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 12) ^ ((uint32_t)'3' << 16) ^ ((uint32_t)'0' << 20) ^ ((uint32_t)'X' << 24) ^ ((uint32_t)'X' << 28)) + (sizeof(struct MCP230XX) << 19) )
 
 //-----------------------------------------------------------------------------
 

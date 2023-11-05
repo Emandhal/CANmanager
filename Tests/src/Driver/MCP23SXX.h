@@ -441,7 +441,7 @@ struct MCP23SXX
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define MCP23SXX_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 12) ^ ((uint32_t)'3' << 16) ^ ((uint32_t)'S' << 20) ^ ((uint32_t)'X' << 24) ^ ((uint32_t)'X' << 28)) + __LINE__ + (sizeof(struct MCP23SXX) << 19) )
+#define MCP23SXX_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'P' << 8) ^ ((uint32_t)'2' << 12) ^ ((uint32_t)'3' << 16) ^ ((uint32_t)'S' << 20) ^ ((uint32_t)'X' << 24) ^ ((uint32_t)'X' << 28)) + (sizeof(struct MCP23SXX) << 19) )
 
 //-----------------------------------------------------------------------------
 

@@ -138,7 +138,7 @@ typedef struct SPI_TransferStruct
 //-----------------------------------------------------------------------------
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define SPI_UNIQUE_ID  ( (((uint32_t)'S' << 0) ^ ((uint32_t)'P' << 5) ^ ((uint32_t)'I' << 10) ^ ((uint32_t)'V' << 15) ^ ((uint32_t)'7' << 20) ^ ((uint32_t)'1' << 25)) + __LINE__ + (sizeof(struct SPI_TransferStruct) << 19) )
+#define SPI_UNIQUE_ID  ( (((uint32_t)'S' << 0) ^ ((uint32_t)'P' << 5) ^ ((uint32_t)'I' << 10) ^ ((uint32_t)'V' << 15) ^ ((uint32_t)'7' << 20) ^ ((uint32_t)'1' << 25)) + (sizeof(struct SPI_TransferStruct) << 19) )
 
 //-----------------------------------------------------------------------------
 
