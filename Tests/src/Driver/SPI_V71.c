@@ -37,17 +37,17 @@ static SPI_XDMAChandles __HasReservedDMAchannel[SPI_COUNT] =
 
 static volatile SPI_TransferStruct __SPItransferList[SPI_COUNT] =
 {
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // SPI/SPI0/FLEXCOM0
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // SPI/SPI0/FLEXCOM0
 #if (SPI_COUNT > 1)
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // SPI1/FLEXCOM1
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // SPI1/FLEXCOM1
 #endif
 #if (SPI_COUNT > 2)
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM2
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM3
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM4
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM5
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM6
-  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // FLEXCOM7
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM2
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM3
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM4
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM5
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM6
+  { .TxData = NULL, .RxData = NULL, .IsAsserted = false, .Status = SPI_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // FLEXCOM7
 #endif
 };
 
@@ -119,7 +119,7 @@ eERRORRESULT SPI_Init(Spi* pSPI, const SPI_Config* pConf)
     //--- Set value to register ---
     pSPI->SPI_CSR[z] = Value; //** Set CRSx register value
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -294,7 +294,7 @@ eERRORRESULT SPI_InterruptEnable(Spi* pSPI, uint32_t sourcesInterrupts, bool ena
   }
   //--- Enable the specified interrupts ---
   pSPI->SPI_IER = sourcesInterrupts;
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -316,7 +316,7 @@ eERRORRESULT SPI_InterruptDisable(Spi* pSPI, uint32_t sourcesInterrupts, bool di
   //--- Disable the specified interrupts ---
   pSPI->SPI_IDR = sourcesInterrupts;
   (void)SPI_GetInterruptStatus(pSPI); // Clear Interrupts status
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -357,7 +357,7 @@ eERRORRESULT SPI_SetSPIclockHz(Spi* pSPI, uint8_t chipSelect, uint32_t desiredCl
   pSPI->SPI_CSR[chipSelect] &= (~SPI_CSR_SCBR_Msk);
   pSPI->SPI_CSR[chipSelect] |= SPI_CSR_SCBR(Div);
 
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -476,7 +476,7 @@ eERRORRESULT SPI_Transfer(Spi* pSPI, SPIInterface_Packet* const pPacketDesc)
   //--- Endianness result ---
   pPacketDesc->Config.Value &= ~SPI_ENDIAN_RESULT_Mask;
   pPacketDesc->Config.Value |= SPI_ENDIAN_RESULT_SET(EndianTransform); // Indicate that the endian transform have been processed
-  return (ForceTerminate ? ERR__SPI_TIMEOUT : ERR_OK);
+  return (ForceTerminate ? ERR__SPI_TIMEOUT : ERR_NONE);
 }
 
 eERRORRESULT SPI_Transfer_Gen(SPI_Interface *pIntDev, uint8_t chipSelect, uint8_t *txData, uint8_t *rxData, size_t size)
@@ -558,7 +558,7 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
       __SPItransferList[PeriphNumber].Status = SPI_STATUS_READY; // Set status as ready for the next transfer
       __SPItransferList[PeriphNumber].Config.Value = 0;          // Clear current configuration
       __SPItransferList[PeriphNumber].IsAsserted = false;        // Transfer is deasserted
-      return ERR_OK;
+      return ERR_NONE;
 
     case SPI_STATUS_FAULT:                                       //** SPI transfer in fault
       __SPItransferList[PeriphNumber].Status = SPI_STATUS_READY; // Set ready for a new transfer
@@ -569,7 +569,7 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
     default:                                                     // Configure the transfer with the following lines
       break;
   }
-  if (pPacketDesc->DataSize == 0) return ERR_OK;                 // Nothing to send, return
+  if (pPacketDesc->DataSize == 0) return ERR_NONE;                 // Nothing to send, return
 
   //--- Configure the transfer ---
   if ((pSPI->SPI_MR & SPI_MR_PS) == 0)                           // Fixed chip select?
@@ -580,7 +580,7 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
     else pSPI->SPI_MR |= SPI_MR_PCS(pPacketDesc->ChipSelect);
   }
   Error = SPI_InterruptDisable(pSPI, SPI_ALL_INTERRUPTS, false);
-  if (Error != ERR_OK) return Error;
+  if (Error != ERR_NONE) return Error;
 
   //--- Configure status ---
   __SPItransferList[PeriphNumber].TxData         = pPacketDesc->TxData;
@@ -588,7 +588,7 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
   __SPItransferList[PeriphNumber].Size           = pPacketDesc->DataSize;
   __SPItransferList[PeriphNumber].IsAsserted     = false;
   __SPItransferList[PeriphNumber].Status         = SPI_STATUS_IN_PROGRESS;
-  __SPItransferList[PeriphNumber].Error          = ERR_OK;
+  __SPItransferList[PeriphNumber].Error          = ERR_NONE;
   __SPItransferList[PeriphNumber].TransactionCounter++;
   if (__SPItransferList[PeriphNumber].TransactionCounter > SPI_TRANSACTION_NUMBER_Mask) __SPItransferList[PeriphNumber].TransactionCounter = 1; // Value cannot be 0
   __SPItransferList[PeriphNumber].Config.Value   = (pPacketDesc->Config.Value & ~SPI_ENDIAN_RESULT_Mask)
@@ -630,12 +630,12 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
                                  | XDMAC_CIE_ROIE;             // Request Overflow Error Interrupt Enable Bit
     //--- Configure and enable DMA channel ---
     Error = XDMAC_ConfigureTransfer(__HasReservedDMAchannel[PeriphNumber].Tx, &__XDMAC_SPIconfig);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
 #ifdef CONF_BOARD_ENABLE_CACHE
     SCB_CleanDCache_by_Addr((uint32_t*)__SPItransferList[PeriphNumber].TxData, __SPItransferList[PeriphNumber].Size);
 #endif
     Error = XDMAC_ChannelEnable(__HasReservedDMAchannel[PeriphNumber].Tx);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
   }
   if (pPacketDesc->RxData != NULL)
   {
@@ -671,12 +671,12 @@ static eERRORRESULT __SPI_DMA_Transfer(Spi *pSPI, SPIInterface_Packet* const pPa
                                  | XDMAC_CIE_ROIE;             // Request Overflow Error Interrupt Enable Bit
     //--- Configure and enable DMA channel ---
     Error = XDMAC_ConfigureTransfer(__HasReservedDMAchannel[PeriphNumber].Rx, &__XDMAC_SPIconfig);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
 #ifdef CONF_BOARD_ENABLE_CACHE
     SCB_CleanDCache_by_Addr((uint32_t*)__SPItransferList[PeriphNumber].RxData, __SPItransferList[PeriphNumber].Size);
 #endif
     Error = XDMAC_ChannelEnable(__HasReservedDMAchannel[PeriphNumber].Rx);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
   }
   return ERR__SPI_BUSY;
 }
@@ -750,10 +750,6 @@ eERRORRESULT SPI_PacketTransfer_Gen(SPI_Interface *pIntDev, SPIInterface_Packet*
   Spi* pSPI = (Spi*)(pIntDev->InterfaceDevice);
   return SPI_PacketTransfer(pSPI, pPacketDesc);
 }
-
-
-
-
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

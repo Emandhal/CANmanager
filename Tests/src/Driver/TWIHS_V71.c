@@ -38,17 +38,17 @@ static HandleXDMAC __HasReservedDMAchannel[TWIHS_COUNT] =
 
 static volatile TWIHS_TransferStruct __TWIHStransferList[TWIHS_COUNT] =
 {
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI0/TWIHS0
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI0/TWIHS0
 #if (TWIHS_COUNT > 2)
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI1/TWIHS1
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI2/TWIHS2
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI1/TWIHS1
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI2/TWIHS2
 #endif
 #if (TWIHS_COUNT > 3)
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI3
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI4
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI5
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI6
-  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_OK, .TransactionCounter = 0, }, // TWI7
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI3
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI4
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI5
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI6
+  { .Data = NULL, .RemainingBytes = 0, .Status = TWIHS_STATUS_UNINITIALIZED, .Error = ERR_NONE, .TransactionCounter = 0, }, // TWI7
 #endif
 };
 
@@ -199,7 +199,7 @@ eERRORRESULT TWIHS_InterruptEnable(Twihs* pTWIHS, uint32_t sourcesInterrupts, bo
   }
   //--- Enable the specified interrupts ---
   pTWIHS->TWIHS_IER = sourcesInterrupts;
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -218,7 +218,7 @@ eERRORRESULT TWIHS_InterruptDisable(Twihs* pTWIHS, uint32_t sourcesInterrupts, b
   //--- Disable the specified interrupts ---
   pTWIHS->TWIHS_IDR = sourcesInterrupts;
   (void)TWIHS_GetInterruptStatus(pTWIHS); // Clear Interrupts status
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -332,7 +332,7 @@ eERRORRESULT TWIHS_BusRecovery(Twihs* pTWIHS)
 
     default: break;
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -381,7 +381,7 @@ eERRORRESULT TWIHS_SetI2CclockHz(Twihs* pTWIHS, uint32_t desiredClockHz)
     // Set clock waveform generator register
     pTWIHS->TWIHS_CWGR = TWIHS_CWGR_CLDIV(CLHDIV) | TWIHS_CWGR_CHDIV(CLHDIV) | TWIHS_CWGR_CKDIV(CKDIV);
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -438,7 +438,7 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
       if (!Timeout--) return ERR__I2C_TIMEOUT;                 // Timeout ? return an error
       if ((Status & TWIHS_SR_TXCOMP) > 0) break;
     }
-    return ERR_OK;
+    return ERR_NONE;
   }
 
   //--- Endianness configuration for data striding ---
@@ -506,7 +506,7 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
   //--- Endianness result ---
   pPacketDesc->Config.Value &= ~I2C_ENDIAN_RESULT_Mask;
   pPacketDesc->Config.Value |= I2C_ENDIAN_RESULT_SET(EndianTransform); // Indicate that the endian transform have been processed
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 eERRORRESULT TWIHS_Transfer_Gen(I2C_Interface *pIntDev, const uint8_t deviceAddress, uint8_t *data, size_t byteCount, bool start, bool stop)
@@ -636,7 +636,7 @@ static void __TWIHS_Handler(Twihs* pTWIHS)
   if ((Status & TWIHS_SR_TXCOMP) > 0)
   {
     __TWIHStransferList[PeriphNumber].Status = TWIHS_STATUS_COMPLETE;
-    __TWIHStransferList[PeriphNumber].Error  = ERR_OK;
+    __TWIHStransferList[PeriphNumber].Error  = ERR_NONE;
     pTWIHS->TWIHS_IDR = ~0ul;
   }
 }
@@ -673,7 +673,7 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
 //      pPacketDesc->Config.Value |= I2C_ENDIAN_RESULT_SET(I2C_ENDIAN_TRANSFORM_GET(pPacketDesc->Config.Value)); // Indicate that the endian transform have been processed
       __TWIHStransferList[PeriphNumber].Status = TWIHS_STATUS_READY; // Set status as ready for the next transfer
       __TWIHStransferList[PeriphNumber].Config.Value = 0;            // Clear current configuration
-      return ERR_OK;
+      return ERR_NONE;
 
     case TWIHS_STATUS_FAULT:                                         //** TWIHS transfer in fault
       __TWIHStransferList[PeriphNumber].Status = TWIHS_STATUS_READY; // Set ready for a new transfer
@@ -684,7 +684,7 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
     default:                                                         // Configure the transfer with the following lines
       break;
   }
-  if ((pPacketDesc->pBuffer == NULL) || (pPacketDesc->BufferSize == 0)) return ERR_OK; // Nothing to send, return
+  if ((pPacketDesc->pBuffer == NULL) || (pPacketDesc->BufferSize == 0)) return ERR_NONE; // Nothing to send, return
 
   //--- Configure the transfer ---
   const bool DeviceWrite = ((pPacketDesc->ChipAddr & 0x01) == 0);
@@ -694,7 +694,7 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
   NVIC_EnableIRQ(PeriphID);
   NVIC_SetPriority(PeriphID, TWI_IRQ_level);
   Error = TWIHS_InterruptDisable(pTWIHS, TWIHS_ALL_INTERRUPTS, false);
-  if (Error != ERR_OK) return Error;
+  if (Error != ERR_NONE) return Error;
 
   //--- Configure status ---
   __TWIHStransferList[PeriphNumber].DeviceWrite    = DeviceWrite;
@@ -702,7 +702,7 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
   __TWIHStransferList[PeriphNumber].Size           = pPacketDesc->BufferSize;
   __TWIHStransferList[PeriphNumber].RemainingBytes = pPacketDesc->BufferSize;
   __TWIHStransferList[PeriphNumber].Status         = TWIHS_STATUS_IN_PROGRESS;
-  __TWIHStransferList[PeriphNumber].Error          = ERR_OK;
+  __TWIHStransferList[PeriphNumber].Error          = ERR_NONE;
   __TWIHStransferList[PeriphNumber].TransactionCounter++;
   if (__TWIHStransferList[PeriphNumber].TransactionCounter > I2C_TRANSACTION_NUMBER_Mask) __TWIHStransferList[PeriphNumber].TransactionCounter = 1; // Value cannot be 0
   __TWIHStransferList[PeriphNumber].Config.Value   = (pPacketDesc->Config.Value & ~I2C_ENDIAN_RESULT_Mask)
@@ -826,12 +826,12 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
                                  | XDMAC_CIE_ROIE; // Request Overflow Error Interrupt Enable Bit
     //--- Configure and enable DMA channel ---
     Error = XDMAC_ConfigureTransfer(__HasReservedDMAchannel[PeriphNumber], &__XDMAC_I2Cconfig);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
 # ifdef CONF_BOARD_ENABLE_CACHE
     SCB_CleanDCache_by_Addr((uint32_t*)__TWIHStransferList[PeriphNumber].Data, __TWIHStransferList[PeriphNumber].Size);
 # endif
     Error = XDMAC_ChannelEnable(__HasReservedDMAchannel[PeriphNumber]);
-    if (Error != ERR_OK) return Error;
+    if (Error != ERR_NONE) return Error;
   }
 
   //--- Set I2C interrupts ---
@@ -922,7 +922,7 @@ eERRORRESULT TWIHS_PacketTransfer(Twihs *pTWIHS, I2CInterface_Packet* const pPac
            pTWIHS->TWIHS_IADR <<= 8;
            pTWIHS->TWIHS_IADR |= pPacketDesc->pBuffer[z];
          }
-         return ERR_OK;
+         return ERR_NONE;
        }
     }
     else return __TWIHS_DMA_Transfer(pTWIHS, pPacketDesc);

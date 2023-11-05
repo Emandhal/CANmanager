@@ -10,16 +10,12 @@
 //-----------------------------------------------------------------------------
 #include "XDMAC_V71.h"
 //-----------------------------------------------------------------------------
-/// @cond 0
-/**INDENT-OFF**/
 #ifndef __cplusplus
 #  include <asf.h>
 #else
 #  include <cstdint>
 extern "C" {
 #endif
-/**INDENT-ON**/
-/// @endcond
 //-----------------------------------------------------------------------------
 
 /*//! Conversion table to get the HardWare Interface ID
@@ -116,7 +112,7 @@ eERRORRESULT XDMAC_Init(Xdmac* pXDMAC, bool enableNVIC, uint32_t nvicPriority)
 
   //--- Reset XDMAC peripheral ---
   XDMAC_Reset(pXDMAC);            // Reset the XDMAC peripheral
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -183,7 +179,7 @@ eERRORRESULT XDMAC_CloseChannel(HandleXDMAC handleDMA)
   ChannelHandles[Channel].InUse               = false;
   ChannelHandles[Channel].fnDMACallback       = NULL;
   ChannelHandles[Channel].DMAInterruptContext = 0;
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -201,7 +197,7 @@ eERRORRESULT XDMAC_ConfigureTransfer(HandleXDMAC handleDMA, const XDMAC_ChannelC
   eERRORRESULT Error;
   setXDMACchan_InterruptEvents InterruptsFlags;
   Error = XDMAC_GetInterruptStatus(handleDMA, &InterruptsFlags); // Clear Interrupts status, and do nothing with the flags
-  if (Error != ERR_OK) return Error;
+  if (Error != ERR_NONE) return Error;
 
   //--- Configure the DMA channel ---
   ChannelHandles[Channel].pChannel->XDMAC_CSA  = pConfig->MBR_SA;                    // Source Address Register
@@ -240,7 +236,7 @@ eERRORRESULT XDMAC_InterruptEnable(HandleXDMAC handleDMA, setXDMACchan_Interrupt
   //--- Enable the specified interrupts ---
   ChannelHandles[Channel].pXDMAC->XDMAC_GIE   = (XDMAC_GIE_IE0 << Channel);
   ChannelHandles[Channel].pChannel->XDMAC_CIE = sourcesInterrupts;
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -273,7 +269,7 @@ eERRORRESULT XDMAC_GetInterruptStatus(HandleXDMAC handleDMA, setXDMACchan_Interr
 
   //--- Get the interrupts flags ---
   *interruptsFlags = (setXDMACchan_InterruptEvents)ChannelHandles[Channel].pChannel->XDMAC_CIS;
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -300,7 +296,7 @@ eERRORRESULT XDMAC_Reset(Xdmac* pXDMAC)
     ChannelHandles[z].fnDMACallback       = NULL;
     ChannelHandles[z].DMAInterruptContext = 0;
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -349,7 +345,7 @@ eERRORRESULT XDMAC_ChannelEnable(HandleXDMAC handleDMA)
   //--- Update DCache before DMA transmit ---
   //SCB_CleanInvalidateDCache();
   ChannelHandles[Channel].pXDMAC->XDMAC_GE = (XDMAC_GE_EN0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -362,7 +358,7 @@ eERRORRESULT XDMAC_ChannelDisable(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GD = (XDMAC_GD_DI0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -375,7 +371,7 @@ eERRORRESULT XDMAC_ChannelReadSuspend(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GRS |= (XDMAC_GRS_RS0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -388,7 +384,7 @@ eERRORRESULT XDMAC_ChannelWriteSuspend(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GWS |= (XDMAC_GWS_WS0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -401,7 +397,7 @@ eERRORRESULT XDMAC_ChannelReadWriteSuspend(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GRWS = (XDMAC_GRWS_RWS0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -414,7 +410,7 @@ eERRORRESULT XDMAC_ChannelReadWriteResume(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GRWR = (XDMAC_GRWR_RWR0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -427,7 +423,7 @@ eERRORRESULT XDMAC_ChannelSoftwareRequest(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GSWR = (XDMAC_GSWR_SWREQ0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -440,7 +436,7 @@ eERRORRESULT XDMAC_GetSoftwareRequestStatus(HandleXDMAC handleDMA, bool* request
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   *requestIsPending = ((ChannelHandles[Channel].pXDMAC->XDMAC_GSWS & (XDMAC_GSWS_SWRS0 << Channel)) > 0);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 
@@ -453,19 +449,11 @@ eERRORRESULT XDMAC_ChannelSoftwareFlushRequest(HandleXDMAC handleDMA)
   size_t Channel = __XDMAC_GetChannelPerHandle(handleDMA);
   if (Channel == (size_t)-1) return ERR__INVALID_HANDLE;
   ChannelHandles[Channel].pXDMAC->XDMAC_GSWF = (XDMAC_GSWF_SWF0 << Channel);
-  return ERR_OK;
+  return ERR_NONE;
 }
 
-
-
-
-
 //-----------------------------------------------------------------------------
-/// @cond 0
-/**INDENT-OFF**/
 #ifdef __cplusplus
 }
 #endif
-/**INDENT-ON**/
-/// @endcond
 //-----------------------------------------------------------------------------
