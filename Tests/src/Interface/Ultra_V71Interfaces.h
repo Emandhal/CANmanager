@@ -38,8 +38,12 @@
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
 #include "GPIO_Interface.h"
-#include "AT24MAC402.h"
-#include "MCAN_V71.h"
+#ifdef USE_EEPROM_GENERICNESS
+#  include "AT24MAC402.h"
+#endif
+#ifdef USE_V71_MCAN
+#  include "MCAN_V71.h"
+#endif
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
   extern "C" {
@@ -51,10 +55,12 @@
 //********************************************************************************************************************
 // SAMV71 MCAN0 peripheral
 //********************************************************************************************************************
+#ifdef USE_V71_MCAN
 extern CAN_BitTimeStats MCAN0V71_BitTimeStats; //!< MCAN0V71 Bit Time stat
 
 extern struct MCANV71 MCAN0V71;             //!< Component structure of the MCAN0 on SAMV71
-extern struct MCANV71_Config MCAN0V71_Conf; //!< Configuration structure of the MCAN0 on SAMV71
+extern struct MCAN_Config MCAN0V71_Conf; //!< Configuration structure of the MCAN0 on SAMV71
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -62,10 +68,20 @@ extern struct MCANV71_Config MCAN0V71_Conf; //!< Configuration structure of the 
 //********************************************************************************************************************
 // SAMV71 MCAN1 peripheral
 //********************************************************************************************************************
+#ifdef USE_V71_MCAN
 extern CAN_BitTimeStats MCAN1V71_BitTimeStats; //!< MCAN1V71 Bit Time stat
+extern uint32_t MCAN1V71_SYSCLK;               //!< SYSCLK frequency will be stored here after using #Init_MCANV71()
 
-extern struct MCANV71 MCAN1V71;             //!< Component structure of the MCAN1 on SAMV71
-extern struct MCANV71_Config MCAN1V71_Conf; //!< Configuration structure of the MCAN1 on SAMV71
+extern struct MCANV71 MCAN1V71;          //!< Component structure of the MCAN1 on SAMV71
+extern struct MCAN_Config MCAN1V71_Conf; //!< Configuration structure of the MCAN1 on SAMV71
+
+#define MCAN1V71_OBJ_COUNT    6
+extern CAN_RAMconfig MCAN1_FIFObuff_RAMInfos[MCAN1V71_OBJ_COUNT]; //!< FIFO/Buffer RAM informations array
+extern MCAN_FIFObuff MCAN1_FIFObuffList[MCAN1V71_OBJ_COUNT];      //!< FIFO/Buffer configuration structure
+
+#define MCAN1V71_FILTER_COUNT  (10 + 11)
+extern MCAN_Filter MCAN1_FilterList[MCAN1V71_FILTER_COUNT]; //!< Filter configuration structure
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -73,7 +89,9 @@ extern struct MCANV71_Config MCAN1V71_Conf; //!< Configuration structure of the 
 //********************************************************************************************************************
 // SAMV71 I2C peripheral
 //********************************************************************************************************************
+#ifdef USE_EEPROM_GENERICNESS
 extern struct I2C_Interface I2C0_V71;
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -89,9 +107,11 @@ extern struct SPI_Interface SPI0_V71;
 //********************************************************************************************************************
 // AT24MAC402 Component
 //********************************************************************************************************************
+#ifdef USE_EEPROM_GENERICNESS
 // Component structure of the AT24MAC402 with hard I2C on the V71
 extern struct AT24MAC402 AT24MAC402_V71;
 #define EEPROM_AT24MAC402  &AT24MAC402_V71
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -122,8 +142,6 @@ uint32_t GetCurrentms_V71(void);
 //********************************************************************************************************************
 // PORTs interfaces of V71
 //********************************************************************************************************************
-
-//**********************************************************************************************************************************************************
 
 /*! @brief PORT set pins direction for V71
  *
@@ -156,7 +174,6 @@ eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pins
 
 
 
-//**********************************************************************************************************************************************************
 //********************************************************************************************************************
 // GPIO Interfaces of V71
 //********************************************************************************************************************

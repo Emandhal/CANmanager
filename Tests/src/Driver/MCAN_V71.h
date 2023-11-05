@@ -97,7 +97,7 @@ struct MCANV71
 
   //--- Driver configuration ---
   setMCAN_DriverConfig DriverConfig; //!< Driver configuration, by default it is MCAN_DRIVER_NORMAL_USE. Configuration can be OR'ed
-  
+
   //--- MCAN interface ---
   MCAN_Interface _MCAN;              //!< DO NOT USE OR CHANGE THIS VALUE, WILL BE FILLED AT INIT WITH PROPER VALUES. This is the MCAN_Interface descriptor that will be used to communicate with the MCAN core
 
@@ -111,7 +111,7 @@ struct MCANV71
 };
 
 //! This unique ID is a helper for pointer recognition when using USE_GENERICS_DEFINED for generic call of GPIO or PORT use (using GPIO_Interface.h)
-#define MCANV71_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'A' << 8) ^ ((uint32_t)'N' << 14) ^ ((uint32_t)'V' << 18) ^ ((uint32_t)'7' << 22) ^ ((uint32_t)'1' << 26)) + __LINE__ + (sizeof(struct MCANV71) << 19) )
+#define MCANV71_UNIQUE_ID  ( (((uint32_t)'M' << 0) ^ ((uint32_t)'C' << 4) ^ ((uint32_t)'A' << 8) ^ ((uint32_t)'N' << 14) ^ ((uint32_t)'V' << 18) ^ ((uint32_t)'7' << 22) ^ ((uint32_t)'1' << 26)) + (sizeof(struct MCANV71) << 19) )
 
 //-----------------------------------------------------------------------------
 

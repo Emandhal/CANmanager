@@ -462,6 +462,7 @@
       <Value>BOARD=SAMV71_XPLAINED_ULTRA</Value>
       <Value>USE_ERRORS_STRING</Value>
       <Value>CHECK_NULL_PARAM</Value>
+      <Value>USE_V71_MCAN</Value>
       <Value>USE_DYNAMIC_INTERFACE</Value>
       <Value>CAN_AUTOMATIC_BITRATE_CALCULUS</Value>
       <Value>USE_EEPROM_GENERICNESS</Value>
@@ -766,6 +767,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Utils\CRC16_CMS.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Utils\StringTools.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Utils\StringTools.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\common\services\delay\delay.h">

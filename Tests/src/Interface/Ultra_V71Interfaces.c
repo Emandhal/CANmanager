@@ -8,7 +8,9 @@
 
 //-----------------------------------------------------------------------------
 #include "Ultra_V71Interfaces.h"
-#include "TWIHS_V71.h"
+#ifdef USE_EEPROM_GENERICNESS
+#  include "TWIHS_V71.h"
+#endif
 #include "SPI_V71.h"
 #include "Main.h"
 //-----------------------------------------------------------------------------
@@ -25,72 +27,19 @@ extern "C" {
 
 
 //********************************************************************************************************************
-// SAMV71 MCAN peripheral functions
-//********************************************************************************************************************
-//=============================================================================
-// This function is called when the MCANV71 needs to configure the peripheral clock
-//=============================================================================
-eERRORRESULT MCANV71_ConfigurePeripheralClocks(MCANV71 *pComp, uint32_t* const peripheralClock)
-{ // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
-  #ifdef CHECK_NULL_PARAM
-  if ((pComp == NULL) || (peripheralClock == NULL)) return ERR__PARAMETER_ERROR;
-  #endif
-  Mcan* pMCAN = (Mcan*)pComp->Instance;
-  //-- Get peripheral ID ---
-  uint32_t PeriphID = 0;
-  if (pMCAN == MCAN0) PeriphID = ID_MCAN0;
-  else if (pMCAN == MCAN1) PeriphID = ID_MCAN1;
-  else return ERR__PERIPHERAL_NOT_VALID;
-  //--- Enable clock ---
-  static bool Is_MCAN_PMC_PCK_Enabled = false;
-  if (Is_MCAN_PMC_PCK_Enabled == false)
-  {
-    pmc_disable_pck(PMC_PCK_5);
-    pmc_switch_pck_to_upllck(PMC_PCK_5, PMC_PCK_PRES(5)); // UPLL is 480MHz, so UPLL/(5+1) = 80MHz
-    pmc_enable_pck(PMC_PCK_5);
-    NVIC_EnableIRQ(PMC_PCK_5);
-    Is_MCAN_PMC_PCK_Enabled = true;
-  }
-  pmc_enable_periph_clk(PeriphID);
-  *peripheralClock = PLL_UPLL_HZ / (5+1);
-  return ERR_NONE;
-}
-
-
-#define CCFG_CAN0_CAN0DMABA_SET(value)   ( (value) & CCFG_CAN0_CAN0DMABA_Msk  )
-#define CCFG_SYSIO_CAN1DMABA_SET(value)  ( (value) & CCFG_SYSIO_CAN1DMABA_Msk )
-//=============================================================================
-// This function is called when the MCANV71 needs to configure the 16-bit MSB of
-// the MCAN base address (replace weak function in "MCANV71")
-//=============================================================================
-eERRORRESULT MCANV71_ConfigureMCANbaseAddress(MCANV71 *pComp)
-{
-  if (pComp->Instance == MCAN0)
-  MATRIX->CCFG_CAN0  = CCFG_CAN0_CAN0DMABA_SET((uint32_t)pComp->RAMallocation);
-  else MATRIX->CCFG_SYSIO = CCFG_SYSIO_CAN1DMABA_SET((uint32_t)pComp->RAMallocation);
-  return ERR_NONE;
-}
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
-//********************************************************************************************************************
 // SAMV71 MCAN0 peripheral
 //********************************************************************************************************************
+#ifdef USE_V71_MCAN
 
 #define MCAN0_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u ) //!< 32-bits word * 4352 words max for MCAN0 is 17408 bytes
 uint8_t MCAN0_RAMbuffer[MCAN0_CAN_BUFFER_SIZE];             //!< RAM buffer for the MCAN0
 
-//! Peripheral structure of the MCAN0 on SAMV71
+//! Peripheral structure of the MCAN1 on SAMV71
 struct MCANV71 MCAN0V71 =
 {
   .UserDriverData = NULL,
   //--- Driver configuration ---
   .DriverConfig   = MCAN_DRIVER_NORMAL_USE,
-  .InternalConfig = 0,
   //--- MCAN peripheral ---
   .Instance       = MCAN0,
   .RAMallocation  = &MCAN0_RAMbuffer[0],
@@ -102,19 +51,19 @@ struct MCANV71 MCAN0V71 =
 //-----------------------------------------------------------------------------
 
 CAN_BitTimeStats MCAN0V71_BitTimeStats = { 0 }; //!< MCAN0V71 Bit Time stat
-uint32_t MCAN0V71_SYSCLK; //!< SYSCLK frequency will be stored here after using #Init_MCANV71()
+uint32_t MCAN0V71_SYSCLK = 0; //!< SYSCLK frequency will be stored here after using #Init_MCANV71()
 
 //! Configuration structure of the MCAN0 on SAMV71
-struct MCANV71_Config MCAN0V71_Config =
+struct MCAN_Config MCAN0V71_Conf =
 {
   //--- Controller clocks ---
-  .MainFreq               = 0, //!< Use peripheral frequency called by #MCANV71_ConfigurePeripheralClocks()
   .MessageRAMwatchdogConf = 0,
+  .SYSCLK_Result          = &MCAN0V71_SYSCLK,
   //--- RAM configuration ---
   .SIDelementsCount       = 10,
-  .EIDelementsCount       = 10,
+  .EIDelementsCount       = 11,
   //--- CAN configuration ---
-  .ExtendedIDrangeMask    = 0x00000000,
+  .ExtendedIDrangeMask    = MCAN_EID_AND_RANGE_MASK,
   .RejectAllStandardIDs   = false,
   .RejectAllExtendedIDs   = false,
   .NonMatchingStandardID  = MCAN_ACCEPT_IN_RX_FIFO_0,
@@ -123,8 +72,8 @@ struct MCANV71_Config MCAN0V71_Config =
   {
     .DesiredNominalBitrate = CAN_SHIELD_BITRATE,   // Desired CAN2.0A/CAN2.0B bitrate in bit/s
     .DesiredDataBitrate    = CANFD_SHIELD_BITRATE, // Desired Data CANFD bitrate in bit/s
-    .BusMeters             = 1,                    // Only 10cm on the V71_UltraXplained_CAN_Shield
-    .TransceiverDelay      = 330,                  // The transceiver is a TLE9255WSKXUMA1 on the CAN_Shield_V71 board. The worst delay is from Normal mode, Propagation delay, increased load, TxD to RxD
+    .BusMeters             = 1,
+    .TransceiverDelay      = 300,                  // The transceiver is a ATA6561-GBQW on the board. The worst delay is from Normal mode, Falling edge at pin TXD
     .NominalSamplePoint    = 75,                   // Nominal sample point in percent
     .DataSamplePoint       = 75,                   // Data sample point in percent
   },
@@ -156,6 +105,7 @@ struct MCANV71_Config MCAN0V71_Config =
   .BufferTransmitInt     = 0xFFFFFFFF,
   .BufferCancelFinishInt = 0xFFFFFFFF,
 };
+#endif
 
 //-----------------------------------------------------------------------------
 
@@ -166,6 +116,7 @@ struct MCANV71_Config MCAN0V71_Config =
 //********************************************************************************************************************
 // SAMV71 MCAN1 peripheral
 //********************************************************************************************************************
+#ifdef USE_V71_MCAN
 
 #define MCAN1_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u ) //!< 32-bits word * 4352 words max for MCAN1 is 17408 bytes
 uint8_t MCAN1_RAMbuffer[MCAN1_CAN_BUFFER_SIZE];             //!< RAM buffer for the MCAN1
@@ -176,7 +127,6 @@ struct MCANV71 MCAN1V71 =
   .UserDriverData = NULL,
   //--- Driver configuration ---
   .DriverConfig   = MCAN_DRIVER_NORMAL_USE,
-  .InternalConfig = 0,
   //--- MCAN peripheral ---
   .Instance       = MCAN1,
   .RAMallocation  = &MCAN1_RAMbuffer[0],
@@ -188,19 +138,19 @@ struct MCANV71 MCAN1V71 =
 //-----------------------------------------------------------------------------
 
 CAN_BitTimeStats MCAN1V71_BitTimeStats = { 0 }; //!< MCAN1V71 Bit Time stat
-uint32_t MCAN1V71_SYSCLK; //!< SYSCLK frequency will be stored here after using #Init_MCANV71()
+uint32_t MCAN1V71_SYSCLK = 0; //!< SYSCLK frequency will be stored here after using #Init_MCANV71()
 
 //! Configuration structure of the MCAN1 on SAMV71
-struct MCANV71_Config MCAN1V71_Config =
+struct MCAN_Config MCAN1V71_Conf =
 {
   //--- Controller clocks ---
-  .MainFreq               = 0, //!< Use peripheral frequency called by #MCANV71_ConfigurePeripheralClocks()
   .MessageRAMwatchdogConf = 0,
+  .SYSCLK_Result          = &MCAN1V71_SYSCLK,
   //--- RAM configuration ---
   .SIDelementsCount       = 10,
-  .EIDelementsCount       = 10,
+  .EIDelementsCount       = 11,
   //--- CAN configuration ---
-  .ExtendedIDrangeMask    = 0x00000000,
+  .ExtendedIDrangeMask    = MCAN_EID_AND_RANGE_MASK,
   .RejectAllStandardIDs   = false,
   .RejectAllExtendedIDs   = false,
   .NonMatchingStandardID  = MCAN_ACCEPT_IN_RX_FIFO_0,
@@ -209,8 +159,8 @@ struct MCANV71_Config MCAN1V71_Config =
   {
     .DesiredNominalBitrate = CAN_SHIELD_BITRATE,   // Desired CAN2.0A/CAN2.0B bitrate in bit/s
     .DesiredDataBitrate    = CANFD_SHIELD_BITRATE, // Desired Data CANFD bitrate in bit/s
-    .BusMeters             = 1,                    // Only 10cm on the V71_UltraXplained_CAN_Shield
-    .TransceiverDelay      = 330,                  // The transceiver is a TLE9255WSKXUMA1 on the CAN_Shield_V71 board. The worst delay is from Normal mode, Propagation delay, increased load, TxD to RxD
+    .BusMeters             = 1,
+    .TransceiverDelay      = 300,                  // The transceiver is a ATA6561-GBQW on the board. The worst delay is from Normal mode, Falling edge at pin TXD
     .NominalSamplePoint    = 75,                   // Nominal sample point in percent
     .DataSamplePoint       = 75,                   // Data sample point in percent
   },
@@ -243,6 +193,46 @@ struct MCANV71_Config MCAN1V71_Config =
   .BufferCancelFinishInt = 0xFFFFFFFF,
 };
 
+CAN_RAMconfig MCAN1_FIFObuff_RAMInfos[MCAN1V71_OBJ_COUNT];
+
+MCAN_FIFObuff MCAN1_FIFObuffList[MCAN1V71_OBJ_COUNT] =
+{
+  { .Name = MCAN_RX_FIFO0,  .Size = 64, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[0], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_RX_FIFO1,  .Size = 64, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[1], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_RX_BUFFER, .Size = 64, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[2], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_TEF,       .Size = 32, .Payload = MCAN_8_BYTES,  .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_EVENT_NEW_MESSAGE_INT   | MCAN_FIFO_EVENT_LOST_MESSAGE_INT,   .WatermarkLevel = 16, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[3], }, // 32 *  2 * UINT32
+  { .Name = MCAN_TX_BUFFER, .Size = 16, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_TX_BUFFER_MODE,        .InterruptFlags = MCAN_FIFO_NO_INTERRUPT_FLAGS,                                           .WatermarkLevel =  8, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[4], }, // 16 * (2 * UINT32 + 64)
+  { .Name = MCAN_TXQ_FIFO,  .Size = 16, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_TX_FIFO_MODE,          .InterruptFlags = MCAN_FIFO_TRANSMIT_FIFO_EMPTY_INT,                                      .WatermarkLevel =  8, .RAMInfos = &MCAN1_FIFObuff_RAMInfos[5], }, // 16 * (2 * UINT32 + 64)
+};
+
+MCAN_Filter MCAN1_FilterList[MCAN1V71_FILTER_COUNT] =
+{
+  //--- SID filters ---
+  { .Filter = 0, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_REJECT_ID,        .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = false, .DualID    = { .AcceptanceID1 = 0x000, .AcceptanceID2  = 0x001,                                               }, }, // Reject 0x000 and 0x001
+  { .Filter = 1, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_RANGE, .Config = MCAN_FILTER_SET_PRIORITY,     .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = false, .RangeID   = { .MinID         = 0x002, .MaxID          = 0x00F,                                               }, }, // High priority message for 0x002 to 0x00F, no store
+  { .Filter = 2, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_SET_PRIORITY,     .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .IDandMask = { .AcceptanceID  = 0x010, .AcceptanceMask = 0x7F0,                                               }, }, // High priority message for 0x010 to 0x01F, store to FIFO 0
+  { .Filter = 3, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_BUFFER,    .ExtendedID = false, .IDbuffer  = { .AcceptanceID  = 0x200, .BufferPosition = 20,                                                  }, }, // Store message 0x200 to buffer 20
+  { .Filter = 4, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = false, .DebugID   = { .AcceptanceID  = 0x400, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_A, .BufferPosition = 58, }, }, // Store debug message A in buffer 58
+  { .Filter = 5, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = false, .DebugID   = { .AcceptanceID  = 0x401, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_B, .BufferPosition = 59, }, }, // Store debug message B in buffer 59
+  { .Filter = 6, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = false, .DebugID   = { .AcceptanceID  = 0x402, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_C, .BufferPosition = 60, }, }, // Store debug message C in buffer 60
+  { .Filter = 7, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .IDandMask = { .AcceptanceID  = 0x600, .AcceptanceMask = 0x700,                                               }, }, // Range 0x600 to 0x6FF
+  { .Filter = 8, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .DualID    = { .AcceptanceID1 = 0x700, .AcceptanceID2  = 0x701,                                               }, }, // IDs 0x700 and 0x701
+  { .Filter = 9, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_RANGE, .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .RangeID   = { .MinID         = 0x702, .MaxID          = 0x7FF,                                               }, }, // Range 0x702 to 0x7FF
+
+  //--- EID filters ---
+  { .Filter =  0, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_REJECT_ID,        .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = true, .DualID    = { .AcceptanceID1 = 0x00000000, .AcceptanceID2  = 0x00000001,                                          }, }, // Reject 0x00000000 and 0x00000001
+  { .Filter =  1, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE,      .Config = MCAN_FILTER_SET_PRIORITY,     .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = true, .RangeID   = { .MinID         = 0x00000002, .MaxID          = 0x0000000F,                                          }, }, // High priority message for 0x00000002 to 0x0000000F, no store
+  { .Filter =  2, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_SET_PRIORITY,     .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .IDandMask = { .AcceptanceID  = 0x00000010, .AcceptanceMask = 0x1FFFFFF0,                                          }, }, // High priority message for 0x00000010 to 0x0000001F, store to FIFO 1
+  { .Filter =  3, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_BUFFER,    .ExtendedID = true, .IDbuffer  = { .AcceptanceID  = 0x08000000, .BufferPosition = 25,                                                  }, }, // Store message 0x08000000 to buffer 25
+  { .Filter =  4, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = true, .DebugID   = { .AcceptanceID  = 0x10000000, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_A, .BufferPosition = 61, }, }, // Store debug message A in buffer 61
+  { .Filter =  5, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = true, .DebugID   = { .AcceptanceID  = 0x10000001, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_B, .BufferPosition = 62, }, }, // Store debug message B in buffer 62
+  { .Filter =  6, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_AS_DEBUG_MESSAGE, .PointTo = MCAN_RX_BUFFER,    .ExtendedID = true, .DebugID   = { .AcceptanceID  = 0x10000002, .DebugMessage   = MCAN_TREAT_AS_DEBUG_MESSAGE_C, .BufferPosition = 63, }, }, // Store debug message C in buffer 63
+  { .Filter =  7, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .IDandMask = { .AcceptanceID  = 0x10000000, .AcceptanceMask = 0x1F000000,                                          }, }, // Range 0x10000000 to 0x10FFFFFF
+  { .Filter =  8, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .DualID    = { .AcceptanceID1 = 0x14000000, .AcceptanceID2  = 0x14000001,                                          }, }, // IDs 0x14000000 and 0x14000001
+  { .Filter =  9, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE,      .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .RangeID   = { .MinID         = 0x18000000, .MaxID          = 0x1C000000,                                          }, }, // Range 0x18000000 to 0x1C000000
+  { .Filter = 10, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE_MASK, .Config = MCAN_FILTER_NO_CONFIG,        .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .RangeID   = { .MinID         = 0x1C000000, .MaxID          = 0x1F000000,                                          }, }, // Range 0x1C000000 to 0x3FFFFFFF but with ExtendedIDrangeMask mask: 0x00000000 to 0x1FFFFFFF
+};
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -252,7 +242,7 @@ struct MCANV71_Config MCAN1V71_Config =
 //********************************************************************************************************************
 // SAMV71 I2C peripheral
 //********************************************************************************************************************
-
+#ifdef USE_EEPROM_GENERICNESS
 //! Peripheral structure of the hard I2C0 on the V71
 struct I2C_Interface I2C0_V71 =
 {
@@ -261,7 +251,7 @@ struct I2C_Interface I2C0_V71 =
   .fnI2C_Init      = TWIHS_MasterInit_Gen,
   .fnI2C_Transfer  = TWIHS_PacketTransfer_Gen,
 };
-
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -290,7 +280,7 @@ struct SPI_Interface SPI0_V71 =
 //********************************************************************************************************************
 // AT24MAC402 Component
 //********************************************************************************************************************
-
+#ifdef USE_EEPROM_GENERICNESS
 //! Component structure of the AT24MAC402 with hard I2C on the V71
 struct AT24MAC402 AT24MAC402_V71 =
 {
@@ -308,7 +298,7 @@ struct AT24MAC402 AT24MAC402_V71 =
     .AddrA2A1A0     = AT24MAC402_ADDR(1, 1, 1),
   },
 };
-
+#endif
 //-----------------------------------------------------------------------------
 
 
@@ -408,8 +398,9 @@ eERRORRESULT PORTSetDirection_V71(PORT_Interface *pIntDev, const uint32_t pinsDi
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  
-  
+  Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+  if (pPIO == NULL) return ERR__PARAMETER_ERROR;
+
   return ERR_NONE;
 }
 
@@ -422,8 +413,9 @@ eERRORRESULT PORTGetInputLevel_V71(PORT_Interface *pIntDev, uint32_t *pinsLevel)
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  
-  
+  Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+  if (pPIO == NULL) return ERR__PARAMETER_ERROR;
+
   return ERR_NONE;
 }
 
@@ -436,8 +428,9 @@ eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pins
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  
-  
+  Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+  if (pPIO == NULL) return ERR__PARAMETER_ERROR;
+
   return ERR_NONE;
 }
 
@@ -460,8 +453,9 @@ eERRORRESULT GPIOSetState_V71(GPIO_Interface *pIntDev, const eGPIO_State pinStat
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  
-  
+  Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+  if (pPIO == NULL) return ERR__PARAMETER_ERROR;
+
   return ERR_NONE;
 }
 
@@ -474,8 +468,9 @@ eERRORRESULT GPIOGetInputLevel_V71(GPIO_Interface *pIntDev, eGPIO_State *pinLeve
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  
-  
+  Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+  if (pPIO == NULL) return ERR__PARAMETER_ERROR;
+
   return ERR_NONE;
 }
 

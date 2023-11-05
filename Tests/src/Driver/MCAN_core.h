@@ -56,7 +56,7 @@
 #  define _WO_                      volatile //!< Defines 'write only' permissions
 #  define _RW_                      volatile //!< Defines 'read / write' permissions
 extern "C" {
-  
+
 #else
 
 #  define MCAN_MEMBER(name)         .name =
@@ -3892,7 +3892,7 @@ typedef struct MCAN_Config
 {
   //--- Controller clocks ---
   uint8_t MessageRAMwatchdogConf;                //!< Start value of the Message RAM Watchdog Counter. The counter is disabled when WDC is cleared
-  uint32_t *SYSCLK_Result;                       //!< This is the SYSCLK of the component after configuration (can be NULL if the internal SYSCLK of the component do not have to be known)
+  uint32_t* SYSCLK_Result;                       //!< This is the SYSCLK of the component after configuration (can be NULL if the internal SYSCLK of the component do not have to be known)
 
   //--- RAM configuration ---
   uint8_t SIDelementsCount;                      //!< Standard ID Number of Filter Elements in RAM (0 to 128 elements)

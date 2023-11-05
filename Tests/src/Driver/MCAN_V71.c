@@ -122,7 +122,7 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCAN_Config* const pConf, const 
   // Example: pComp->RAMallocation address is 0x1E000 and pComp->RAMsize is 15kB, the configuration is in a way that *startAddr have its 16-bit high address that is higher like 0x1E000+2F00 = 0x20F00,
   //          if the MCAN peripheral need to access the 0x20000 address, it will consider the address as 0x10000 because of the 16-bit high address that is stored fixed.
   if (((StartAddress & MCAN_BASE_ADDRESS_MASK) ^ ((CurrAddress - 1u) & MCAN_BASE_ADDRESS_MASK)) > 0) return ERR__BAD_ADDRESS;
-  
+
   //--- Initialize RAM if configured ------------------------
   if ((pComp->DriverConfig & MCAN_DRIVER_INIT_SET_RAM_AT_0) > 0)                          // If there is a DRIVER_INIT_SET_RAM_AT_0 flag then
   {

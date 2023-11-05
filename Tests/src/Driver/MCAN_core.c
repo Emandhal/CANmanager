@@ -79,7 +79,7 @@ eERRORRESULT __Init_MCAN(MCAN_Interface *pComp, const MCAN_Config* const pConf, 
   if ((pComp == NULL) || (pConf == NULL) || (listFIFO == NULL)) return ERR__PARAMETER_ERROR;
 #endif
   eERRORRESULT Error;
-  
+
   //--- Remove write protection -----------------------------
   Error = MCAN_RemoveWriteProtection(pComp);
   if (Error != ERR_NONE) return Error;                                                                    // If there is an error while calling MCAN_RemoveWriteProtection() then return the error
@@ -148,7 +148,7 @@ eERRORRESULT MCAN_CheckEndianness(MCAN_Interface *pComp)
     pComp->InternalConfig |= MCAN_CHANGE_ENDIANNESS_Mask;                                          // Check the endianness. If not correct, set the CHANGE_ENDIANNESS flag
     if ((DataValue != MCAN_ENDN_LITTLE_ENDIAN_VALUE) && (DataValue != MCAN_ENDN_BIG_ENDIAN_VALUE)) // If unknown value, the device is not a MCAN or no proper communication occurred
       return ERR__NO_DEVICE_DETECTED;
-  }       
+  }
   return ERR_NONE;
 }
 
@@ -1277,7 +1277,7 @@ eERRORRESULT MCAN_GetFIFOStatus(MCAN_Interface *pComp, eMCAN_FIFObuffer name, se
           case MCAN_DEBUG_MESSAGE_AB_RECEIVED : *statusFlags = (setMCAN_FIFObufferstatus)(*statusFlags + MCAN_RX_DEBUG_MESSAGE_MSG_AB ); break;
           case MCAN_DEBUG_MESSAGE_ABC_RECEIVED: *statusFlags = (setMCAN_FIFObufferstatus)(*statusFlags + MCAN_RX_DEBUG_MESSAGE_MSG_ABC); break;
         }
-      }        
+      }
       break;
 
     case MCAN_RX_BUFFER: // RX buffer
@@ -1534,7 +1534,7 @@ eERRORRESULT MCAN_ConfigureSIDfilter(MCAN_Interface *pComp, const MCAN_Filter* c
     {
       if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
       FilterConf.S0 |= MCAN_CAN_FILTS0_SFID2_SET(confFilter->DualID.AcceptanceID2); // Set second SID
-    }      
+    }
 
     //=== Configure Filter control ===
     Error = MCAN_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_STANDARD_FILTER_SIZE); // Write the new flags configuration in the SID reserved space in the RAM allocation
@@ -1630,7 +1630,7 @@ eERRORRESULT MCAN_ConfigureEIDfilter(MCAN_Interface *pComp, const MCAN_Filter* c
     {
       if ((confFilter->DualID.AcceptanceID2 & ~MCAN_CAN_FILTER_EID_AND_SID_MASK) > 0) return ERR__FILTER_TOO_LARGE;
       FilterConf.F1.F1 |= MCAN_CAN_FILTF1_EFID2_SET(confFilter->DualID.AcceptanceID2); // Set second EID
-    }    
+    }
 
     //=== Configure Filter control ===
     Error = MCAN_WriteRAM(pComp, AddrFilter, &FilterConf.Bytes[0], MCAN_CAN_EXTENDED_FILTER_SIZE); // Write the new flags configuration in the EID reserved space in the RAM allocation
@@ -1758,11 +1758,11 @@ eERRORRESULT MCAN_ClearRxBufferNewDataFlag(MCAN_Interface *pComp, uint8_t index)
   if (index < 32)
   {
     Error = MCAN_WriteREG32(pComp, RegMCAN_NDAT1, (1 << (index -  0))); // Write configuration to the NDAT1 register
-  }       
+  }
   else
   {
     Error = MCAN_WriteREG32(pComp, RegMCAN_NDAT2, (1 << (index - 32))); // Write configuration to the NDAT2 register
-  }    
+  }
   return Error;
 }
 
