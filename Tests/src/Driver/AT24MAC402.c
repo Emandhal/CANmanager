@@ -28,8 +28,8 @@ extern "C" {
 
 #ifdef USE_EEPROM_GENERICNESS
 // AT24MAC602 EEPROM configurations
-const EEPROM_Conf AT24MAC402_1V7_Conf = { .ChipAddress = 0xA0, .ChipSelect = EEPROM_CHIP_ADDRESS_A2A1A0, .AddressType = EEPROM_ADDRESS_1Byte, .PageWriteTime = 5, .PageSize = 16, .ArrayByteSize = 16/*Pages*/ *16, .MaxI2CclockSpeed =  400000, };
-const EEPROM_Conf AT24MAC402_Conf     = { .ChipAddress = 0xA0, .ChipSelect = EEPROM_CHIP_ADDRESS_A2A1A0, .AddressType = EEPROM_ADDRESS_1Byte, .PageWriteTime = 5, .PageSize = 16, .ArrayByteSize = 16/*Pages*/ *16, .MaxI2CclockSpeed = 1000000, };
+const EEPROM_Conf AT24MAC402_1V7_Conf = { .ChipAddress = 0xA0, .ChipSelect = EEPROM_CHIP_ADDRESS_A2A1A0, .AddressType = EEPROM_ADDRESS_1Byte, .PageWriteTime = 5, .PageSize = 16, .OffsetAddress = 0, .TotalByteSize = 16/*Pages*/ *16, .MaxI2CclockSpeed =  400000, };
+const EEPROM_Conf AT24MAC402_Conf     = { .ChipAddress = 0xA0, .ChipSelect = EEPROM_CHIP_ADDRESS_A2A1A0, .AddressType = EEPROM_ADDRESS_1Byte, .PageWriteTime = 5, .PageSize = 16, .OffsetAddress = 0, .TotalByteSize = 16/*Pages*/ *16, .MaxI2CclockSpeed = 1000000, };
 #endif
 
 //-----------------------------------------------------------------------------
@@ -45,6 +45,8 @@ const EEPROM_Conf AT24MAC402_Conf     = { .ChipAddress = 0xA0, .ChipSelect = EEP
 static eERRORRESULT __AT24MAC402_ReadPage(AT24MAC402 *pComp, uint8_t chipAddr, uint8_t address, uint8_t* data, size_t size);
 // Write data to the AT24MAC402 (DO NOT USE DIRECTLY, use AT24MAC402_WriteData() instead)
 static eERRORRESULT __AT24MAC402_WritePage(AT24MAC402 *pComp, uint8_t chipAddr, uint8_t address, const uint8_t* data, size_t size);
+//-----------------------------------------------------------------------------
+#define AT24MAC402_TIME_DIFF(begin,end)  ( ((end) >= (begin)) ? ((end) - (begin)) : (UINT32_MAX - ((begin) - (end) - 1)) ) // Works only if time difference is strictly inferior to (UINT32_MAX/2) and call often
 //-----------------------------------------------------------------------------
 
 
@@ -71,9 +73,9 @@ eERRORRESULT Init_AT24MAC402(AT24MAC402 *pComp)
 
   if (pComp->Eeprom.I2CclockSpeed > AT24MAC402_I2CCLOCK_MAXSUP2V5) return ERR__I2C_FREQUENCY_ERROR;
   Error = pI2C->fnI2C_Init(pI2C, pComp->Eeprom.I2CclockSpeed);
-  if (Error != ERR_OK) return Error; // If there is an error while calling fnI2C_Init() then return the Error
+  if (Error != ERR_NONE) return Error; // If there is an error while calling fnI2C_Init() then return the Error
 
-  return (AT24MAC402_IsReady(pComp) ? ERR_OK : ERR__NO_DEVICE_DETECTED);
+  return (AT24MAC402_IsReady(pComp) ? ERR_NONE : ERR__NO_DEVICE_DETECTED);
 }
 
 
@@ -93,7 +95,7 @@ bool AT24MAC402_IsReady(AT24MAC402 *pComp)
   if (pI2C->fnI2C_Transfer == NULL) return false;
 #endif
   I2CInterface_Packet PacketDesc = I2C_INTERFACE8_NO_DATA_DESC(AT24MAC402_EEPROM_CHIPADDRESS_BASE | pComp->Eeprom.AddrA2A1A0);
-  return (pI2C->fnI2C_Transfer(pI2C, &PacketDesc) == ERR_OK); // Send only the chip address and get the Ack flag
+  return (pI2C->fnI2C_Transfer(pI2C, &PacketDesc) == ERR_NONE); // Send only the chip address and get the Ack flag
 }
 
 //-----------------------------------------------------------------------------
@@ -123,7 +125,7 @@ eERRORRESULT __AT24MAC402_ReadPage(AT24MAC402 *pComp, uint8_t chipAddr, uint8_t 
   Error = pI2C->fnI2C_Transfer(pI2C, &RegPacketDesc);               // Transfer the register's address
   if (Error == ERR__I2C_NACK) return ERR__NOT_READY;                // If the device receive a NAK, then the device is not ready
   if (Error == ERR__I2C_NACK_DATA) return ERR__I2C_INVALID_ADDRESS; // If the device receive a NAK while transferring data, then this is an invalid address
-  if (Error != ERR_OK) return Error;                                // If there is an error while calling fnI2C_Transfer() then return the Error
+  if (Error != ERR_NONE) return Error;                              // If there is an error while calling fnI2C_Transfer() then return the Error
   //--- Get the data ---
   I2CInterface_Packet DataPacketDesc = I2C_INTERFACE8_RX_DATA_DESC(chipAddr, true, data, size, true, I2C_WRITE_THEN_READ_SECOND_PART);
   return pI2C->fnI2C_Transfer(pI2C, &DataPacketDesc);               // Restart at first data read transfer, get the data and stop transfer at last byte
@@ -167,19 +169,22 @@ eERRORRESULT AT24MAC402_ReadEEPROMData(AT24MAC402 *pComp, uint8_t address, uint8
     PageRemData = (size < PageRemData ? size : PageRemData);                      // Get the least remaining bytes to read between remain size and remain in page
 
     //--- Read with timeout ---
-    uint32_t Timeout = pComp->Eeprom.fnGetCurrentms() + 6;                        // Wait at least 5ms (see tWR in Table 6-3 from datasheet AC Characteristics) + 1ms because GetCurrentms can be 1 cycle before the new ms
+    uint32_t StartTime = pComp->Eeprom.fnGetCurrentms();                          // Start the timeout
     while (true)
     {
       Error = __AT24MAC402_ReadPage(pComp, ChipAddr, address, data, PageRemData); // Read data from a page
-      if (Error == ERR_OK) break;                                                 // All went fine, continue the data sending
+      if (Error == ERR_NONE) break;                                               // All went fine, continue the data sending
       if (Error != ERR__NOT_READY) return Error;                                  // If there is an error while calling __AT24MAC402_ReadPage() then return the error
-      if (pComp->Eeprom.fnGetCurrentms() >= Timeout) return ERR__DEVICE_TIMEOUT;  // Timeout? return the error
+      if (AT24MAC402_TIME_DIFF(StartTime, pComp->Eeprom.fnGetCurrentms()) > 6)    // Wait at least 5ms (see tWR in Table 6-3 from datasheet AC Characteristics) + 1ms because GetCurrentms can be 1 cycle before the new ms
+      {
+        return ERR__DEVICE_TIMEOUT;                                               // Timeout? return the error
+      }
     }
     address += PageRemData;
     data += PageRemData;
     size -= PageRemData;
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 #endif // USE_EEPROM_GENERICNESS
 
@@ -211,7 +216,7 @@ eERRORRESULT __AT24MAC402_WritePage(AT24MAC402 *pComp, uint8_t chipAddr, uint8_t
   Error = pI2C->fnI2C_Transfer(pI2C, &RegPacketDesc);               // Transfer the register's address
   if (Error == ERR__I2C_NACK) return ERR__NOT_READY;                // If the device receive a NAK, then the device is not ready
   if (Error == ERR__I2C_NACK_DATA) return ERR__I2C_INVALID_ADDRESS; // If the device receive a NAK while transferring data, then this is an invalid address
-  if (Error != ERR_OK) return Error;                                // If there is an error while calling fnI2C_Transfer() then return the Error
+  if (Error != ERR_NONE) return Error;                              // If there is an error while calling fnI2C_Transfer() then return the Error
   //--- Send the data ---
   I2CInterface_Packet DataPacketDesc = I2C_INTERFACE8_TX_DATA_DESC(chipAddr, false, pData, size, true, I2C_WRITE_THEN_WRITE_SECOND_PART);
   return pI2C->fnI2C_Transfer(pI2C, &DataPacketDesc);               // Continue by transferring the data, and stop transfer at last byte
@@ -247,29 +252,31 @@ eERRORRESULT AT24MAC402_WriteEEPROMData(AT24MAC402 *pComp, uint8_t address, cons
   const uint8_t ChipAddr = AT24MAC402_EEPROM_CHIPADDRESS_BASE | pComp->Eeprom.AddrA2A1A0;
   eERRORRESULT Error;
   uint8_t PageRemData;
-  uint32_t Timeout;
   uint8_t* pData = (uint8_t*)data;
 
   //--- Cut data to write into pages ---
   while (size > 0)
   {
-    PageRemData = AT24MAC402_PAGE_SIZE - (address & AT24MAC402_PAGE_SIZE_MASK);     // Get how many bytes are
-    PageRemData = (size < PageRemData ? size : PageRemData);                        // Get the least remaining bytes to write between remain size and remain in page
+    PageRemData = AT24MAC402_PAGE_SIZE - (address & AT24MAC402_PAGE_SIZE_MASK);    // Get how many bytes are
+    PageRemData = (size < PageRemData ? size : PageRemData);                       // Get the least remaining bytes to write between remain size and remain in page
 
     //--- Write with timeout ---
-    Timeout = pComp->Eeprom.fnGetCurrentms() + 6;                                   // Wait at least 5ms (see tWR in Table 6-3 from datasheet AC Characteristics) + 1ms because GetCurrentms can be 1 cycle before the new ms
+    uint32_t StartTime = pComp->Eeprom.fnGetCurrentms();                           // Start the timeout
     while (true)
     {
-      Error = __AT24MAC402_WritePage(pComp, ChipAddr, address, pData, PageRemData); // Write data to a page
-      if (Error == ERR_OK) break;                                                   // All went fine, continue the data sending
-      if (Error != ERR__NOT_READY) return Error;                                    // If there is an error while calling __AT24MAC402_WritePage() then return the error
-      if (pComp->Eeprom.fnGetCurrentms() >= Timeout) return ERR__DEVICE_TIMEOUT;    // Timeout? return the error
+      Error = __AT24MAC402_WritePage(pComp, ChipAddr, address, data, PageRemData); // Read data from a page
+      if (Error == ERR_NONE) break;                                                // All went fine, continue the data sending
+      if (Error != ERR__NOT_READY) return Error;                                   // If there is an error while calling __AT24MAC402_WritePage() then return the error
+      if (AT24MAC402_TIME_DIFF(StartTime, pComp->Eeprom.fnGetCurrentms()) > 6)     // Wait at least 5ms (see tWR in Table 6-3 from datasheet AC Characteristics) + 1ms because GetCurrentms can be 1 cycle before the new ms
+      {
+        return ERR__DEVICE_TIMEOUT;                                                // Timeout? return the error
+      }
     }
     address += PageRemData;
     pData += PageRemData;
     size  -= PageRemData;
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 #endif // USE_EEPROM_GENERICNESS
 
@@ -289,7 +296,7 @@ eERRORRESULT AT24MAC402_WaitEndOfWrite(AT24MAC402 *pComp)
     if (AT24MAC402_IsReady(pComp)) break;                                      // Wait the end of write, and exit if all went fine
     if (pComp->Eeprom.fnGetCurrentms() >= Timeout) return ERR__DEVICE_TIMEOUT; // Timeout? return the error
   }
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -321,7 +328,7 @@ eERRORRESULT AT24MAC402_GenerateEUI64(AT24MAC402 *pComp, AT24MAC402_MAC_EUI64 *p
   AT24MAC402_MAC_EUI48 EUI48;
 
   Error = AT24MAC402_GetEUI48(pComp, &EUI48); // Get the EUI-48
-  if (Error != ERR_OK) return Error;          // If there is an error while calling AT24MAC402_GetEUI48() then return the error
+  if (Error != ERR_NONE) return Error;        // If there is an error while calling AT24MAC402_GetEUI48() then return the error
 
   //--- Generate the EUI-64 from the EUI-48 ---
   // See https://fr.wikipedia.org/wiki/Adresse_MAC and datasheet p9 §7.1
@@ -333,7 +340,7 @@ eERRORRESULT AT24MAC402_GenerateEUI64(AT24MAC402 *pComp, AT24MAC402_MAC_EUI64 *p
   pEUI64->NIC[2] = EUI48.NIC[0];
   pEUI64->NIC[3] = EUI48.NIC[1];
   pEUI64->NIC[4] = EUI48.NIC[2];
-  return ERR_OK;
+  return ERR_NONE;
 }
 
 //-----------------------------------------------------------------------------

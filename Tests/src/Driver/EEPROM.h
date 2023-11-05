@@ -1,8 +1,8 @@
 /*!*****************************************************************************
  * @file    EEPROM.h
  * @author  FMA
- * @version 1.1.0
- * @date    30/10/2021
+ * @version 1.2.1
+ * @date    05/11/2023
  * @brief   Generic EEPROM driver
  * @details Generic I2C-Compatible (2-wire) Serial EEPROM
  * It can work with every memory with an address 1010xxx_ compatibility
@@ -31,6 +31,9 @@
  *****************************************************************************/
 
 /* Revision history:
+ * 1.2.1    Rename 'ArrayByteSize' to 'TotalByteSize'
+ *          Add 'OffsetAddress' parameter for some EEPROM configuration
+ * 1.2.0    Add EEPROM genericness
  * 1.1.0    I2C interface rework
  *          Add EEPROM_WaitEndOfWrite() function
  * 1.0.0    Release version
@@ -107,7 +110,8 @@ typedef struct EEPROM_Conf
   eEEPROM_AddressType AddressType; //!< Indicate the EEPROM address type
   uint8_t PageWriteTime;           //!< Maximum time to write a page (for timeout) in millisecond
   uint16_t PageSize;               //!< This is the page size of the device memory in bytes
-  uint32_t ArrayByteSize;          //!< This is the memory total size in bytes
+  uint32_t OffsetAddress;          //!< This is the offset address of the EEPROM in the device memory
+  uint32_t TotalByteSize;          //!< This is the memory total size in bytes
   uint32_t MaxI2CclockSpeed;       //!< This is the maximum I2C SCL clock speed of the device in Hertz
 } EEPROM_Conf;
 
@@ -169,7 +173,7 @@ extern const EEPROM_Conf EERAM47L16_Conf, EERAM47C16_Conf;
 //********************************************************************************************************************
 
 typedef struct EEPROM EEPROM; //! Typedef of EEPROM device object structure
-typedef uint8_t TEERPOMDriverInternal; //! Alias for Driver Internal data flags
+typedef uint8_t TEEPROMDriverInternal; //! Alias for Driver Internal data flags
 
 //-----------------------------------------------------------------------------
 
@@ -186,7 +190,7 @@ typedef uint32_t (*GetCurrentms_Func)(void);
 struct EEPROM
 {
   void *UserDriverData;                 //!< Optional, can be used to store driver data or NULL
-  TEERPOMDriverInternal InternalConfig; //!< DO NOT USE OR CHANGE THIS VALUE, IT'S THE INTERNAL DRIVER CONFIGURATION
+  TEEPROMDriverInternal InternalConfig; //!< DO NOT USE OR CHANGE THIS VALUE, IT'S THE INTERNAL DRIVER CONFIGURATION
 
   //--- EEPROM configuration ---
   const EEPROM_Conf *Conf;              //!< This is the EEPROM configuration, this parameter is mandatory
