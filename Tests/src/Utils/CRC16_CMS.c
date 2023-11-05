@@ -5,7 +5,7 @@
  * @date    14/05/2020
  * @brief   CRC16-CMS implementation
  * @details
- *  The CRC16-CMS polynomial is x^16 + x^15 + x^5 + 1 (0x8005)
+ *  The CRC16-CMS polynomial is x^16 + x^15 + x^2 + 1 (0x8005)
  *   - Does not use RefIN and RefOUT, the initial value 0xFFFF
  *   - The result is XORed with 0x0000
  *   - http://reveng.sourceforge.net/crc-catalogue/16.htm

@@ -51,11 +51,8 @@ extern "C" {
 #endif
 //-----------------------------------------------------------------------------
 
-
-
 // Limits definitions
 #define SPI_SPICLOCK_MAX  ( 51000000u ) //!< Max SPI clock frequency (maximum pad speed)
-
 
 // Definitions
 #define SPI_SCBR_MIN    (   1 ) //!< Min SCBS value
@@ -181,7 +178,6 @@ typedef struct SPI_Config
 //-----------------------------------------------------------------------------
 
 
-
 /*! @brief Atmel SPI peripheral initialization
  *
  * It initialize the SPI peripheral and its timings
@@ -192,7 +188,6 @@ typedef struct SPI_Config
  * @return Returns an #eERRORRESULT value enum
  */
 eERRORRESULT SPI_Init(Spi* pSPI, const SPI_Config* pConf);
-
 
 /*! @brief Atmel SPI master initialization
  *
@@ -206,14 +201,12 @@ eERRORRESULT SPI_Init(Spi* pSPI, const SPI_Config* pConf);
 eERRORRESULT SPI_MasterInit(Spi* pSPI, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreq);
 eERRORRESULT SPI_MasterInit_Gen(SPI_Interface* pIntDev, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreqq);
 
-
 /*! @brief Get peripheral ID of the Atmel SPI
  *
  * @param[in] *pSPI Is the SPI peripheral to use
  * @return The SPI peripheral ID. Returns SPI_INVALID_PERIPHERAL if not found
  */
 uint32_t SPI_GetPeripheralID(Spi* pSPI);
-
 
 /*! @brief Get peripheral number of the Atmel SPI
  *
@@ -225,7 +218,6 @@ uint32_t SPI_GetPeripheralNumber(Spi* pSPI);
 //-----------------------------------------------------------------------------
 
 
-
 /*! @brief Enable interrupts of the Atmel SPI
  *
  * @param[in] *pSPI Is the SPI peripheral to use
@@ -235,7 +227,6 @@ uint32_t SPI_GetPeripheralNumber(Spi* pSPI);
  */
 eERRORRESULT SPI_InterruptEnable(Spi* pSPI, uint32_t sourcesInterrupts, bool enableNVIC);
 
-
 /*! @brief Disable interrupts of the Atmel SPI
  *
  * @param[in] *pSPI Is the SPI peripheral to use
@@ -244,7 +235,6 @@ eERRORRESULT SPI_InterruptEnable(Spi* pSPI, uint32_t sourcesInterrupts, bool ena
  * @return Returns an #eERRORRESULT value enum
  */
 eERRORRESULT SPI_InterruptDisable(Spi* pSPI, uint32_t sourcesInterrupts, bool disableNVIC);
-
 
 /*! @brief Get interrupt status of the Atmel SPI
  *
@@ -259,14 +249,12 @@ inline uint32_t SPI_GetInterruptStatus(Spi* pSPI)
 //-----------------------------------------------------------------------------
 
 
-
 /*! @brief Reset the Atmel SPI
  * @param[in] *pSPI Is the SPI peripheral to reset
  */
 void SPI_Reset(Spi* pSPI);
 
 //-----------------------------------------------------------------------------
-
 
 
 /*! @brief Set the SPI SCK clock in Hertz of the Atmel SPI
@@ -280,7 +268,6 @@ void SPI_Reset(Spi* pSPI);
 eERRORRESULT SPI_SetSPIclockHz(Spi* pSPI, uint8_t chipSelect, uint32_t desiredClockHz);
 
 //-----------------------------------------------------------------------------
-
 
 
 /*! @brief Hardware SPI data transfer communication for the Atmel SPI
@@ -315,7 +302,6 @@ eERRORRESULT SPI_Transfer_Gen(SPI_Interface *pIntDev, uint8_t chipSelect, uint8_
 eERRORRESULT SPI_DMA_MasterInit(Spi *pIntDev, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreq);
 eERRORRESULT SPI_DMA_MasterInit_Gen(SPI_Interface *pIntDev, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreq);
 
-
 /*! @brief Hardware SPI data transfer with DMA communication for the Atmel SPI
  *
  * This function takes care of the transfer of the specified packet following the SPI_Interface specification
@@ -326,12 +312,6 @@ eERRORRESULT SPI_DMA_MasterInit_Gen(SPI_Interface *pIntDev, uint8_t chipSelect, 
  */
 eERRORRESULT SPI_PacketTransfer(Spi *pIntDev, SPIInterface_Packet* const pPacketDesc);
 eERRORRESULT SPI_PacketTransfer_Gen(SPI_Interface *pIntDev, SPIInterface_Packet* const pPacketDesc);
-
-//********************************************************************************************************************
-
-
-
-
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

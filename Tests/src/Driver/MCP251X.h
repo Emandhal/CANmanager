@@ -1187,7 +1187,7 @@ typedef union __MCP251X_PACKED__ MCP251X_TXBnCTRL_Register
   {
     uint8_t TXP  : 2; //!< 0-1 - Transmit Buffer Priority
     uint8_t      : 1; //!< 2
-    uint8_t TXREQ: 1; //!< 3   - Message Transmit Request: '1' = Buffer is currently pending transmission (MCU sets this bit to request message be transmitted ï¿½ bit is automatically cleared when the message is sent) ; '0' = Buffer is not currently pending transmission (MCU can clear this bit to request a message abort)
+    uint8_t TXREQ: 1; //!< 3   - Message Transmit Request: '1' = Buffer is currently pending transmission (MCU sets this bit to request message be transmitted – bit is automatically cleared when the message is sent) ; '0' = Buffer is not currently pending transmission (MCU can clear this bit to request a message abort)
     uint8_t TXERR: 1; //!< 4   - Transmission Error Detected: '1' = A bus error occurred while the message was being transmitted ; '0' = No bus error occurred while the message was being transmitted
     uint8_t MLOA : 1; //!< 5   - Message Lost Arbitration: '1' = Message lost arbitration while being sent ; '0' = Message did not lose arbitration while being sent
     uint8_t ABTF : 1; //!< 6   - Message Aborted Flag: '1' = Message was aborted ; '0' = Message completed transmission successfully
@@ -1720,7 +1720,7 @@ eERRORRESULT MCP251X_ModifyRegister(MCP251X *pComp, eMCP251X_Registers reg, uint
  * @param[in] andFlush Indicate if the FIFO will be flush to the CAN bus right after this message
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* messageObjectToSend, uint8_t objectSize, uint8_t buffIdx, bool andFlush);
+eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* const messageObjectToSend, uint8_t objectSize, uint8_t buffIdx, bool andFlush);
 
 /*! @brief Transmit a message to the Buffer of the MCP251X device
  *
@@ -1732,7 +1732,7 @@ eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* messag
  * @param[in] andFlush Indicate if the FIFO will be flush to the CAN bus right after this message
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, CAN_CANMessage* const messageToSend, uint8_t buffIdx, bool andFlush);
+eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, const CAN_CANMessage* const messageToSend, uint8_t buffIdx, bool andFlush);
 
 
 /*! @brief Receive a message object (with data) from the Buffer of the MCP251X device
@@ -1745,7 +1745,7 @@ eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, CAN_CANMessage* const messa
  * @param[in] buffIdx Is the buffer index where to get the frame
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251X_ReceiveMessageObject(MCP251X *pComp, uint8_t* messageObjectGet, uint8_t objectSize, uint8_t buffIdx);
+eERRORRESULT MCP251X_ReceiveMessageObject(MCP251X *pComp, uint8_t* const messageObjectGet, uint8_t objectSize, uint8_t buffIdx);
 
 /*! @brief Receive a message from the Buffer of the MCP251X device
  *

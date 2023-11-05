@@ -212,7 +212,7 @@ eERRORRESULT MCP251X_ModifyRegister(MCP251X *pComp, eMCP251X_Registers reg, uint
 //=============================================================================
 // Transmit a message object (with data) to the Buffer of the MCP251X device
 //=============================================================================
-eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* messageObjectToSend, uint8_t objectSize, uint8_t buffIdx, bool andFlush)
+eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* const messageObjectToSend, uint8_t objectSize, uint8_t buffIdx, bool andFlush)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageObjectToSend == NULL)) return ERR__PARAMETER_ERROR;
@@ -254,7 +254,7 @@ eERRORRESULT MCP251X_TransmitMessageObject(MCP251X *pComp, const uint8_t* messag
 //=============================================================================
 // Transmit a message to the Buffer of the MCP251X device
 //=============================================================================
-eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, CAN_CANMessage* const messageToSend, uint8_t buffIdx, bool andFlush)
+eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, const CAN_CANMessage* const messageToSend, uint8_t buffIdx, bool andFlush)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageToSend == NULL)) return ERR__PARAMETER_ERROR;
@@ -291,7 +291,7 @@ eERRORRESULT MCP251X_TransmitMessage(MCP251X *pComp, CAN_CANMessage* const messa
 //=============================================================================
 // Receive a message object (with data) from the Buffer of the MCP251X device
 //=============================================================================
-eERRORRESULT MCP251X_ReceiveMessageObject(MCP251X *pComp, uint8_t* messageObjectGet, uint8_t objectSize, uint8_t buffIdx)
+eERRORRESULT MCP251X_ReceiveMessageObject(MCP251X *pComp, uint8_t* const messageObjectGet, uint8_t objectSize, uint8_t buffIdx)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageObjectGet == NULL)) return ERR__PARAMETER_ERROR;

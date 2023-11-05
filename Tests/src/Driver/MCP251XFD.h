@@ -63,15 +63,18 @@
 #include "CAN_common.h"
 #include "SPI_Interface.h"
 #include "ErrorsDef.h"
+#ifdef USE_GENERICS_DEFINED
+#  include "GPIO_Interface.h"
+#endif
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 
 #  define MCP251XFD_MEMBER(name)
 #  if defined(_MSC_VER)
 #    define MCP251XFD_WEAK
-#    define MCP251XFD_EXTERN               extern
+#    define MCP251XFD_EXTERN             extern
 #  else
-#    define MCP251XFD_WEAK                 __attribute__((weak))
+#    define MCP251XFD_WEAK               __attribute__((weak))
 #    define MCP251XFD_EXTERN
 #  endif
 #  define __MCP251XFD_PACKED__
@@ -89,7 +92,7 @@
 #else
 
 #  define MCP251XFD_MEMBER(name)         .name =
-#  define MCP251XFD_WEAK                   __attribute__((weak))
+#  define MCP251XFD_WEAK                 __attribute__((weak))
 #  define MCP251XFD_EXTERN
 #  define __MCP251XFD_PACKED__           __attribute__((packed))
 #  define MCP251XFD_PACKITEM
@@ -97,9 +100,6 @@
 #  define MCP251XFD_PACKENUM(name,type)  typedef enum __MCP251XFD_PACKED__
 #  define MCP251XFD_UNPACKENUM(name)     name
 
-#endif
-#ifdef USE_GENERICS_DEFINED
-#  include "GPIO_Interface.h"
 #endif
 //-----------------------------------------------------------------------------
 

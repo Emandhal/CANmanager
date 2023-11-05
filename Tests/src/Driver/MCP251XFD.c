@@ -421,12 +421,12 @@ eERRORRESULT MCP251XFD_WriteData(MCP251XFD *pComp, uint16_t address, const uint8
     *pBuf = ((Addr >> 8) & 0xFF);                                           // Set first byte of SPI command
     ++pBuf;
     *pBuf = Addr & 0xFF;                                                    // Set next byte of SPI command
-    ++pBuf;    
+    ++pBuf;
 
     //--- Set length of data ---
     ByteCount = (size > Increment ? Increment : size);                      // Define byte count to send
     if (UseCRC && (UseSafe == false))                                       // Add Len in the frame if use CRC but not use safe
-    {                        
+    {
       if (InRAM) *pBuf = (ByteCount >> 2) & 0xFF;                           // If use CRC for write and in RAM, set how many data word that is requested
       else *pBuf = ByteCount & 0xFF;                                        // Set how many data byte that is requested
       ++pBuf;

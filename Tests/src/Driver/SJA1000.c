@@ -106,7 +106,7 @@ eERRORRESULT Init_SJA1000(SJA1000 *pComp, const SJA1000_Config* pConf)
   __SJA1000_CHECK_ERROR;
   SJA1000_PIN_HIGH(WR);       __SJA1000_CHECK_ERROR; // Set WR pin high level
   SJA1000_PIN_OUTPUT(RD_E);   __SJA1000_CHECK_ERROR; // Set RD/E pin as output
-  SJA1000_PIN_OUTPUT(WR);     __SJA1000_CHECK_ERROR; // Set RD/E pin as output
+  SJA1000_PIN_OUTPUT(WR);     __SJA1000_CHECK_ERROR; // Set WR pin as output
   SJA1000_PORT_OUTPUT(DATA);  __SJA1000_CHECK_ERROR; // Set DATA port as output
 
   //--- Set configuration mode ---
@@ -353,7 +353,7 @@ eERRORRESULT SJA1000_TransmitMessageObject(SJA1000 *pComp, const uint8_t* messag
 //=============================================================================
 // Transmit a message to the Buffer of the SJA1000 device
 //=============================================================================
-eERRORRESULT SJA1000_TransmitMessage(SJA1000 *pComp, CAN_CANMessage* const messageToSend)
+eERRORRESULT SJA1000_TransmitMessage(SJA1000 *pComp, const CAN_CANMessage* const messageToSend)
 {
 #ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (messageToSend == NULL)) return ERR__PARAMETER_ERROR;

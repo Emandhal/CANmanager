@@ -477,12 +477,6 @@ eERRORRESULT XDMAC_GetSoftwareRequestStatus(HandleXDMAC handleDMA, bool* request
 eERRORRESULT XDMAC_ChannelSoftwareFlushRequest(HandleXDMAC handleDMA);
 
 //-----------------------------------------------------------------------------
-
-
-
-
-
-//-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }
 #endif

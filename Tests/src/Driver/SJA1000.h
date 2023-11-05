@@ -1654,7 +1654,7 @@ eERRORRESULT SJA1000_TransmitMessageObject(SJA1000 *pComp, const uint8_t* messag
  * @param[in] *messageToSend Is the message to send with all the data attached with
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT SJA1000_TransmitMessage(SJA1000 *pComp, CAN_CANMessage* const messageToSend);
+eERRORRESULT SJA1000_TransmitMessage(SJA1000 *pComp, const CAN_CANMessage* const messageToSend);
 
 
 /*! @brief Receive a message object (with data) from the FIFO of the SJA1000 device
@@ -1666,7 +1666,7 @@ eERRORRESULT SJA1000_TransmitMessage(SJA1000 *pComp, CAN_CANMessage* const messa
  * @param[in] objectSize Is the size of the message object (with its data)
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT SJA1000_ReceiveMessageObject(SJA1000 *pComp, uint8_t* messageObjectGet, uint8_t objectSize);
+eERRORRESULT SJA1000_ReceiveMessageObject(SJA1000 *pComp, uint8_t* const messageObjectGet, uint8_t objectSize);
 
 /*! @brief Receive a message from the FIFO of the SJA1000 device
  *
