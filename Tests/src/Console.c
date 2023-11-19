@@ -182,6 +182,10 @@ bool TrySendingNextCharToConsole(ConsoleTx* pApi)
 //=============================================================================
 void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, eLogMode logMode, const char* format, va_list args)
 {
+#ifdef CHECK_NULL_PARAM
+  if (pApi == NULL) return;
+  if (pApi->fnGetCurrentms == NULL) return;
+#endif
   const char* const FormatLine   = "%s [%u:%02u:%02u:%02u] ";
   const char* const WhiteTextStr = "\x001B[0m";
   const char* const NewLine      = "\r\n";
@@ -191,7 +195,7 @@ void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, eLogMode logMod
   if ((logMode == LogMode_Line) || (logMode == LogMode_StartPartial))
   {
     // Fast div 1000 (+/- one unit error is not critical for logging purpose)
-    Val = msCount;
+    Val = (uint64_t)(pApi->fnGetCurrentms());
     Time = (uint32_t)((Val * 0x00418937) >> 32); // Magic number : Here 0x418937 is 0xFFFFFFFF / 1000d. This is the overflow limit of an uint32
     // Extract fields
     NewTime = (Time / 60); Sec = Time - (NewTime * 60); Time = NewTime;

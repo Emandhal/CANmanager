@@ -1,5 +1,5 @@
 /*!*****************************************************************************
- * @file    Console_V71InterfaceSync.h
+ * @file    Console_V71Interface.c
  * @author  Fabien 'Emandhal' MAILLY
  * @version 1.1.0
  * @date    04/06/2023
@@ -11,21 +11,25 @@
 
 //-----------------------------------------------------------------------------
 #include "Console_V71Interface.h"
-#include "StringTools.h"
+#ifdef USE_CONSOLE_RX
+#  include "StringTools.h"
+#endif
 //-----------------------------------------------------------------------------
 #if !defined(__cplusplus)
 #  include <asf.h>
-#else
+#else // #ifdef __cplusplus
 #  include <cstdint>
 extern "C" {
-#endif
+#endif // #if !defined(__cplusplus)
 //-----------------------------------------------------------------------------
 
 
 
 
 
-//**********************************************************************************************************************************************************
+//********************************************************************************************************************
+// UART on SAM V71
+//********************************************************************************************************************
 //=============================================================================
 // Handler for Console USART interrupt.
 //=============================================================================
@@ -55,16 +59,8 @@ void USART1_Handler(void)
 
 //-----------------------------------------------------------------------------
 
-
-
-
-
-//**********************************************************************************************************************************************************
-//********************************************************************************************************************
-// UART of V71
-//********************************************************************************************************************
-//! UART console interface definition for dynamic interfaces
 #ifdef USE_DYNAMIC_INTERFACE
+//! UART console interface definition for dynamic interfaces
 static UART_Interface Console_UART =
 {
   UART_MEMBER(InterfaceDevice) CONSOLE_UART,
@@ -100,14 +96,14 @@ void ConsoleUART_TxInit_V71(void)
 
   //--- Configure and enable interrupt of USART ---
   usart_enable_interrupt(CONSOLE_UART, US_IER_TXRDY | US_IER_TXEMPTY);
-  NVIC_EnableIRQ(USART1_IRQn);                                          // *** USE WITH INTERRUPT CHAR SEND. IN SEND WHILE IDLE (while(true) in the main()) COMMENT THIS LINE
+  NVIC_EnableIRQ(USART1_IRQn);                             // *** USE WITH INTERRUPT CHAR SEND. IN SEND WHILE IDLE (while(true) in the main()) COMMENT THIS LINE
 }
 
 
 //=============================================================================
 // UART transmit char function interface of the ATSAMV71
 //=============================================================================
-eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallySent)
+eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, const uint8_t* data, size_t size, size_t* const actuallySent)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
@@ -160,7 +156,7 @@ void ConsoleUART_RxInit_V71(void)
 //=============================================================================
 // UART receive char function interface of the ATSAMV71
 //=============================================================================
-eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallyReceived, uint8_t *lastCharError)
+eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t* data, size_t size, size_t* const actuallyReceived, uint8_t* const lastCharError)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
@@ -204,12 +200,16 @@ ConsoleTx Console_TxConf =
     UART_MEMBER(Channel)         0,
   },
 #endif
+
+  //--- Time call function ---
+  CONSOLE_MEMBER(fnGetCurrentms) GetCurrentms_V71,
+
   //--- Transmit buffer ---
   CONSOLE_MEMBER(Buffer    ) &ConsoleTxBuffer[0],
   CONSOLE_MEMBER(BufferSize) CONSOLE_TX_BUFFER_SIZE,
 };
 
-#endif // USE_CONSOLE_TX
+#endif // #ifdef USE_CONSOLE_TX
 //-----------------------------------------------------------------------------
 
 
@@ -303,7 +303,7 @@ void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin
       break;
   }
 }
-#endif // USE_CONSOLE_GPIO_COMMANDS
+#endif // #ifdef USE_CONSOLE_GPIO_COMMANDS
 //-----------------------------------------------------------------------------
 
 
@@ -375,7 +375,7 @@ static void __WriteDataToEEPROM(uint8_t index, uint32_t address, uint32_t size, 
   size_t BytesWritten = 0;
   bool IsHexData = false;
   eERRORRESULT Error;
-  
+
   if (data[0] == '0')
   {
     IsHexData = ((data[1] == 'x') || (data[1] == 'X')); // Start with "0x" or "0X"? This is an Hex data
@@ -453,12 +453,12 @@ static void __ShowEEPROMmapping(uint8_t index)
 
   //--- Read page per page and create mapping ---
   LOGINFO("Visual mapping of device %u, page size %u:", (unsigned int)(index), (unsigned int)EepromPageSize);
-  
+
   LOG_START_PARTIAL_INFO;
   for (size_t zMem = 0; zMem < (EepromSize / EepromPageSize); ++zMem)
   {
     OneBitsCount = 0;
-    
+
     for (size_t zPage = 0; zPage < (EepromPageSize / sizeof(PageBuffer)); ++zPage)
     {
       //--- Read a page ---
@@ -474,7 +474,7 @@ static void __ShowEEPROMmapping(uint8_t index)
     }
 
     //--- Fill visual mapping ---
-    char CharToSend = (char)250;                                      // Char not filled (default)                                    
+    char CharToSend = (char)250;                                      // Char not filled (default)
     if (OneBitsCount >= (EepromPageSize * 2)) CharToSend = (char)176; // Char filled a little
     if (OneBitsCount >= (EepromPageSize * 4)) CharToSend = (char)177; // Char partially filled
     if (OneBitsCount >= (EepromPageSize * 6)) CharToSend = (char)178; // Char filled mostly
@@ -493,7 +493,7 @@ static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
   eERRORRESULT Error = ERR_NONE;
   static const char* Hexa = "0123456789ABCDEF";
   uint8_t ReadBuffer[16];
-  
+
 #define ROW_LENGTH  16           // 16 bytes per row
   char HexaDump[ROW_LENGTH * 3]; // [2 digit hexa + space] - 1 space + 1 zero terminal
   char HexaChar[ROW_LENGTH + 1]; // [1 char] + 1 zero terminal
@@ -512,7 +512,7 @@ static void __DumpEEPROMmemory(uint8_t index, uint32_t address, uint32_t size)
       LOGERROR("Unable to read EEPROM memory (error code: %u)", (unsigned int)Error);
       return;
     }
-    
+
     //--- Dump ---
     memset(HexaDump, ' ', sizeof(HexaDump));
     memset(HexaChar, '.', ROW_LENGTH);
@@ -541,7 +541,7 @@ void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint
   eERRORRESULT Error;
   uint8_t WriteBuffer[16];
   uint32_t zMem = 0;
-  
+
   switch (action)
   {
     default:
@@ -576,14 +576,14 @@ void ConsoleRx_EEPROMcommandCallBack(eConsoleActions action, uint8_t index, uint
     case Action_Show:
       __ShowEEPROMmapping(index);
       break;
-    
+
     case Action_Dump:
       __DumpEEPROMmemory(index, address, size);
       break;
-  }    
+  }
 }
-#endif // USE_CONSOLE_EEPROM_COMMANDS
-#endif // USE_CONSOLE_RX
+#endif // #ifdef USE_CONSOLE_EEPROM_COMMANDS
+#endif // #ifdef USE_CONSOLE_RX
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

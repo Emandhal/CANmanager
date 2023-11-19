@@ -105,8 +105,20 @@
 //********************************************************************************************************************
 #ifdef USE_CONSOLE_TX
 
-//! Circular Buffer for Console transmit structure
-typedef struct ConsoleTx ConsoleTx;
+typedef struct ConsoleTx ConsoleTx;  //! Typedef of ConsoleTx object structure
+
+//-----------------------------------------------------------------------------
+
+/*! @brief Function that gives the current millisecond of the system to the driver
+ *
+ * This function will be called when the driver needs to get current millisecond
+ * @return Returns the current millisecond of the system
+ */
+typedef uint32_t (*GetCurrentms_Func)(void);
+
+//-----------------------------------------------------------------------------
+
+//! Console transmit object structure
 struct ConsoleTx
 {
   void *UserAPIData;      //!< Optional, can be used to store API data or NULL
@@ -117,6 +129,9 @@ struct ConsoleTx
 #else
   UART_Interface  UART;   //!< This is the UART_RxInterface descriptor that will be used to communicate with the device
 #endif
+
+  //--- Time call function ---
+  GetCurrentms_Func fnGetCurrentms; //!< This function will be called when the driver need to get current millisecond
 
   //--- Transmit buffer ---
   volatile size_t InPos;  //!< This is the input position in the buffer (where data will be write before being send to UART)

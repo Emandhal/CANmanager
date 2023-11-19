@@ -1,5 +1,5 @@
 /*!*****************************************************************************
- * @file    Console_V71InterfaceSync.h
+ * @file    Console_V71Interface.h
  * @author  Fabien 'Emandhal' MAILLY
  * @version 1.1.0
  * @date    04/06/2023
@@ -117,7 +117,7 @@
 
 //**********************************************************************************************************************************************************
 //********************************************************************************************************************
-// UART of V71
+// UART on SAM V71
 //********************************************************************************************************************
 
 //! @brief Console UART Tx initialization for the ATSAMV71
@@ -133,7 +133,7 @@ void ConsoleUART_TxInit_V71(void);
  * @param[out] *actuallySent Is the count of data actually sent to the transmit FIFO
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallySent);
+eERRORRESULT UARTtransmit_V71(UART_Interface *pIntDev, const uint8_t* data, size_t size, size_t* constactuallySent);
 
 //-----------------------------------------------------------------------------
 
@@ -150,7 +150,7 @@ void ConsoleUART_RxInit_V71(void);
  * @param[out] *lastCharError Is the last char received error. Set to UART_NO_ERROR (0) if no errors
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t *data, size_t size, size_t *actuallyReceived, uint8_t *lastCharError);
+eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t* data, size_t size, size_t* const actuallyReceived, uint8_t* const lastCharError);
 
 //-----------------------------------------------------------------------------
 
