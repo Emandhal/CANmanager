@@ -98,7 +98,7 @@ eERRORRESULT Init_MCP230XX(MCP230XX *pComp, const MCP230XX_Config *pConf)
   //--- Initialize I2C interface ---
   Error = pI2C->fnI2C_Init(pI2C, SCLfreq);
   if (Error != ERR_NONE) return Error;                                        // If there is an error while calling fnI2C_Init() then return the error
-  if (MCP230XX_IsReady(pComp)) return ERR__NO_DEVICE_DETECTED;
+  if (MCP230XX_IsReady(pComp) == false) return ERR__NO_DEVICE_DETECTED;
 
   //--- Check device ---
   if ((pComp->DeviceName == MCP230XX_AUTODETECT) || (pComp->DeviceName >= eMCP230XX_DEVICE_COUNT))
@@ -196,8 +196,6 @@ bool MCP230XX_IsReady(MCP230XX *pComp)
 
 
 
-
-
 //=============================================================================
 // [STATIC] Check I2C clock speed
 //=============================================================================
@@ -214,6 +212,7 @@ bool __MCP230XX_CheckSCLspeed(MCP230XX *pComp)
 }
 
 //-----------------------------------------------------------------------------
+
 
 
 
