@@ -422,7 +422,7 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
   pTWIHS->TWIHS_IADR = 0; // Not used
   pTWIHS->TWIHS_CR   = TWIHS_CR_MSEN | TWIHS_CR_SVDIS;
 
-  //--- Device polling ? ---
+  //--- Device polling? ---
   if ((pPacketDesc->pBuffer == NULL) || (pPacketDesc->BufferSize <= 0)) // Device polling only
   { // Little hack because TWI of V71 does not support device polling without using SMBus
     pTWIHS->TWIHS_MMR &= ~TWIHS_MMR_MREAD;                     // The SMBus of this device does not support quick read command (no Stop will be sent)
@@ -435,7 +435,7 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
     {
       Status = pTWIHS->TWIHS_SR;
       if ((Status & TWIHS_SR_NACK) > 0) return ERR__I2C_NACK;
-      if (!Timeout--) return ERR__I2C_TIMEOUT;                 // Timeout ? return an error
+      if (!Timeout--) return ERR__I2C_TIMEOUT;                 // Timeout? return an error
       if ((Status & TWIHS_SR_TXCOMP) > 0) break;
     }
     return ERR_NONE;
@@ -456,7 +456,7 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
     {
       Status = pTWIHS->TWIHS_SR;
       if ((Status & TWIHS_SR_NACK) > 0) return ERR__I2C_NACK_DATA;
-      if (!Timeout--) return ERR__I2C_TIMEOUT;                 // Timeout ? return an error
+      if (!Timeout--) return ERR__I2C_TIMEOUT;                 // Timeout? return an error
       if ((Status & TWIHS_SR_TXRDY) == 0) continue;
       Timeout = TWIHS_TIMEOUT;
 
@@ -479,13 +479,13 @@ eERRORRESULT TWIHS_Transfer(Twihs* pTWIHS, I2CInterface_Packet* const pPacketDes
     while (RemainingBytes > 0)
     {
       if ((RemainingBytes == 1) && pPacketDesc->Stop)
-        pTWIHS->TWIHS_CR |= TWIHS_CR_STOP;                     // Last byte ? Send a stop if asked
+        pTWIHS->TWIHS_CR |= TWIHS_CR_STOP;                     // Last byte? Send a stop if asked
 
       Timeout = TWIHS_TIMEOUT;
       while (true)                                             // Wait the polling to finish
       {
         Status = pTWIHS->TWIHS_SR;
-        if (!Timeout--) return ERR__I2C_TIMEOUT;               // Timeout ? return an error
+        if (!Timeout--) return ERR__I2C_TIMEOUT;               // Timeout? return an error
         if ((Status & TWIHS_SR_RXRDY) > 0) break;
       }
 

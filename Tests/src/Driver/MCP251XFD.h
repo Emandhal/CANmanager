@@ -4773,29 +4773,6 @@ uint8_t MCP251XFD_PayloadToByte(eMCP251XFD_PayloadSize payload);
  */
 uint8_t MCP251XFD_DLCToByte(eCAN_DataLength dlc, bool isCANFD);
 
-//********************************************************************************************************************
-
-
-/*! @brief Function for interface driver initialization
- *
- * This function will be called at driver initialization to configure the interface driver
- * @param[in] *pIntDev Is the SPI interface container structure used for the interface initialization
- * @param[in] chipSelect Is the Chip Select index to use for the SPI/Dual-SPI/Quad-SPI initialization
- * @param[in] mode Is the mode of the SPI to configure
- * @param[in] sckFreq Is the SCK frequency in Hz to set at the interface initialization
- * @return Returns an #eERRORRESULT value enum
- */
-MCP251XFD_EXTERN eERRORRESULT MCP251XFD_SPIinit(SPI_Interface *pIntDev, uint8_t chipSelect, eSPIInterface_Mode mode, const uint32_t sckFreq) MCP251XFD_WEAK;
-
-/*! @brief Function for SPI transfer
- *
- * This function will be called at driver read/write data from/to the interface driver
- * @param[in] *pIntDev Is the SPI interface container structure used for the communication
- * @param[in] *pPacketConf Is the packet description to transfer through SPI
- * @return Returns an #eERRORRESULT value enum
- */
-MCP251XFD_EXTERN eERRORRESULT MCP251XFD_SPItransfer(SPI_Interface *pIntDev, SPIInterface_Packet* const pPacketDesc) MCP251XFD_WEAK;
-
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
 }
