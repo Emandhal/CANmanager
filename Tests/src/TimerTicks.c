@@ -91,6 +91,29 @@ static volatile uint32_t msTickCount = 0;
 #endif
 
 //-----------------------------------------------------------------------------
+
+
+
+
+
+//=============================================================================
+// Prototypes for private functions
+//=============================================================================
+#if defined(SYSLED_Low) && defined(SYSLED_Invert) && defined(SYSLED_High)
+/*! @brief Refresh system LED state
+ *
+ * @param[in] ticks Is the count of ticks to add to the blink
+ */
+static void __RefreshSystemLEDstate(uint32_t ticks);
+#endif
+#if defined(STATUSLED_Low) && defined(STATUSLED_Invert) && defined(STATUSLED_High)
+/*! @brief Refresh status LED state
+ *
+ * @param[in] ticks Is the count of ticks to add to the blink
+ */
+static void __RefreshStatusLEDState(uint32_t ticks);
+#endif
+//-----------------------------------------------------------------------------
 #define TIMERTICKS_TIME_DIFF(begin,end)  ( ((end) >= (begin)) ? ((end) - (begin)) : (UINT32_MAX - ((begin) - (end) - 1)) ) // Works only if time difference is strictly inferior to (UINT32_MAX/2) and call often
 //-----------------------------------------------------------------------------
 
@@ -154,10 +177,10 @@ eERRORRESULT TimerTicks_Init(void)
 void __attribute__ ((optimize("Ofast"))) TimerTicks_ProcessIT(void)
 {
 #if defined(SYSLED_Low) && defined(SYSLED_Invert) && defined(SYSLED_High)
-  RefreshSystemLEDstate(TICK_TO_ADD_FOR_MS);
+  __RefreshSystemLEDstate(TICK_TO_ADD_FOR_MS);
 #endif
 #if defined(STATUSLED_Low) && defined(STATUSLED_Invert) && defined(STATUSLED_High)
-  RefreshStatusLEDState(TICK_TO_ADD_FOR_MS);
+  __RefreshStatusLEDState(TICK_TO_ADD_FOR_MS);
 #endif
 
 #if defined(USER_BUTTON1_GetState)
@@ -549,9 +572,9 @@ void SetSystemLEDblinkMode(eLEDBlinkMode blinkMode)
 
 
 //=============================================================================
-// Refresh system LED state
+// [STATIC] Refresh system LED state
 //=============================================================================
-void __attribute__ ((optimize("Ofast"))) RefreshSystemLEDstate(uint32_t ticks)
+void __attribute__ ((optimize("Ofast"))) __RefreshSystemLEDstate(uint32_t ticks)
 {
   TickBlinkSystemLED += ticks;
 
@@ -623,9 +646,9 @@ void SetStatusLEDblinkMode(eLEDBlinkMode blinkMode)
 
 
 //=============================================================================
-// Refresh status LED state
+// [STATIC] Refresh status LED state
 //=============================================================================
-void __attribute__ ((optimize("Ofast"))) RefreshStatusLEDState(uint32_t ticks)
+void __attribute__ ((optimize("Ofast"))) __RefreshStatusLEDState(uint32_t ticks)
 {
   TickBlinkStatusLED += ticks;
 

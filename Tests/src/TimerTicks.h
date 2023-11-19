@@ -267,12 +267,6 @@ void SystemAndStatusLED_Init(void);
  * @param[in] blinkMode Is the new blink mode
  */
 void SetSystemLEDblinkMode(eLEDBlinkMode blinkMode);
-
-/*! @brief Refresh system LED state
- *
- * @param[in] ticks Is the count of ticks to add to the blink
- */
-void RefreshSystemLEDstate(uint32_t ticks);
 #endif
 
 //-----------------------------------------------------------------------------
@@ -284,12 +278,6 @@ void RefreshSystemLEDstate(uint32_t ticks);
  * @param[in] blinkMode Is the new blink mode
  */
 void SetStatusLEDblinkMode(eLEDBlinkMode blinkMode);
-
-/*! @brief Refresh status LED state
- *
- * @param[in] ticks Is the count of ticks to add to the blink
- */
-void RefreshStatusLEDState(uint32_t ticks);
 #endif
 
 //------------------------------------------------------------------------------
