@@ -314,7 +314,7 @@ struct MCP251XFD MCP2518FD_MB1 =
                   | MCP251XFD_DRIVER_INIT_SET_RAM_AT_0
                   | MCP251XFD_DRIVER_CLEAR_BUFFER_BEFORE_READ,
   //--- IO configuration ---
-  .GPIOsOutDir    = 0,
+  .GPIOsDirection = 0,
   .GPIOsOutLevel  = MCP251XFD_GPIO0_LOW | MCP251XFD_GPIO1_HIGH,
   //--- Interface driver call functions ---
   .SPIchipSelect  = 0x0 << 1, // Y0 output on U7
@@ -517,7 +517,7 @@ MCP251XFD MCP2517FD_MB3 =
                   | MCP251XFD_DRIVER_INIT_SET_RAM_AT_0
                   | MCP251XFD_DRIVER_CLEAR_BUFFER_BEFORE_READ,
   //--- IO configuration ---
-  .GPIOsOutDir    = 0,
+  .GPIOsDirection = 0,
   .GPIOsOutLevel  = MCP251XFD_GPIO0_LOW | MCP251XFD_GPIO1_HIGH,
   //--- Interface driver call functions ---
   .SPIchipSelect  = 0x6 << 1, // Y6 output on U7

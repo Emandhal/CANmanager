@@ -737,11 +737,11 @@ eERRORRESULT MCP251XFD_ConfigurePins(MCP251XFD *pComp, eMCP251XFD_GPIO0Mode GPIO
   Error = MCP251XFD_WriteSFR8(pComp, RegMCP251XFD_IOCON_PINMODE, Config);                                                                // Write configuration to the IOCON register (last byte only)
   if (Error != ERR_NONE) return Error;                                                                                                   // If there is an error while calling MCP251XFD_WriteSFR8() then return the error
 
-  pComp->GPIOsOutDir = MCP251XFD_SFR_IOCON8_XSTBYDIS | MCP251XFD_SFR_IOCON8_GPIO0_OUTPUT | MCP251XFD_SFR_IOCON8_GPIO1_OUTPUT; // By default, disable all controls
-  if (GPIO0PinMode == MCP251XFD_PIN_AS_XSTBY   ) pComp->GPIOsOutDir |= MCP251XFD_SFR_IOCON8_XSTBYEN;                          // If the pin INT0/GPIO0/XSTBY is in XSTBY mode then enable XSTBY mode
-  if (GPIO0PinMode == MCP251XFD_PIN_AS_GPIO0_IN) pComp->GPIOsOutDir |= MCP251XFD_SFR_IOCON8_GPIO0_INPUT;                      // If the pin INT0/GPIO0/XSTBY is in GPIO input mode then set GPIO input mode
-  if (GPIO1PinMode == MCP251XFD_PIN_AS_GPIO1_IN) pComp->GPIOsOutDir |= MCP251XFD_SFR_IOCON8_GPIO1_INPUT;                      // If the pin INT1/GPIO1 is in GPIO input mode then set GPIO input mode
-  return MCP251XFD_WriteSFR8(pComp, RegMCP251XFD_IOCON_DIRECTION, pComp->GPIOsOutDir);                                        // Write configuration to the IOCON register (first byte only)
+  pComp->GPIOsDirection = MCP251XFD_SFR_IOCON8_XSTBYDIS | MCP251XFD_SFR_IOCON8_GPIO0_OUTPUT | MCP251XFD_SFR_IOCON8_GPIO1_OUTPUT; // By default, disable all controls
+  if (GPIO0PinMode == MCP251XFD_PIN_AS_XSTBY   ) pComp->GPIOsDirection |= MCP251XFD_SFR_IOCON8_XSTBYEN;                          // If the pin INT0/GPIO0/XSTBY is in XSTBY mode then enable XSTBY mode
+  if (GPIO0PinMode == MCP251XFD_PIN_AS_GPIO0_IN) pComp->GPIOsDirection |= MCP251XFD_SFR_IOCON8_GPIO0_INPUT;                      // If the pin INT0/GPIO0/XSTBY is in GPIO input mode then set GPIO input mode
+  if (GPIO1PinMode == MCP251XFD_PIN_AS_GPIO1_IN) pComp->GPIOsDirection |= MCP251XFD_SFR_IOCON8_GPIO1_INPUT;                      // If the pin INT1/GPIO1 is in GPIO input mode then set GPIO input mode
+  return MCP251XFD_WriteSFR8(pComp, RegMCP251XFD_IOCON_DIRECTION, pComp->GPIOsDirection);                                        // Write configuration to the IOCON register (first byte only)
 }
 
 
@@ -755,9 +755,9 @@ eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, uint8_t pinsDirect
 #endif
 
   pinsChangeMask &= 0x3;
-  pComp->GPIOsOutDir &= ~pinsChangeMask;                                               // Force change bits to 0
-  pComp->GPIOsOutDir |= (pinsDirection & pinsChangeMask);                              // Apply new direction only on changed pins
-  return MCP251XFD_WriteSFR8(pComp, RegMCP251XFD_IOCON_DIRECTION, pComp->GPIOsOutDir); // Write new configuration to the IOCON register (first byte only)
+  pComp->GPIOsDirection &= ~pinsChangeMask;                                               // Force change bits to 0
+  pComp->GPIOsDirection |= (pinsDirection & pinsChangeMask);                              // Apply new direction only on changed pins
+  return MCP251XFD_WriteSFR8(pComp, RegMCP251XFD_IOCON_DIRECTION, pComp->GPIOsDirection); // Write new configuration to the IOCON register (first byte only)
 }
 
 
@@ -889,7 +889,7 @@ eERRORRESULT MCP251XFD_GetPinInputLevel_Gen(GPIO_Interface *pIntDev, eGPIO_State
 #endif
   uint8_t PinState = 0;
   eERRORRESULT Error = MCP251XFD_GetGPIOPinsInputLevel(pDevice, &PinState);
-  *pinLevel = (PinState > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
+  *pinLevel = ((PinState & pIntDev->PinBitMask) > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
   return Error;
 }
 
@@ -2522,7 +2522,7 @@ uint8_t MCP251XFD_DLCToByte(eCAN_DataLength dlc, bool isCANFD)
       UserDriverData(NULL),
       DriverConfig  (setMCP251XFD_DriverConfig(0)),
       InternalConfig(0),
-      GPIOsOutDir   (0),
+      GPIOsDirection   (0),
       GPIOsOutLevel (0),
       SPIchipSelect (csPin),
       SPI           (&aSPI),
@@ -2540,7 +2540,7 @@ uint8_t MCP251XFD_DLCToByte(eCAN_DataLength dlc, bool isCANFD)
       UserDriverData(NULL),
       DriverConfig  (setMCP251XFD_DriverConfig(0)),
       InternalConfig(0),
-      GPIOsOutDir   (0),
+      GPIOsDirection   (0),
       GPIOsOutLevel (0),
       SPIchipSelect (csPin),
       SPI

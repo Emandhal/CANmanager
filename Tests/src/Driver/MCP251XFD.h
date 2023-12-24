@@ -1,7 +1,7 @@
 /*!*****************************************************************************
  * @file    MCP251XFD.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.1.0
+ * @version 2.0.0
  * @date    03/09/2023
  * @brief   MCP251XFD C driver with C++ class wrapper
  * @details
@@ -36,7 +36,8 @@
  *****************************************************************************/
 
 /* Revision history:
- * 1.1.0    Update driver for "CAN_common" and "SPI_Interface"
+ * 2.0.0    Update driver to match "SPI_Interface"
+ * 1.1.0    Update driver for "CAN_common"
  * 1.0.6    Reduce code size by merging all Data Reads and all Data Writes
  * 1.0.5    Do a safer timeout for functions
  *          Mark RegMCP251XFD_IOCON as deprecated following MCP2517FD: DS80000792C (§6), MCP2518FD: DS80000789C (§5), MCP251863: DS80000984A (§5)
@@ -70,13 +71,6 @@
 #ifdef __cplusplus
 
 #  define MCP251XFD_MEMBER(name)
-#  if defined(_MSC_VER)
-#    define MCP251XFD_WEAK
-#    define MCP251XFD_EXTERN             extern
-#  else
-#    define MCP251XFD_WEAK               __attribute__((weak))
-#    define MCP251XFD_EXTERN
-#  endif
 #  define __MCP251XFD_PACKED__
 #  ifdef ARDUINO
 #    define MCP251XFD_PACKITEM           __attribute__((packed))
@@ -92,8 +86,6 @@
 #else
 
 #  define MCP251XFD_MEMBER(name)         .name =
-#  define MCP251XFD_WEAK                 __attribute__((weak))
-#  define MCP251XFD_EXTERN
 #  define __MCP251XFD_PACKED__           __attribute__((packed))
 #  define MCP251XFD_PACKITEM
 #  define MCP251XFD_UNPACKITEM
@@ -290,7 +282,7 @@ typedef enum
 {
   MCP2517FD         = 0x0, //!< MCP2517FD supported
   MCP2518FD         = 0x1, //!< MCP2518FD/MCP251863 supported
-  eMPC251XFD_DEVICE_COUNT, // Device count of this enum, keep last
+  eMCP251XFD_DEVICE_COUNT, // Device count of this enum, keep last
 } eMCP251XFD_Devices;
 
 #define MCP251XFD_DEV_ID_Pos         2
@@ -298,7 +290,7 @@ typedef enum
 #define MCP251XFD_DEV_ID_SET(value)  (((uint8_t)(value) << MCP251XFD_DEV_ID_Pos) & MCP251XFD_DEV_ID_Mask) //!< Set Device ID
 #define MCP251XFD_DEV_ID_GET(value)  (((uint8_t)(value) & MCP251XFD_DEV_ID_Mask) >> MCP251XFD_DEV_ID_Pos) //!< Get Device ID
 
-static const char* const MCP251XFD_DevicesNames[eMPC251XFD_DEVICE_COUNT] =
+static const char* const MCP251XFD_DevicesNames[eMCP251XFD_DEVICE_COUNT] =
 {
   "MCP2517FD",
   "MCP2518FD", // Same for MCP251863
@@ -3372,8 +3364,8 @@ struct MCP251XFD
   TMCP251XFDDriverInternal InternalConfig; //!< DO NOT USE OR CHANGE THIS VALUE, IT'S THE INTERNAL DRIVER CONFIGURATION
 
   //--- GPIO configuration ---
-  uint8_t GPIOsOutDir;                     //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
-  uint8_t GPIOsOutLevel;                   //!< GPIOs pins output level (0 = set to '0' ; 1 = set to '1'). Used to speed up output change
+  uint8_t GPIOsDirection;                  //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
+  uint8_t GPIOsOutLevel;                   //!< GPIOs pins output level (0 = set to low level ; 1 = set to high level). Used to speed up output change
 
   //--- Interface driver call functions ---
   uint8_t SPIchipSelect;                   //!< This is the Chip Select index that will be set at the call of a transfer
@@ -3938,7 +3930,7 @@ eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, uint8_t pinsLeve
 #ifdef USE_GENERICS_DEFINED
 /*! @brief Set PORT direction of the MCP251XFD device
  *
- * @param[in] *pIntDev Is the pointed structure of the GPIO interface to be used
+ * @param[in] *pIntDev Is the pointed structure of the PORT interface to be used
  * @param[in] pinsDirection Set the IO pins output level, if bit is '1' then the corresponding GPIO is level high else it's level low
  * @return Returns an #eERRORRESULT value enum
  */
@@ -3965,7 +3957,7 @@ eERRORRESULT MCP251XFD_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uin
 
 /*! @brief Set a pin on PORT direction of the MCP251XFD device
  *
- * This function will be called to change the direction of the GPIO
+ * This function will be called to change the direction or the state of a GPIO
  * @param[in] *pIntDev Is the GPIO interface container structure used for the GPIO set direction
  * @param[in] pinState Set the GPIO state following #eGPIO_State enumerator
  * @return Returns an #eERRORRESULT value enum
