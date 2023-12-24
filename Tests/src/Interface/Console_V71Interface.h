@@ -177,31 +177,6 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t* data, size_t size
 
 
 
-//**********************************************************************************************************************************************************
-
-//! Command buffer size
-#define COMMAND_BUFFER_SIZE   256
-
-/*! @brief Command Input buffer
- *
- * This structure contains infos concerning the input data for the received command
- */
-typedef struct
-{
-	volatile uint32_t BufPos;         //!< Position in the buffer
-	char Buffer[COMMAND_BUFFER_SIZE]; //!< Raw buffer with the frame to be processed
-	volatile bool ToProcess;          //!< Indicate that the frame in buffer should be processed or not
-} CommandInputBuf;
-
-//! The current Command Input buffer
-extern CommandInputBuf CommandInput;
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
 //********************************************************************************************************************
 // Console Receive API
 //********************************************************************************************************************

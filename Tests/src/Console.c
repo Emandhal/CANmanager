@@ -202,21 +202,20 @@ void __LOG(ConsoleTx* pApi, const char* context, bool whiteText, eLogMode logMod
     NewTime = (Time / 60); Min = Time - (NewTime * 60); Time = NewTime;
     NewTime = (Time / 24); Hor = Time - (NewTime * 24); Time = NewTime;
     d = Time;
-  }    
-
+  }
 
 #ifndef __cplusplus
 # define LOG_BUFFER_SIZE  200
   char TmpBuff[LOG_BUFFER_SIZE];
   if ((logMode == LogMode_Line) || (logMode == LogMode_StartPartial))
   {
-    siprintf(TmpBuff, FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
+    sniprintf(TmpBuff, LOG_BUFFER_SIZE, FormatLine, context, (unsigned int)d, (unsigned int)Hor, (unsigned int)Min, (unsigned int)Sec);
     SetStrToConsoleBuffer(pApi, TmpBuff);
     if (whiteText) SetStrToConsoleBuffer(pApi, WhiteTextStr);
   }
   if (logMode != LogMode_EndPartial)
   {
-    vsiprintf(TmpBuff, format, args);
+    vsniprintf(TmpBuff, LOG_BUFFER_SIZE, format, args);
     SetStrToConsoleBuffer(pApi, TmpBuff);
   }    
   if ((logMode == LogMode_Line) || (logMode == LogMode_EndPartial)) SetStrToConsoleBuffer(pApi, NewLine);
