@@ -289,10 +289,10 @@ eERRORRESULT MCP23SXX_SetPinsDirection(MCP23SXX *pComp, const uint8_t port, cons
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
   if (port >= MCP23SXX_DevicesRegLinks[pComp->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
-  pComp->PORToutDir[port] &= ~pinsChangeMask;                  // Force change bits to 0
-  pComp->PORToutDir[port] |= (pinsDirection & pinsChangeMask); // Apply new output level only on changed pins
+  pComp->PORTdirection[port] &= ~pinsChangeMask;                  // Force change bits to 0
+  pComp->PORTdirection[port] |= (pinsDirection & pinsChangeMask); // Apply new output level only on changed pins
   const eMCP23SXX_Registers IODIRreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pComp->DeviceName].IODIR + port);
-  return MCP23SXX_WriteRegister(pComp, IODIRreg, &pComp->PORToutDir[port], 1);
+  return MCP23SXX_WriteRegister(pComp, IODIRreg, &pComp->PORTdirection[port], 1);
 }
 
 
@@ -319,8 +319,8 @@ eERRORRESULT MCP23SXX_SetPinsOutputLevel(MCP23SXX *pComp, const uint8_t port, co
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
   if (port >= MCP23SXX_DevicesRegLinks[pComp->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
-  pComp->PORToutLevel[port] &= ~pinsChangeMask;                 // Force change bits to 0
-  pComp->PORToutLevel[port] |= (pinsLevel & pinsChangeMask);    // Apply new output level only on changed pins
+  pComp->PORToutLevel[port] &= ~pinsChangeMask;              // Force change bits to 0
+  pComp->PORToutLevel[port] |= (pinsLevel & pinsChangeMask); // Apply new output level only on changed pins
   const eMCP23SXX_Registers OLATreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pComp->DeviceName].OLAT + port);
   return MCP23SXX_WriteRegister(pComp, OLATreg, &pComp->PORToutLevel[port], 1);
 }
@@ -342,14 +342,14 @@ eERRORRESULT MCP23SXX_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP23SXX_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
-  MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);         // Get the MCP23SXX device of this GPIO port
+  MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);           // Get the MCP23SXX device of this GPIO port
 #ifdef CHECK_NULL_PARAM
   if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
   if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
-  pDevice->PORToutDir[pIntDev->PORTindex] = (uint8_t)pinsDirection; // Apply new output direction on PORT
+  pDevice->PORTdirection[pIntDev->PORTindex] = (uint8_t)pinsDirection; // Apply new output direction on PORT
   const eMCP23SXX_Registers IODIRreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pDevice->DeviceName].IODIR + pIntDev->PORTindex);
-  return MCP23SXX_WriteRegister(pDevice, IODIRreg, &pDevice->PORToutDir[pIntDev->PORTindex], 1);
+  return MCP23SXX_WriteRegister(pDevice, IODIRreg, &pDevice->PORTdirection[pIntDev->PORTindex], 1);
 }
 
 
@@ -384,14 +384,14 @@ eERRORRESULT MCP23SXX_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP23SXX_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
-  MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);     // Get the MCP23SXX device of this GPIO port
+  MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);       // Get the MCP23SXX device of this GPIO port
 #ifdef CHECK_NULL_PARAM
   if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
   if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
-  pDevice->PORToutDir[pIntDev->PORTindex] = (uint8_t)pinsLevel; // Apply new output level on PORT
+  pDevice->PORTdirection[pIntDev->PORTindex] = (uint8_t)pinsLevel; // Apply new output level on PORT
   const eMCP23SXX_Registers OLATreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pDevice->DeviceName].OLAT + pIntDev->PORTindex);
-  return MCP23SXX_WriteRegister(pDevice, OLATreg, &pDevice->PORToutDir[pIntDev->PORTindex], 1);
+  return MCP23SXX_WriteRegister(pDevice, OLATreg, &pDevice->PORTdirection[pIntDev->PORTindex], 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -441,7 +441,7 @@ eERRORRESULT MCP23SXX_GetPinInputLevel_Gen(GPIO_Interface *pIntDev, eGPIO_State 
 #endif
   uint8_t PinState = 0;
   eERRORRESULT Error = MCP23SXX_GetPinsInputLevel(pDevice, pIntDev->PORTindex, &PinState);
-  *pinLevel = (PinState > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
+  *pinLevel = ((PinState & pIntDev->PinBitMask) > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
   return Error;
 }
 

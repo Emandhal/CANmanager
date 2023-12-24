@@ -423,17 +423,17 @@ struct MCP23SXX
   setMCP23SXX_ControlFlags ControlFlags; //!< I/O expander configuration flags for general behavior (can be OR'ed)
 
   //--- PORT configuration ---
-  uint8_t PORToutDir[2];                 //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
-  uint8_t PORToutLevel[2];               //!< GPIOs pins output level (0 = set to '0' ; 1 = set to '1'). Used to speed up output change
+  uint8_t PORTdirection[2];              //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
+  uint8_t PORToutLevel[2];               //!< GPIOs pins output level (0 = set to low level ; 1 = set to high level). Used to speed up output change
 
   //--- Interface driver call functions ---
   uint8_t SPIchipSelect;                 //!< This is the Chip Select index that will be set at the call of a transfer
 #ifdef USE_DYNAMIC_INTERFACE
-  SPI_Interface* SPI;                  //!< This is the SPI_Interface descriptor pointer that will be used to communicate with the device
+  SPI_Interface* SPI;                    //!< This is the SPI_Interface descriptor pointer that will be used to communicate with the device
 #else
-  SPI_Interface SPI;                   //!< This is the SPI_Interface descriptor that will be used to communicate with the device
+  SPI_Interface SPI;                     //!< This is the SPI_Interface descriptor that will be used to communicate with the device
 #endif
-  uint32_t SPIclockSpeed;              //!< Clock frequency of the SPI interface in Hertz
+  uint32_t SPIclockSpeed;                //!< Clock frequency of the SPI interface in Hertz
 
   //--- Device address ---
   uint8_t AddrA2A1A0;                    //!< Device configurable address A2, A1, and A0. You can use the macro MCP23SXX_ADDR() to help filling this parameter. Only these 3 lower bits are used: ....210. where 2 is A2, 1 is A1, 0 is A0, and '.' are fixed by device

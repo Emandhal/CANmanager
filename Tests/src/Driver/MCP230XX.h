@@ -452,16 +452,16 @@ struct MCP230XX
   setMCP230XX_ControlFlags ControlFlags; //!< I/O expander configuration flags for general behavior (can be OR'ed)
 
   //--- PORT configuration ---
-  uint8_t PORToutDir[2];                 //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
-  uint8_t PORToutLevel[2];               //!< GPIOs pins output level (0 = set to '0' ; 1 = set to '1'). Used to speed up output change
+  uint8_t PORTdirection[2];              //!< GPIOs pins direction (0 = set to output ; 1 = set to input). Used to speed up direction change
+  uint8_t PORToutLevel[2];               //!< GPIOs pins output level (0 = set to low level ; 1 = set to high level). Used to speed up output change
 
   //--- Interface driver call functions ---
 #ifdef USE_DYNAMIC_INTERFACE
-  I2C_Interface* I2C;                  //!< This is the I2C_Interface descriptor pointer that will be used to communicate with the device
+  I2C_Interface* I2C;                    //!< This is the I2C_Interface descriptor pointer that will be used to communicate with the device
 #else
-  I2C_Interface I2C;                   //!< This is the I2C_Interface descriptor that will be used to communicate with the device
+  I2C_Interface I2C;                     //!< This is the I2C_Interface descriptor that will be used to communicate with the device
 #endif
-  uint32_t I2CclockSpeed;              //!< Clock frequency of the I2C interface in Hertz
+  uint32_t I2CclockSpeed;                //!< Clock frequency of the I2C interface in Hertz
 
   //--- Device address ---
   uint8_t AddrA2A1A0;                    //!< Device configurable address A2, A1, and A0. You can use the macro MCP230XX_ADDR() to help filling this parameter. Only these 3 lower bits are used: ....210. where 2 is A2, 1 is A1, 0 is A0, and '.' are fixed by device
