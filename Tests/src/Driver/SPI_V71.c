@@ -132,7 +132,7 @@ eERRORRESULT SPI_MasterInit(Spi* pSPI, uint8_t chipSelect, eSPIInterface_Mode mo
 #ifdef CHECK_NULL_PARAM
   if (pSPI == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  if (SPI_PIN_COUNT_GET(mode) > 1) return ERR__NOT_SUPPORTED;
+  if (SPI_PIN_COUNT_GET(mode) != 1) return ERR__NOT_SUPPORTED;
   if (chipSelect > 4) return ERR__PARAMETER_ERROR;
   eERRORRESULT Error;
 
