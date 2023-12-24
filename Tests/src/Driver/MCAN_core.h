@@ -88,7 +88,7 @@ extern "C" {
 #  define MCAN_SWAP32(x)  ({ uint32_t z = (x); \
                           (uint32_t)(((z & 0xff) << 24) | ((z & 0xff00) << 8) | ((z >> 8) & 0xff00) | ((z >> 24) & 0xff)); })
 #else
-#  define MCAN_SWAP32(x)  ( (uint32_t)((((int32_t)(x) & 0xff) << 24) | (((int32_t)(x) & 0xff00) << 8) | (((int32_t)(x) >> 8) & 0xff00) | (((int32_t)(x) >> 24) & 0xff)) )
+#  define MCAN_SWAP32(x)  ( (uint32_t)((((uint32_t)(x) & 0xff) << 24) | (((uint32_t)(x) & 0xff00) << 8) | (((uint32_t)(x) >> 8) & 0xff00) | (((uint32_t)(x) >> 24) & 0xff)) )
 #endif
 
 //-----------------------------------------------------------------------------
