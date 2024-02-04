@@ -133,7 +133,8 @@ eERRORRESULT SPI_MasterInit(Spi* pSPI, uint8_t chipSelect, eSPIInterface_Mode mo
   if (pSPI == NULL) return ERR__PARAMETER_ERROR;
 #endif
   if (SPI_PIN_COUNT_GET(mode) != 1) return ERR__NOT_SUPPORTED;
-  if (chipSelect > 4) return ERR__PARAMETER_ERROR;
+  if ( (((pSPI->SPI_MR & SPI_MR_PS) >  0) && (chipSelect > 14))                                // Maximum Chip Select on Variable Peripheral Select is 14 (0..14). 15 is for no chip selection
+    || (((pSPI->SPI_MR & SPI_MR_PS) == 0) && (chipSelect >  3)) ) return ERR__PARAMETER_ERROR; // Maximum Chip Select on Fixed Peripheral Select is 3 (0..3)
   eERRORRESULT Error;
 
   //--- Configure SPI mode ---
@@ -273,6 +274,15 @@ uint32_t SPI_GetPeripheralNumber(Spi* pSPI)
 }
 
 
+//=============================================================================
+// Calculate the SPI clock speed in Hz
+//=============================================================================
+uint32_t SPI_GetClock(Spi* pSPI, uint8_t aCS)
+{
+  return sysclk_get_peripheral_hz() / ((pSPI->SPI_CSR[aCS] & SPI_CSR_SCBR_Msk) >> SPI_CSR_SCBR_Pos);
+}
+
+
 
 
 
@@ -381,7 +391,6 @@ eERRORRESULT SPI_Transfer(Spi* pSPI, SPIInterface_Packet* const pPacketDesc)
   uint32_t Timeout = SPI_TIMEOUT;
 
   //--- Check the state of the transfer ---
-  if (PeriphNumber == SPI_INVALID_PERIPHERAL) return ERR__PERIPHERAL_NOT_VALID;
   switch (__SPItransferList[PeriphNumber].Status)
   {
     case SPI_STATUS_COMPLETE:      //** SPI transfer complete
@@ -443,13 +452,13 @@ eERRORRESULT SPI_Transfer(Spi* pSPI, SPIInterface_Packet* const pPacketDesc)
     //--- Transmit data ---
     Timeout = SPI_TIMEOUT;
     while ((pSPI->SPI_SR & SPI_SR_TDRE) == 0)                 // SPI Tx ready?
-      if ((Timeout--) == 0) { ForceTerminate = true; break; } // Timeout ? return an error
+      if ((Timeout--) == 0) { ForceTerminate = true; break; } // Timeout? return an error
     pSPI->SPI_TDR = DataToSend;                               // Send the data
 
     //--- Receive data ---
     Timeout = SPI_TIMEOUT;
     while ((pSPI->SPI_SR & SPI_SR_RDRF) == 0)                 // SPI Rx ready?
-      if ((Timeout--) == 0) { ForceTerminate = true; break; } // Timeout ? return an error
+      if ((Timeout--) == 0) { ForceTerminate = true; break; } // Timeout? return an error
     DataRead = (uint8_t)(pSPI->SPI_RDR & 0xFF);               // Read the receive register
     if (pRxData != NULL)
     {

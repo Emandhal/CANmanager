@@ -215,6 +215,15 @@ uint32_t SPI_GetPeripheralID(Spi* pSPI);
  */
 uint32_t SPI_GetPeripheralNumber(Spi* pSPI);
 
+/*! @brief Calculate the SPI clock speed in Hz
+ *
+ * The calculus depend on SPI configuration of the SAMV71
+ * @param[in] *pSPI Is the pointed structure of the SPI registers configuration
+ * @param[in] aCS Is the SPI Chip Select to work with
+ * @return Return the time in nanoseconds
+ */
+uint32_t SPI_GetClock(Spi* pSPI, uint8_t aCS);
+
 //-----------------------------------------------------------------------------
 
 

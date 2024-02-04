@@ -25,6 +25,7 @@
 #include "Main.h"
 #include "TimerTicks.h"
 #include "Interface/Console_V71Interface.h"
+#include "SPI_V71.h"
 //-----------------------------------------------------------------------------
 
 volatile uint32_t msCount; //!< Milli-seconds count from start of the system
@@ -35,6 +36,32 @@ const char ButtonStateStr[2][7+1/* \0 */] =
 {
   "push",
   "release",
+};
+
+//-----------------------------------------------------------------------------
+
+//! Delay before SPCK
+# define SPI_DLYBS   ( 0x01 ) // Tspick/2 needed
+//! Delay between consecutive transfers
+# define SPI_DLYBCT  ( 0x01 ) // To conform last SCK rise to nCS rise time (1 Tspick)
+//! Delay Between Chip Selects
+# define SPI_DLYBCS  ( 0x01 ) // To conform 1 Tspick needed
+
+//! Configuration of the SPI0 on the V71
+SPI_Config SPI0_Config =
+{
+  .VariablePS      = true,
+  .CSdecoder       = true,
+  .ModeFaultDetect = false,
+  .WaitRead        = true,
+  .DLYBCS_ns       = SPI_DLYBCS,
+  .CSR             =
+  {
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+  },
 };
 
 //-----------------------------------------------------------------------------
@@ -138,6 +165,16 @@ int main (void)
 
   //--- Configure SysTick base timer --------------------
   SysTick_Config(SystemCoreClock * SYSTEM_TICK_MS / 1000); // (Fmck(Hz)*1/1000)=1ms
+  
+  //--- Configure SPI0 ----------------------------------
+  eERRORRESULT ErrorSPI = SPI_Init(SPI0, &SPI0_Config);
+  if (ErrorSPI != ERR_NONE)
+  {
+    ioport_set_pin_level(LED0_GPIO, LED0_ACTIVE_LEVEL);
+    ioport_set_pin_level(LED1_GPIO, LED1_ACTIVE_LEVEL);
+    LOGFATAL("Unable to configure SPI0 (error code: %u), END OF DEMO", (unsigned int)ErrorSPI);
+    while (true) TrySendingNextCharToConsole(CONSOLE_TX); // Stay stuck here
+  }
 
   //--- Reset watchdog ----------------------------------
   wdt_restart(WDT);

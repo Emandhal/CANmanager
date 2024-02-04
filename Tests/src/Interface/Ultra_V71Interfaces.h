@@ -58,7 +58,7 @@
 #ifdef USE_V71_MCAN
 extern CAN_BitTimeStats MCAN0V71_BitTimeStats; //!< MCAN0V71 Bit Time stat
 
-extern struct MCANV71 MCAN0V71;             //!< Component structure of the MCAN0 on SAMV71
+extern struct MCANV71 MCAN0V71;          //!< Component structure of the MCAN0 on SAMV71
 extern struct MCAN_Config MCAN0V71_Conf; //!< Configuration structure of the MCAN0 on SAMV71
 #endif
 //-----------------------------------------------------------------------------
