@@ -94,7 +94,7 @@ extern "C" {
 //-----------------------------------------------------------------------------
 
 #define MCAN_BASE_ADDRESS_MASK     ( 0xFFFF0000 ) //!< Base address mask for RAM address reconstitution
-#define MCAN_ADDRESS32_ALIGN_MASK  ( 0xFFFFFFFC ) //!< Base 32-bits addresswith alignment mask for RAM address
+#define MCAN_ADDRESS32_ALIGN_MASK  ( 0xFFFFFFFC ) //!< Base 32-bits address with alignment mask for RAM address
 
 //-----------------------------------------------------------------------------
 
@@ -3805,6 +3805,7 @@ typedef struct MCAN_Filter
 #define MCAN_DEV_PS_GET(value)             (eMCAN_PowerStates)(((uint32_t)(value) & MCAN_DEV_PS_Mask) >> MCAN_DEV_PS_Pos) // Get Device Power State
 #define MCAN_CHANGE_ENDIANNESS_Pos         29
 #define MCAN_CHANGE_ENDIANNESS_Mask        ( 0x1u << MCAN_CHANGE_ENDIANNESS_Pos ) //!< Endianness have to be change
+#define MCAN_CHANGE_ENDIANNESS_SET         ( MCAN_CHANGE_ENDIANNESS_Mask )        // Set the indication that endianness have to be change
 #define MCAN_IS_CHANGE_ENDIANNESS(pComp)   ((((pComp)->InternalConfig) & (1u << MCAN_CHANGE_ENDIANNESS_Pos)) > 0) //!< Is CPU and device/peripheral does not have matched endianness?
 #define MCAN_16BIT_MM_ENABLED              ( 1 << 30 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the Wide Message Marker is configured
 #define MCAN_CANFD_ENABLED                 ( 1 << 31 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the CANFD is configured

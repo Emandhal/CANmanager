@@ -145,7 +145,7 @@ eERRORRESULT MCAN_CheckEndianness(MCAN_Interface *pComp)
   pComp->InternalConfig &= ~MCAN_CHANGE_ENDIANNESS_Mask;
   if (MCAN_ENDN_IS_MATCH_ENDIANNESS(DataValue) == false)
   {
-    pComp->InternalConfig |= MCAN_CHANGE_ENDIANNESS_Mask;                                          // Check the endianness. If not correct, set the CHANGE_ENDIANNESS flag
+    pComp->InternalConfig |= MCAN_CHANGE_ENDIANNESS_SET;                                           // Check the endianness. If not correct, set the CHANGE_ENDIANNESS flag
     if ((DataValue != MCAN_ENDN_LITTLE_ENDIAN_VALUE) && (DataValue != MCAN_ENDN_BIG_ENDIAN_VALUE)) // If unknown value, the device is not a MCAN or no proper communication occurred
       return ERR__NO_DEVICE_DETECTED;
   }
