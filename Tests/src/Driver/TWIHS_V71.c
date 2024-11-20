@@ -707,6 +707,7 @@ static eERRORRESULT __TWIHS_DMA_Transfer(Twihs *pTWIHS, I2CInterface_Packet* con
   if (__TWIHStransferList[PeriphNumber].TransactionCounter > I2C_TRANSACTION_NUMBER_Mask) __TWIHStransferList[PeriphNumber].TransactionCounter = 1; // Value cannot be 0
   __TWIHStransferList[PeriphNumber].Config.Value   = (pPacketDesc->Config.Value & ~I2C_ENDIAN_RESULT_Mask)
                                                    | I2C_TRANSACTION_NUMBER_SET(__TWIHStransferList[PeriphNumber].TransactionCounter);
+  pPacketDesc->Config.Value &= ~I2C_TRANSACTION_NUMBER_Mask;
   pPacketDesc->Config.Value |= I2C_TRANSACTION_NUMBER_SET(__TWIHStransferList[PeriphNumber].TransactionCounter); // Set the transaction number for the driver
 
   //--- Configure the XDMAC ---
