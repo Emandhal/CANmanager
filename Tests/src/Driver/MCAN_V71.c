@@ -36,9 +36,9 @@ extern "C" {
 //=============================================================================
 eERRORRESULT MCANV71_ConfigurePeripheralClocks(MCANV71 *pComp, uint32_t* const peripheralClock)
 { // It's a weak function, the user need to create the same function in his project and implement things, thus this function will be discarded
-  #ifdef CHECK_NULL_PARAM
+#ifdef CHECK_NULL_PARAM
   if ((pComp == NULL) || (peripheralClock == NULL)) return ERR__PARAMETER_ERROR;
-  #endif
+#endif
   volatile Mcan* pMCAN = (volatile Mcan*)pComp->Instance;
   //-- Get peripheral ID ---
   uint32_t PeriphID = 0;
@@ -70,7 +70,7 @@ eERRORRESULT MCANV71_ConfigurePeripheralClocks(MCANV71 *pComp, uint32_t* const p
 eERRORRESULT MCANV71_ConfigureMCANbaseAddress(MCANV71 *pComp)
 {
   if (pComp->Instance == MCAN0)
-  MATRIX->CCFG_CAN0  = (MATRIX->CCFG_CAN0  & ~CCFG_CAN0_CAN0DMABA_Msk ) | CCFG_CAN0_CAN0DMABA_SET((uint32_t)pComp->RAMallocation);
+       MATRIX->CCFG_CAN0  = (MATRIX->CCFG_CAN0  & ~CCFG_CAN0_CAN0DMABA_Msk ) | CCFG_CAN0_CAN0DMABA_SET((uint32_t)pComp->RAMallocation);
   else MATRIX->CCFG_SYSIO = (MATRIX->CCFG_SYSIO & ~CCFG_SYSIO_CAN1DMABA_Msk) | CCFG_SYSIO_CAN1DMABA_SET((uint32_t)pComp->RAMallocation);
   return ERR_NONE;
 }
