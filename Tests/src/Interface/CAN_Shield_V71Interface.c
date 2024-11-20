@@ -300,99 +300,6 @@ GPIO_Interface SJA1000_Trans_CS =
 
 
 //********************************************************************************************************************
-// MCP2518FD External CAN controller
-//********************************************************************************************************************
-
-//! Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
-struct MCP251XFD MCP2518FD_MB1 =
-{
-  .UserDriverData = NULL,
-  //--- Driver configuration ---
-  .DriverConfig   = MCP251XFD_DRIVER_NORMAL_USE
-                  | MCP251XFD_DRIVER_SAFE_RESET
-                  | MCP251XFD_DRIVER_USE_READ_WRITE_CRC
-                  | MCP251XFD_DRIVER_INIT_SET_RAM_AT_0
-                  | MCP251XFD_DRIVER_CLEAR_BUFFER_BEFORE_READ,
-  //--- IO configuration ---
-  .GPIOsDirection = 0,
-  .GPIOsOutLevel  = MCP251XFD_GPIO0_LOW | MCP251XFD_GPIO1_HIGH,
-  //--- Interface driver call functions ---
-  .SPIchipSelect  = 0x0 << 1, // Y0 output on U7
-  .SPI            = &SPI0_V71,
-  .SPIclockSpeed  = 17000000, // 17MHz
-  //--- Time call function ---
-  .fnGetCurrentms = GetCurrentms_V71,
-  //--- CRC16-USB call function ---
-  .fnComputeCRC16 = MCP251XFD_ComputeCRC16CMS,
-};
-
-//-----------------------------------------------------------------------------
-
-CAN_BitTimeStats MCP2518FD_BitTimeStats = { 0 }; //!< MCP2518FD Bit Time stat
-uint32_t MCP2518FD_SYSCLK; //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
-
-//! Configuration structure of the MCP2518FD on MIKROBUS1
-struct MCP251XFD_Config MCP2518FD_Config =
-{
-  //--- Controller clocks ---
-  .XtalFreq       = 0,                         // CLKIN is not a crystal
-  .OscFreq        = 40000000,                  // CLKIN is an oscillator
-  .SysclkConfig   = MCP251XFD_SYSCLK_IS_CLKIN,
-  .ClkoPinConfig  = MCP251XFD_CLKO_SOF,
-  .SYSCLK_Result  = &MCP2518FD_SYSCLK,
-  //--- CAN configuration ---
-  .BusConfig      =
-  {
-    .DesiredNominalBitrate = CAN_SHIELD_BITRATE,   // Desired CAN2.0A/CAN2.0B bitrate in bit/s
-    .DesiredDataBitrate    = CANFD_SHIELD_BITRATE, // Desired Data CANFD bitrate in bit/s
-    .BusMeters             = 1,                    // Only 10cm on the V71_UltraXplained_CAN_Shield
-    .TransceiverDelay      = 300,                  // The transceiver is a ATA6563-GAQW1 on the MCP2518FD click board. The worst delay is from Normal mode, Rising edge at pin TXD or Falling edge at pin TXD
-    .NominalSamplePoint    = 75,                   // Nominal sample point in percent
-    .DataSamplePoint       = 75,                   // Data sample point in percent
-  },
-  .BitTimeStats   = &MCP2518FD_BitTimeStats,
-  .Bandwidth      = MCP251XFD_NO_DELAY,
-  .ControlFlags   = MCP251XFD_CAN_RESTRICTED_MODE_ON_ERROR      // Transition to Restricted Operation Mode on system error
-                  | MCP251XFD_CAN_ESI_REFLECTS_ERROR_STATUS     // ESI reflects error status of CAN controller
-                  | MCP251XFD_CAN_RESTRICTED_RETRANS_ATTEMPTS   // Restricted retransmission attempts, MCP251XFD_FIFO.Attempts (CiFIFOCONm.TXAT) is used
-                  | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
-                  | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
-                  | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
-                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
-  //--- GPIOs and Interrupts pins ---
-  .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
-  .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,
-  .INTsOutMode    = MCP251XFD_PINS_PUSHPULL_OUT,
-  .TXCANOutMode   = MCP251XFD_PINS_PUSHPULL_OUT,
-  //--- Interrupts ---
-  .SysInterruptFlags = MCP251XFD_INT_ENABLE_ALL_EVENTS - MCP251XFD_INT_TX_EVENT,
-};
-
-//-----------------------------------------------------------------------------
-
-MCP251XFD_RAMInfos MCP2518FD_RAMInfos; //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()
-
-//! Configuration structure for FIFO of the MCP2518FD on MIKROBUS1
-MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT] =
-{
-  { .Name = MCP251XFD_FIFO1, .Size = MCP251XFD_FIFO_26_MESSAGE_DEEP, .Payload = MCP251XFD_PAYLOAD_64BYTE, .Direction = MCP251XFD_RECEIVE_FIFO, .ControlFlags = MCP251XFD_FIFO_ADD_TIMESTAMP_ON_RX, .InterruptFlags = MCP251XFD_FIFO_OVERFLOW_INT + MCP251XFD_FIFO_RECEIVE_FIFO_NOT_EMPTY_INT, .RAMInfos = &MCP2518FD_RAMInfos, },
-};
-
-//-----------------------------------------------------------------------------
-
-//! Configuration structure for Filters of the MCP2518FD on MIKROBUS1
-MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT] =
-{
-  { .Filter = MCP251XFD_FILTER0, .EnableFilter = true, .Match = MCP251XFD_MATCH_SID_EID, .AcceptanceID = MCP251XFD_ACCEPT_ALL_MESSAGES, .AcceptanceMask = MCP251XFD_ACCEPT_ALL_MESSAGES, .PointTo = MCP251XFD_FIFO1, },
-};
-
-//-----------------------------------------------------------------------------
-
-
-
-
-
-//********************************************************************************************************************
 // MCP2515 External CAN controller
 //********************************************************************************************************************
 
@@ -494,6 +401,99 @@ struct SJA1000_Config SJA1000_U6_Conf =
   .bypassRxComp = false,
   //--- Interrupts ---
   .Interrupts   = SJA1000_ENABLE_ALL_PCAN_INTERRUPTS,
+};
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
+// MCP2518FD External CAN controller
+//********************************************************************************************************************
+
+//! Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
+struct MCP251XFD MCP2518FD_MB1 =
+{
+  .UserDriverData = NULL,
+  //--- Driver configuration ---
+  .DriverConfig   = MCP251XFD_DRIVER_NORMAL_USE
+                  | MCP251XFD_DRIVER_SAFE_RESET
+                  | MCP251XFD_DRIVER_USE_READ_WRITE_CRC
+                  | MCP251XFD_DRIVER_INIT_SET_RAM_AT_0
+                  | MCP251XFD_DRIVER_CLEAR_BUFFER_BEFORE_READ,
+  //--- IO configuration ---
+  .GPIOsDirection = 0,
+  .GPIOsOutLevel  = MCP251XFD_GPIO0_LOW | MCP251XFD_GPIO1_HIGH,
+  //--- Interface driver call functions ---
+  .SPIchipSelect  = 0x0 << 1, // Y0 output on U7
+  .SPI            = &SPI0_V71,
+  .SPIclockSpeed  = 17000000, // 17MHz
+  //--- Time call function ---
+  .fnGetCurrentms = GetCurrentms_V71,
+  //--- CRC16-USB call function ---
+  .fnComputeCRC16 = MCP251XFD_ComputeCRC16CMS,
+};
+
+//-----------------------------------------------------------------------------
+
+CAN_BitTimeStats MCP2518FD_BitTimeStats = { 0 }; //!< MCP2518FD Bit Time stat
+uint32_t MCP2518FD_SYSCLK; //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
+
+//! Configuration structure of the MCP2518FD on MIKROBUS1
+struct MCP251XFD_Config MCP2518FD_Config =
+{
+  //--- Controller clocks ---
+  .XtalFreq       = 0,                         // CLKIN is not a crystal
+  .OscFreq        = 40000000,                  // CLKIN is an oscillator
+  .SysclkConfig   = MCP251XFD_SYSCLK_IS_CLKIN,
+  .ClkoPinConfig  = MCP251XFD_CLKO_SOF,
+  .SYSCLK_Result  = &MCP2518FD_SYSCLK,
+  //--- CAN configuration ---
+  .BusConfig      =
+  {
+    .DesiredNominalBitrate = CAN_SHIELD_BITRATE,   // Desired CAN2.0A/CAN2.0B bitrate in bit/s
+    .DesiredDataBitrate    = CANFD_SHIELD_BITRATE, // Desired Data CANFD bitrate in bit/s
+    .BusMeters             = 1,                    // Only 10cm on the V71_UltraXplained_CAN_Shield
+    .TransceiverDelay      = 300,                  // The transceiver is a ATA6563-GAQW1 on the MCP2518FD click board. The worst delay is from Normal mode, Rising edge at pin TXD or Falling edge at pin TXD
+    .NominalSamplePoint    = 75,                   // Nominal sample point in percent
+    .DataSamplePoint       = 75,                   // Data sample point in percent
+  },
+  .BitTimeStats   = &MCP2518FD_BitTimeStats,
+  .Bandwidth      = MCP251XFD_NO_DELAY,
+  .ControlFlags   = MCP251XFD_CAN_RESTRICTED_MODE_ON_ERROR      // Transition to Restricted Operation Mode on system error
+                  | MCP251XFD_CAN_ESI_REFLECTS_ERROR_STATUS     // ESI reflects error status of CAN controller
+                  | MCP251XFD_CAN_RESTRICTED_RETRANS_ATTEMPTS   // Restricted retransmission attempts, MCP251XFD_FIFO.Attempts (CiFIFOCONm.TXAT) is used
+                  | MCP251XFD_CANFD_BITRATE_SWITCHING_ENABLE    // Bit Rate Switching is Enabled, Bit Rate Switching depends on BRS in the Transmit Message Object
+                  | MCP251XFD_CAN_PROTOCOL_EXCEPT_AS_FORM_ERROR // Protocol Exception is treated as a Form Error. A recessive "res bit" following a recessive FDF bit is called a Protocol Exception
+                  | MCP251XFD_CANFD_USE_ISO_CRC                 // Include Stuff Bit Count in CRC Field and use Non-Zero CRC Initialization Vector according to ISO 11898-1:2015
+                  | MCP251XFD_CANFD_DONT_USE_RRS_BIT_AS_SID11,  // Don’t use RRS; SID<10:0> according to ISO 11898-1:2015
+  //--- GPIOs and Interrupts pins ---
+  .GPIO0PinMode   = MCP251XFD_PIN_AS_GPIO0_OUT,
+  .GPIO1PinMode   = MCP251XFD_PIN_AS_INT1_RX,
+  .INTsOutMode    = MCP251XFD_PINS_PUSHPULL_OUT,
+  .TXCANOutMode   = MCP251XFD_PINS_PUSHPULL_OUT,
+  //--- Interrupts ---
+  .SysInterruptFlags = MCP251XFD_INT_ENABLE_ALL_EVENTS - MCP251XFD_INT_TX_EVENT,
+};
+
+//-----------------------------------------------------------------------------
+
+MCP251XFD_RAMInfos MCP2518FD_RAMInfos; //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()
+
+//! Configuration structure for FIFO of the MCP2518FD on MIKROBUS1
+MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT] =
+{
+  { .Name = MCP251XFD_FIFO1, .Size = MCP251XFD_FIFO_26_MESSAGE_DEEP, .Payload = MCP251XFD_PAYLOAD_64BYTE, .Direction = MCP251XFD_RECEIVE_FIFO, .ControlFlags = MCP251XFD_FIFO_ADD_TIMESTAMP_ON_RX, .InterruptFlags = MCP251XFD_FIFO_OVERFLOW_INT + MCP251XFD_FIFO_RECEIVE_FIFO_NOT_EMPTY_INT, .RAMInfos = &MCP2518FD_RAMInfos, },
+};
+
+//-----------------------------------------------------------------------------
+
+//! Configuration structure for Filters of the MCP2518FD on MIKROBUS1
+MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT] =
+{
+  { .Filter = MCP251XFD_FILTER0, .EnableFilter = true, .Match = MCP251XFD_MATCH_SID_EID, .AcceptanceID = MCP251XFD_ACCEPT_ALL_MESSAGES, .AcceptanceMask = MCP251XFD_ACCEPT_ALL_MESSAGES, .PointTo = MCP251XFD_FIFO1, },
 };
 
 //-----------------------------------------------------------------------------

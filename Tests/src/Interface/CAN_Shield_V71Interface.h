@@ -88,24 +88,6 @@ extern GPIO_Interface SJA1000_Trans_CS; //!< GPIO interface of the MCP23SXX as S
 
 
 //********************************************************************************************************************
-// MCP2518FD External CAN controller
-//********************************************************************************************************************
-extern struct MCP251XFD MCP2518FD_MB1;                                //!< Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
-extern MCP251XFD_BitTimeStats MCP2518FD_BTStats;                      //!< MCP2518FD Bit Time stat
-extern uint32_t MCP2518FD_SYSCLK;                                     //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
-extern struct MCP251XFD_Config MCP2518FD_Config;                      //!< Configuration structure of the MCP2518FD on MIKROBUS1
-
-#define MCP2518FD_FIFO_COUNT    1
-extern MCP251XFD_RAMInfos MCP2518FD_RAMInfos;                         //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()
-extern MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT];       //!< Configuration structure for FIFO of the MCP2518FD on MIKROBUS1
-
-#define MCP2518FD_FILTER_COUNT  1
-extern MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT]; //!< Configuration structure for Filters of the MCP2518FD on MIKROBUS1
-//-----------------------------------------------------------------------------
-
-
-
-//********************************************************************************************************************
 // MCP2515 External CAN controller
 //********************************************************************************************************************
 extern CAN_BitTimeStats MCP2515_BitTimeStats; //!< MCP2515 Bit Time stat
@@ -123,6 +105,24 @@ extern CAN_BitTimeStats SJA1000_BitTimeStats; //!< SJA1000 Bit Time stat
 
 extern struct SJA1000 SJA1000_U6;             //!< Component structure of the SJA1000 as U6 with link to GPIO expander on the CAN_Shield board
 extern struct SJA1000_Config SJA1000_U6_Conf; //!< Configuration structure of the SJA1000 as U6
+//-----------------------------------------------------------------------------
+
+
+
+//********************************************************************************************************************
+// MCP2518FD External CAN controller
+//********************************************************************************************************************
+extern struct MCP251XFD MCP2518FD_MB1;                                //!< Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
+extern MCP251XFD_BitTimeStats MCP2518FD_BTStats;                      //!< MCP2518FD Bit Time stat
+extern uint32_t MCP2518FD_SYSCLK;                                     //!< SYSCLK frequency will be stored here after using #Init_MCP251XFD()
+extern struct MCP251XFD_Config MCP2518FD_Config;                      //!< Configuration structure of the MCP2518FD on MIKROBUS1
+
+#define MCP2518FD_FIFO_COUNT    1
+extern MCP251XFD_RAMInfos MCP2518FD_RAMInfos;                         //!< RAM informations will be stored here after using #MCP251XFD_ConfigureFIFOList()
+extern MCP251XFD_FIFO MCP2518FD_FIFOlist[MCP2518FD_FIFO_COUNT];       //!< Configuration structure for FIFO of the MCP2518FD on MIKROBUS1
+
+#define MCP2518FD_FILTER_COUNT  1
+extern MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT]; //!< Configuration structure for Filters of the MCP2518FD on MIKROBUS1
 //-----------------------------------------------------------------------------
 
 
