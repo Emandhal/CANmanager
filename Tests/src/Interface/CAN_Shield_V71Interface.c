@@ -410,7 +410,7 @@ struct SJA1000_Config SJA1000_U6_Conf =
 
 
 //********************************************************************************************************************
-// MCP2518FD External CAN controller
+// MCP2518FD External CAN controller on MIKROBUS1
 //********************************************************************************************************************
 
 //! Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
@@ -503,7 +503,155 @@ MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT] =
 
 
 //********************************************************************************************************************
-// MCP2517FD External CAN controller
+// TCAN4550 External CAN controller on MIKROBUS2
+//********************************************************************************************************************
+
+//! Peripheral structure of the TCAN4550 on MIKROBUS2 on the V71_XplainedUltra_CAN_Shield board
+TCAN455X TCAN4550_MB2 =
+{
+  .UserDriverData = NULL,
+  //--- Driver configuration ---
+  .DriverConfig   = TCAN455X_DRIVER_NORMAL_USE,
+  .InternalConfig = 0,
+  //--- MCAN peripheral ---
+  .SPIchipSelect  = 0x1 << 1, // Y1 output on U7
+  .SPI            = &SPI0_V71,
+  .SPIclockSpeed  = 1800000,
+  //--- Time call function ---
+  .fnGetCurrentms = GetCurrentms_V71,
+};
+
+//-----------------------------------------------------------------------------
+
+CAN_BitTimeStats TCAN4550_BitTimeStats = { 0 }; //!< TCAN4550 Bit Time stat
+uint32_t TCAN4550_SYSCLK = 0; //!< SYSCLK frequency will be stored here after using #Init_TCAN455X()
+
+//! Configuration structure of the TCAN4550 on MIKROBUS2 on the V71_XplainedUltra_CAN_Shield board
+TCAN455X_Config TCAN4550_Conf =
+{
+  //--- Controller clocks ---
+  .XtalFreq         = TCAN455X_CLKIN_FREQ_40MHz,
+  .FailSafeEnable   = false,
+  .SleepWakeDisable = false,
+    
+  //--- Watchdog Timer ---
+  .EnableWatchdog   = false,
+  .WatchdogTimeout  = TCAN455X_WD_TIMER_6s,
+  .WDtimeoutAction  = TCAN455X_WD_ACTION_SET_INTERRUPT_FLAG,
+
+  //--- CAN configuration ---
+  .MCANconf =
+  {
+    //--- Controller clocks ---
+    .MessageRAMwatchdogConf = 0,
+    .SYSCLK_Result          = &TCAN4550_SYSCLK,
+    //--- RAM configuration ---
+    .SIDelementsCount       = 10,
+    .EIDelementsCount       = 11,
+    //--- CAN configuration ---
+    .ExtendedIDrangeMask    = MCAN_EID_AND_RANGE_MASK,
+    .RejectAllStandardIDs   = false,
+    .RejectAllExtendedIDs   = false,
+    .NonMatchingStandardID  = MCAN_ACCEPT_IN_RX_FIFO_0,
+    .NonMatchingExtendedID  = MCAN_ACCEPT_IN_RX_FIFO_1,
+    .BusConfig =
+    {
+      .DesiredNominalBitrate = CAN_SHIELD_BITRATE,   // Desired CAN2.0A/CAN2.0B bitrate in bit/s
+      .DesiredDataBitrate    = CANFD_SHIELD_BITRATE, // Desired Data CANFD bitrate in bit/s
+      .BusMeters             = 1,
+      .TransceiverDelay      = 300,                  // The transceiver is inside the TCAN4550 on the board. The worst delay is Propagation delay time, high TXD_INT to Driver Recessive
+      .NominalSamplePoint    = 75,                   // Nominal sample point in percent
+      .DataSamplePoint       = 75,                   // Data sample point in percent
+    },
+    .BitTimeStats          = &TCAN4550_BitTimeStats,
+    .ControlFlags          = MCAN_CAN_AUTOMATIC_RETRANSMISSION_ENABLE
+                           | MCAN_CANFD_BITRATE_SWITCHING_ENABLE
+                           | MCAN_CANFD_USE_ISO_CRC
+                           | MCAN_CAN_WIDE_MESSAGE_MARKER_16BIT
+                           | MCAN_CAN_INTERNAL_TIMESTAMPING,
+    //--- GPIOs and Interrupts pins ---
+    .EnableLineINT0        = true,
+    .EnableLineINT1        = true,
+    //--- Interrupts ---
+    .SysInterruptFlags     = MCAN_INT_ENABLE_ALL_EVENTS,
+    .SysIntLineSelect      = MCAN_INT_ALL_ON_INT0 // All but...
+                           | MCAN_INT_TIMESTAMP_WRAPAROUND_ON_INT1
+                           | MCAN_INT_MESSAGE_RAM_ACCESS_ON_INT1
+                           | MCAN_INT_TIMEOUT_OCCURED_ON_INT1
+                           | MCAN_INT_ERROR_CORRECTED_ON_INT1
+                           | MCAN_INT_ERROR_UNCORRECTED_INTERRUPT_ON_INT1
+                           | MCAN_INT_ERROR_LOGGING_OVERFLOW_ON_INT1
+                           | MCAN_INT_ERROR_PASSIVE_ON_INT1
+                           | MCAN_INT_WARNING_STATUS_ON_INT1
+                           | MCAN_INT_BUS_OFF_STATUS_ON_INT1
+                           | MCAN_INT_WATCHDOG_ON_INT1
+                           | MCAN_INT_ARBITRATION_ERROR_ON_INT1
+                           | MCAN_INT_DATA_PHASE_ERROR_ON_INT1
+                           | MCAN_INT_ACCESS_RESERVED_ADDRESS_ON_INT1,
+    .BufferTransmitInt     = 0xFFFFFFFF,
+    .BufferCancelFinishInt = 0xFFFFFFFF,
+  },
+
+  //--- GPIOs and Interrupts pins ---
+  .GPIO1PinMode      = TCAN455X_GPO1_MCAN_INT1,
+  .GPIO2PinMode      = TCAN455X_GPO2_MCAN_INT0,
+  .WakePinConf       = TCAN455X_WAKE_PIN_DISABLED,
+  .INHpinEnable      = false,
+  .nWKRQconfig       = TCAN455X_nWKRQ_MIRRORS_INH_FUNCTION,
+  .nWKRQvoltageRef   = TCAN455X_nWKRQ_Vio_VOLTAGE_RAIL,
+
+  //--- Interrupts ---
+  .SysInterruptFlags = TCAN455X_INT_ENABLE_ALL_EVENTS,
+};
+
+//-----------------------------------------------------------------------------
+
+CAN_RAMconfig TCAN4550_FIFObuff_RAMInfos[TCAN4550_OBJ_COUNT]; //!< RAM informations will be stored here after using #Init_TCAN455X()
+
+//! Configuration structure for FIFO of the TCAN4550 on MIKROBUS2
+MCAN_FIFObuff TCAN4550_FIFObuffList[TCAN4550_OBJ_COUNT] =
+{
+  { .Name = MCAN_RX_FIFO0,  .Size =  6, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[0], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_RX_FIFO1,  .Size =  6, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[1], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_RX_BUFFER, .Size =  6, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_RECEIVE_NEW_MESSAGE_INT | MCAN_FIFO_RECEIVE_LOST_MESSAGE_INT, .WatermarkLevel = 32, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[2], }, // 64 * (2 * UINT32 + 64)
+  { .Name = MCAN_TEF,       .Size = 10, .Payload = MCAN_8_BYTES,  .ControlFlags = MCAN_RX_FIFO_BLOCKING_MODE, .InterruptFlags = MCAN_FIFO_EVENT_NEW_MESSAGE_INT   | MCAN_FIFO_EVENT_LOST_MESSAGE_INT,   .WatermarkLevel = 16, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[3], }, // 32 *  2 * UINT32
+  { .Name = MCAN_TX_BUFFER, .Size =  4, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_TX_BUFFER_MODE,        .InterruptFlags = MCAN_FIFO_NO_INTERRUPT_FLAGS,                                           .WatermarkLevel =  8, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[4], }, // 16 * (2 * UINT32 + 64)
+  { .Name = MCAN_TXQ_FIFO,  .Size =  4, .Payload = MCAN_64_BYTES, .ControlFlags = MCAN_TX_FIFO_MODE,          .InterruptFlags = MCAN_FIFO_TRANSMIT_FIFO_EMPTY_INT,                                      .WatermarkLevel =  8, .RAMInfos = &TCAN4550_FIFObuff_RAMInfos[5], }, // 16 * (2 * UINT32 + 64)
+};
+
+//-----------------------------------------------------------------------------
+
+//! Configuration structure for Filters of the TCAN4550 on MIKROBUS2
+MCAN_Filter TCAN4550_FilterList[TCAN4550_FILTER_COUNT] =
+{
+  //--- SID filters ---
+  { .Filter = 0, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_REJECT_ID,    .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = false, .DualID    = { .AcceptanceID1 = 0x000, .AcceptanceID2  = 0x001, }, }, // Reject 0x000 and 0x001
+  { .Filter = 1, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_RANGE, .Config = MCAN_FILTER_SET_PRIORITY, .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = false, .RangeID   = { .MinID         = 0x002, .MaxID          = 0x00F, }, }, // High priority message for 0x002 to 0x00F, no store
+  { .Filter = 2, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_SET_PRIORITY, .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .IDandMask = { .AcceptanceID  = 0x010, .AcceptanceMask = 0x7F0, }, }, // High priority message for 0x010 to 0x01F, store to FIFO 0
+  { .Filter = 3, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_BUFFER,    .ExtendedID = false, .IDbuffer  = { .AcceptanceID  = 0x200, .BufferPosition = 2,     }, }, // Store message 0x200 to buffer 2
+  { .Filter = 4, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_MASK,  .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .IDandMask = { .AcceptanceID  = 0x600, .AcceptanceMask = 0x700, }, }, // Range 0x600 to 0x6FF
+  { .Filter = 5, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_DUAL_ID,  .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .DualID    = { .AcceptanceID1 = 0x700, .AcceptanceID2  = 0x701, }, }, // IDs 0x700 and 0x701
+  { .Filter = 6, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_ONLY_SID, .Type = MCAN_FILTER_MATCH_ID_RANGE, .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO0,     .ExtendedID = false, .RangeID   = { .MinID         = 0x702, .MaxID          = 0x7FF, }, }, // Range 0x702 to 0x7FF
+
+  //--- EID filters ---
+  { .Filter = 0, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_REJECT_ID,    .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = true, .DualID    = { .AcceptanceID1 = 0x00000000, .AcceptanceID2  = 0x00000001, }, }, // Reject 0x00000000 and 0x00000001
+  { .Filter = 1, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE,      .Config = MCAN_FILTER_SET_PRIORITY, .PointTo = MCAN_NO_FIFO_BUFF, .ExtendedID = true, .RangeID   = { .MinID         = 0x00000002, .MaxID          = 0x0000000F, }, }, // High priority message for 0x00000002 to 0x0000000F, no store
+  { .Filter = 2, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_SET_PRIORITY, .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .IDandMask = { .AcceptanceID  = 0x00000010, .AcceptanceMask = 0x1FFFFFF0, }, }, // High priority message for 0x00000010 to 0x0000001F, store to FIFO 1
+  { .Filter = 3, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_BUFFER,    .ExtendedID = true, .IDbuffer  = { .AcceptanceID  = 0x08000000, .BufferPosition = 3,          }, }, // Store message 0x08000000 to buffer 3
+  { .Filter = 4, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_MASK,       .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .IDandMask = { .AcceptanceID  = 0x10000000, .AcceptanceMask = 0x1F000000, }, }, // Range 0x10000000 to 0x10FFFFFF
+  { .Filter = 5, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_DUAL_ID,       .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .DualID    = { .AcceptanceID1 = 0x14000000, .AcceptanceID2  = 0x14000001, }, }, // IDs 0x14000000 and 0x14000001
+  { .Filter = 6, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE,      .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .RangeID   = { .MinID         = 0x18000000, .MaxID          = 0x1C000000, }, }, // Range 0x18000000 to 0x1C000000
+  { .Filter = 7, .EnableFilter = true, .Match = MCAN_FILTER_MATCH_SID_EID, .Type = MCAN_FILTER_MATCH_ID_RANGE_MASK, .Config = MCAN_FILTER_NO_CONFIG,    .PointTo = MCAN_RX_FIFO1,     .ExtendedID = true, .RangeID   = { .MinID         = 0x1C000000, .MaxID          = 0x1F000000, }, }, // Range 0x1C000000 to 0x3FFFFFFF but with ExtendedIDrangeMask mask: 0x00000000 to 0x1FFFFFFF
+};
+
+//-----------------------------------------------------------------------------
+
+
+
+
+
+//********************************************************************************************************************
+// MCP2517FD External CAN controller on MIKROBUS3
 //********************************************************************************************************************
 
 //! Component structure of the MCP2517FD on MIKROBUS3 on the V71_XplainedUltra_CAN_Shield board

@@ -43,6 +43,7 @@
 #include "MCP251XFD.h"
 #include "SJA1000.h"
 #include "MCP251X.h"
+#include "TCAN455X.h"
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus
   extern "C" {
@@ -110,7 +111,7 @@ extern struct SJA1000_Config SJA1000_U6_Conf; //!< Configuration structure of th
 
 
 //********************************************************************************************************************
-// MCP2518FD External CAN controller
+// MCP2518FD External CAN controller on MIKROBUS1
 //********************************************************************************************************************
 extern struct MCP251XFD MCP2518FD_MB1;                                //!< Component structure of the MCP2518FD on MIKROBUS1 on the V71_XplainedUltra_CAN_Shield board
 extern MCP251XFD_BitTimeStats MCP2518FD_BTStats;                      //!< MCP2518FD Bit Time stat
@@ -128,7 +129,25 @@ extern MCP251XFD_Filter MCP2518FD_FilterList[MCP2518FD_FILTER_COUNT]; //!< Confi
 
 
 //********************************************************************************************************************
-// MCP2517FD External CAN controller
+// TCAN4550 External CAN controller on MIKROBUS2
+//********************************************************************************************************************
+extern struct TCAN455X TCAN4550_MB2;                                 //!< Component structure of the TCAN4550 on MIKROBUS2 on the V71_XplainedUltra_CAN_Shield board
+extern CAN_BitTimeStats TCAN4550_BTStats;                            //!< TCAN4550 Bit Time stat
+extern uint32_t TCAN4550_SYSCLK;                                     //!< SYSCLK frequency will be stored here after using #Init_TCAN455X()
+extern struct TCAN455X_Config TCAN4550_Config;                       //!< Configuration structure of the MCP2518FD on MIKROBUS1
+
+#define TCAN4550_OBJ_COUNT    6
+extern CAN_RAMconfig TCAN4550_FIFObuff_RAMInfos[TCAN4550_OBJ_COUNT]; //!< RAM informations will be stored here after using #Init_TCAN455X()
+extern MCAN_FIFObuff TCAN4550_FIFObuffList[TCAN4550_OBJ_COUNT];      //!< FIFO/Buffer configuration structure of the TCAN4550 on MIKROBUS2
+
+#define TCAN4550_FILTER_COUNT  (7 + 8)
+extern MCAN_Filter TCAN4550_FilterList[TCAN4550_FILTER_COUNT];       //!< Configuration structure for Filters of the TCAN4550 on MIKROBUS2
+//-----------------------------------------------------------------------------
+
+
+
+//********************************************************************************************************************
+// MCP2517FD External CAN controller on MIKROBUS3
 //********************************************************************************************************************
 extern struct MCP251XFD MCP2517FD_MB3;                                //!< Component structure of the MCP2517FD on MIKROBUS3 on the V71_XplainedUltra_CAN_Shield board
 extern MCP251XFD_BitTimeStats MCP2517FD_BTStats;                      //!< MCP2517FD Bit Time stat
