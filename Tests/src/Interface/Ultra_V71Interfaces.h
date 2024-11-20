@@ -38,6 +38,7 @@
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
 #include "GPIO_Interface.h"
+#include "SPI_V71.h"
 #ifdef USE_EEPROM_GENERICNESS
 #  include "AT24MAC402.h"
 #endif
@@ -100,6 +101,7 @@ extern struct I2C_Interface I2C0_V71;
 // SAMV71 SPI peripheral
 //********************************************************************************************************************
 extern struct SPI_Interface SPI0_V71;
+extern SPI_Config SPI0_Config;
 //-----------------------------------------------------------------------------
 
 

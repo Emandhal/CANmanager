@@ -31,8 +31,8 @@ extern "C" {
 //********************************************************************************************************************
 #ifdef USE_V71_MCAN
 
-#define MCAN0_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u ) //!< 32-bits word * 4352 words max for MCAN0 is 17408 bytes
-uint8_t MCAN0_RAMbuffer[MCAN0_CAN_BUFFER_SIZE];             //!< RAM buffer for the MCAN0
+#define MCAN0_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u )         //!< 32-bits word * 4352 words max for MCAN0 is 17408 bytes
+COMPILER_ALIGNED(4) uint8_t MCAN0_RAMbuffer[MCAN0_CAN_BUFFER_SIZE]; //!< RAM buffer for the MCAN0
 
 //! Peripheral structure of the MCAN1 on SAMV71
 struct MCANV71 MCAN0V71 =
@@ -118,8 +118,8 @@ struct MCAN_Config MCAN0V71_Conf =
 //********************************************************************************************************************
 #ifdef USE_V71_MCAN
 
-#define MCAN1_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u ) //!< 32-bits word * 4352 words max for MCAN1 is 17408 bytes
-uint8_t MCAN1_RAMbuffer[MCAN1_CAN_BUFFER_SIZE];             //!< RAM buffer for the MCAN1
+#define MCAN1_CAN_BUFFER_SIZE  ( sizeof(uint32_t) * 4352u )         //!< 32-bits word * 4352 words max for MCAN1 is 17408 bytes
+COMPILER_ALIGNED(4) uint8_t MCAN1_RAMbuffer[MCAN1_CAN_BUFFER_SIZE]; //!< RAM buffer for the MCAN1
 
 //! Peripheral structure of the MCAN1 on SAMV71
 struct MCANV71 MCAN1V71 =
@@ -269,6 +269,30 @@ struct SPI_Interface SPI0_V71 =
   .UniqueID        = SPI_UNIQUE_ID,
   .fnSPI_Init      = SPI_MasterInit_Gen,
   .fnSPI_Transfer  = SPI_PacketTransfer_Gen,
+};
+
+//! Delay before SPCK
+#define SPI_DLYBS   ( 0x01 ) // Tspick/2 needed
+//! Delay between consecutive transfers
+#define SPI_DLYBCT  ( 0x01 ) // To conform last SCK rise to nCS rise time (1 Tspick)
+//! Delay Between Chip Selects
+#define SPI_DLYBCS  ( 0x01 ) // To conform 1 Tspick needed
+
+//! Configuration of the SPI0 on the V71
+SPI_Config SPI0_Config =
+{
+  .VariablePS      = true,
+  .CSdecoder       = true,
+  .ModeFaultDetect = false,
+  .WaitRead        = true,
+  .DLYBCS_ns       = SPI_DLYBCS,
+  .CSR             =
+  {
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
+  },
 };
 
 //-----------------------------------------------------------------------------

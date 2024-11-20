@@ -25,7 +25,6 @@
 #include "Main.h"
 #include "TimerTicks.h"
 #include "Interface/Console_V71Interface.h"
-#include "SPI_V71.h"
 //-----------------------------------------------------------------------------
 
 volatile uint32_t msCount; //!< Milli-seconds count from start of the system
@@ -36,32 +35,6 @@ const char ButtonStateStr[2][7+1/* \0 */] =
 {
   "push",
   "release",
-};
-
-//-----------------------------------------------------------------------------
-
-//! Delay before SPCK
-# define SPI_DLYBS   ( 0x01 ) // Tspick/2 needed
-//! Delay between consecutive transfers
-# define SPI_DLYBCT  ( 0x01 ) // To conform last SCK rise to nCS rise time (1 Tspick)
-//! Delay Between Chip Selects
-# define SPI_DLYBCS  ( 0x01 ) // To conform 1 Tspick needed
-
-//! Configuration of the SPI0 on the V71
-SPI_Config SPI0_Config =
-{
-  .VariablePS      = true,
-  .CSdecoder       = true,
-  .ModeFaultDetect = false,
-  .WaitRead        = true,
-  .DLYBCS_ns       = SPI_DLYBCS,
-  .CSR             =
-  {
-    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
-    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
-    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
-    { .DLYBCT_ns = SPI_DLYBCT, .DLYBS_ns = SPI_DLYBS, .BitsPerTransfer = 8, .CSbehavior = SPI_CS_KEEP_LOW, },
-  },
 };
 
 //-----------------------------------------------------------------------------
