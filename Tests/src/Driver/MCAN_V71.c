@@ -89,8 +89,11 @@ eERRORRESULT Init_MCANV71(MCANV71 *pComp, const MCAN_Config* const pConf, const 
 {
   const uint32_t StartAddress = MCANV71_RAM_START_ADDRESS;
   eERRORRESULT Error;
+  
+  //--- Checks ----------------------------------------------
+  if ((StartAddress & 0x3) > 0) return ERR__ADDRESS_ALIGNMENT;                            // Shall be 4-bytes aligned
 
-  //--- Configure peripheral clock ---------------------------
+  //--- Configure peripheral clock --------------------------
   Error = MCANV71_ConfigurePeripheralClocks(pComp, &pComp->_MCAN.PeripheralClock);        //** This is microcontroller specific. It is called to enable peripheral clock and get the peripheral clock
   if (Error != ERR_NONE) return Error;                                                    // If there is an error while calling MCANV71_ConfigurePeripheralClocks() then return the error
   if (pComp->_MCAN.PeripheralClock < MCAN_PERIPHERAL_CLK_MIN) return ERR__FREQUENCY_ERROR;
