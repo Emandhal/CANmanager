@@ -136,6 +136,9 @@ eERRORRESULT SPI_MasterInit(Spi* pSPI, uint8_t chipSelect, eSPIInterface_Mode mo
   if ( (((pSPI->SPI_MR & SPI_MR_PS) >  0) && (chipSelect > 14))                                // Maximum Chip Select on Variable Peripheral Select is 14 (0..14). 15 is for no chip selection
     || (((pSPI->SPI_MR & SPI_MR_PS) == 0) && (chipSelect >  3)) ) return ERR__PARAMETER_ERROR; // Maximum Chip Select on Fixed Peripheral Select is 3 (0..3)
   eERRORRESULT Error;
+  
+  //--- Adjust Chip Select ---
+  if ((pSPI->SPI_MR & SPI_MR_PS) > 0) chipSelect >>= 2;                                        // Only on Variable Peripheral Select
 
   //--- Configure SPI mode ---
   if (SPI_CPOL_GET(mode) > 0)
@@ -144,13 +147,20 @@ eERRORRESULT SPI_MasterInit(Spi* pSPI, uint8_t chipSelect, eSPIInterface_Mode mo
   if (SPI_CPHA_GET(mode) > 0)
        pSPI->SPI_CSR[chipSelect] &= (~SPI_CSR_NCPHA);
   else pSPI->SPI_CSR[chipSelect] |= SPI_CSR_NCPHA;
+  
+  //--- Set SPI bits ---
+  uint32_t BitCount = SPI_DATA_BITCOUNT_GET(mode);
+  if ((BitCount < 8) && (BitCount > 16) && (BitCount != 0)) return ERR__NOT_SUPPORTED;         // Only 8 to 16-bits supported
+  pSPI->SPI_CSR[chipSelect] &= (~SPI_CSR_BITS_Msk);                                            // Clear bit parameter
+  if (BitCount > 0) BitCount -= 8;                                                             // If not 0, subtract 8 to reflect the register
+  pSPI->SPI_CSR[chipSelect] |= SPI_CSR_BITS(BitCount);                                         // Set bit parameter
 
   //--- Set SPI SCK clock frequency ---
-  Error = SPI_SetSPIclockHz(pSPI, chipSelect, sckFreq); // Set the SCK frequency
+  Error = SPI_SetSPIclockHz(pSPI, chipSelect, sckFreq);                                        // Set the SCK frequency
   
   //--- Enable SPI peripheral ---
-  pSPI->SPI_MR |= SPI_MR_MSTR; // Set master mode
-  if ((pSPI->SPI_MR & SPI_MR_PS) > 0) pSPI->SPI_CR = SPI_CR_SPIEN; // Enable SPI only on variable PS
+  pSPI->SPI_MR |= SPI_MR_MSTR;                                                                 // Set master mode
+  if ((pSPI->SPI_MR & SPI_MR_PS) > 0) pSPI->SPI_CR = SPI_CR_SPIEN;                             // Enable SPI only on variable PS
   return Error;
 }
 
