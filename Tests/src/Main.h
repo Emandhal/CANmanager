@@ -21,10 +21,11 @@
 #ifdef USE_CONSOLE_GPIO_COMMANDS
 
 extern PORT_Interface* const PORTAtoZ[]; //!< Description of each PORTs A to Z available on the V71 Xplained Ultra board
-# define PORTSAtoZ_COUNT  ( sizeof(*PORTAtoZ) / sizeof(*PORTAtoZ[0]) ) //!< Count of PORTs A to Z available on the V71 Xplained Ultra board
+extern const size_t PORTAtoZ_COUNT;      //!< Count of PORTs A to Z available on the V71 Xplained Ultra board
 
 extern PORT_Interface* const PORT0to9[]; //!< Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
-# define PORTS0to9_COUNT  ( sizeof(*PORT0to9) / sizeof(*PORT0to9[0]) ) //!< Count of PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
+extern const size_t PORT0to9_COUNT;      //!< Count of PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
+
 #endif
 //-----------------------------------------------------------------------------
 

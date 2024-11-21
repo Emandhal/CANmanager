@@ -152,7 +152,7 @@ uint32_t GetCurrentms_V71(void);
  * @param[in] pinsDirection Set the PORT pin direction, if bit is '1' then the corresponding GPIO is input else it's output
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT PORTSetDirection_V71(PORT_Interface *pIntDev, const uint32_t pinsDirection);
+eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection);
 
 /*! @brief PORT pins input level for V71
  *
@@ -160,7 +160,7 @@ eERRORRESULT PORTSetDirection_V71(PORT_Interface *pIntDev, const uint32_t pinsDi
  * @param[out] *pinsLevel Return the actual level of the PORT pins. If bit is '1' then the corresponding GPIO is level high else it's level low
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT PORTGetInputLevel_V71(PORT_Interface *pIntDev, uint32_t *pinsLevel);
+eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel);
 
 /*! @brief PORT pins output level for V71
  *
@@ -168,7 +168,7 @@ eERRORRESULT PORTGetInputLevel_V71(PORT_Interface *pIntDev, uint32_t *pinsLevel)
  * @param[in] pinsLevel Set the PORT pins output level, if bit is '1' then the corresponding GPIO is level high else it's level low
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pinsLevel);
+eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel);
 
 //-----------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@ eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pins
  * @param[in] pinState Set the GPIO state following #eGPIO_State enumerator
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT GPIOSetState_V71(GPIO_Interface *pIntDev, const eGPIO_State pinState);
+eERRORRESULT V71GPIO_SetPinState(GPIO_Interface *pIntDev, const eGPIO_State pinState);
 
 /*! @brief GPIO pin input level for V71
  *
@@ -196,7 +196,7 @@ eERRORRESULT GPIOSetState_V71(GPIO_Interface *pIntDev, const eGPIO_State pinStat
  * @param[out] *pinLevel Return the actual level of the I/O pin
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT GPIOGetInputLevel_V71(GPIO_Interface *pIntDev, eGPIO_State *pinLevel);
+eERRORRESULT V71GPIO_GetPinInputLevel(GPIO_Interface *pIntDev, eGPIO_State *pinLevel);
 
 //-----------------------------------------------------------------------------
 #ifdef __cplusplus

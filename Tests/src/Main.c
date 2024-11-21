@@ -49,6 +49,7 @@ PORT_Interface* const PORTAtoZ[] =
   &IOPORTD, //!< PORTD
   &IOPORTE, //!< PORTE
 };
+const size_t PORTAtoZ_COUNT = ( sizeof(PORTAtoZ) / sizeof(PORTAtoZ[0]) ); //!< Count of PORTs available on the V71 Xplained Ultra board
 
 //! Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
 PORT_Interface* const PORT0to9[] =
@@ -59,19 +60,22 @@ PORT_Interface* const PORT0to9[] =
   &PORTGPA_U9, //!< PORT3
   &PORTGPB_U9, //!< PORT4
 };
+const size_t PORT0to9_COUNT = ( sizeof(PORT0to9) / sizeof(PORT0to9[0]) ); //!< Count of PORTs of external devices available
 
 #endif
 //-----------------------------------------------------------------------------
 #ifdef USE_CONSOLE_EEPROM_COMMANDS
 #include "EEPROM.h"
+
 //! Description of each EEPROM devices on the V71 Xplained Ultra board
 EEPROM* const EEPROMdevices[] =
 {
   &AT24MAC402_V71.Eeprom,
 };
 const size_t EEPROM_DEVICE_COUNT = ( sizeof(EEPROMdevices) / sizeof(EEPROMdevices[0]) ); //!< Count of EEPROMs available on the V71 Xplained Ultra board
-#endif // USE_CONSOLE_EEPROM_COMMANDS
 
+#endif // USE_CONSOLE_EEPROM_COMMANDS
+//-----------------------------------------------------------------------------
 #include "Console_V71Interface.h"
 //-----------------------------------------------------------------------------
 

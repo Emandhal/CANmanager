@@ -338,9 +338,9 @@ PORT_Interface IOPORTA =
 {
   .InterfaceDevice       = PIOA,
   .UniqueID              = 0,
-  .fnPORT_SetDirection   = PORTSetDirection_V71,
-  .fnPORT_GetInputLevel  = PORTGetInputLevel_V71,
-  .fnPORT_SetOutputLevel = PORTSetOutputLevel_V71,
+  .fnPORT_SetDirection   = V71PORT_SetDirection,
+  .fnPORT_GetInputLevel  = V71PORT_GetInputLevel,
+  .fnPORT_SetOutputLevel = V71PORT_SetOutputLevel,
   .PORTindex             = 0,
 };
 
@@ -349,9 +349,9 @@ PORT_Interface IOPORTB =
 {
   .InterfaceDevice       = PIOB,
   .UniqueID              = 0,
-  .fnPORT_SetDirection   = PORTSetDirection_V71,
-  .fnPORT_GetInputLevel  = PORTGetInputLevel_V71,
-  .fnPORT_SetOutputLevel = PORTSetOutputLevel_V71,
+  .fnPORT_SetDirection   = V71PORT_SetDirection,
+  .fnPORT_GetInputLevel  = V71PORT_GetInputLevel,
+  .fnPORT_SetOutputLevel = V71PORT_SetOutputLevel,
   .PORTindex             = 0,
 };
 
@@ -360,9 +360,9 @@ PORT_Interface IOPORTC =
 {
   .InterfaceDevice       = PIOC,
   .UniqueID              = 0,
-  .fnPORT_SetDirection   = PORTSetDirection_V71,
-  .fnPORT_GetInputLevel  = PORTGetInputLevel_V71,
-  .fnPORT_SetOutputLevel = PORTSetOutputLevel_V71,
+  .fnPORT_SetDirection   = V71PORT_SetDirection,
+  .fnPORT_GetInputLevel  = V71PORT_GetInputLevel,
+  .fnPORT_SetOutputLevel = V71PORT_SetOutputLevel,
   .PORTindex             = 0,
 };
 
@@ -371,9 +371,9 @@ PORT_Interface IOPORTD =
 {
   .InterfaceDevice       = PIOD,
   .UniqueID              = 0,
-  .fnPORT_SetDirection   = PORTSetDirection_V71,
-  .fnPORT_GetInputLevel  = PORTGetInputLevel_V71,
-  .fnPORT_SetOutputLevel = PORTSetOutputLevel_V71,
+  .fnPORT_SetDirection   = V71PORT_SetDirection,
+  .fnPORT_GetInputLevel  = V71PORT_GetInputLevel,
+  .fnPORT_SetOutputLevel = V71PORT_SetOutputLevel,
   .PORTindex             = 0,
 };
 
@@ -382,9 +382,9 @@ PORT_Interface IOPORTE =
 {
   .InterfaceDevice       = PIOE,
   .UniqueID              = 0,
-  .fnPORT_SetDirection   = PORTSetDirection_V71,
-  .fnPORT_GetInputLevel  = PORTGetInputLevel_V71,
-  .fnPORT_SetOutputLevel = PORTSetOutputLevel_V71,
+  .fnPORT_SetDirection   = V71PORT_SetDirection,
+  .fnPORT_GetInputLevel  = V71PORT_GetInputLevel,
+  .fnPORT_SetOutputLevel = V71PORT_SetOutputLevel,
   .PORTindex             = 0,
 };
 
@@ -417,14 +417,19 @@ uint32_t GetCurrentms_V71(void)
 //=============================================================================
 // PORT set pins direction for V71
 //=============================================================================
-eERRORRESULT PORTSetDirection_V71(PORT_Interface *pIntDev, const uint32_t pinsDirection)
+eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
   Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+#ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
-
+#endif
+  const uint32_t BitSet   =  pinsDirection; // Get bit set
+  const uint32_t BitClear = ~pinsDirection; // Get bit clears
+  if (BitSet   > 0) pPIO->PIO_ODR = BitSet;
+  if (BitClear > 0) pPIO->PIO_OER = BitClear;
   return ERR_NONE;
 }
 
@@ -432,14 +437,16 @@ eERRORRESULT PORTSetDirection_V71(PORT_Interface *pIntDev, const uint32_t pinsDi
 //=============================================================================
 // PORT pins input level for V71
 //=============================================================================
-eERRORRESULT PORTGetInputLevel_V71(PORT_Interface *pIntDev, uint32_t *pinsLevel)
+eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
   Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+#ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
-
+#endif
+  *pinsLevel = pPIO->PIO_PDSR;
   return ERR_NONE;
 }
 
@@ -447,14 +454,19 @@ eERRORRESULT PORTGetInputLevel_V71(PORT_Interface *pIntDev, uint32_t *pinsLevel)
 //=============================================================================
 // PORT pins output level for V71
 //=============================================================================
-eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pinsLevel)
+eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
   Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+#ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
-
+#endif
+  const uint32_t BitSet   =  pinsLevel; // Get bit set
+  const uint32_t BitClear = ~pinsLevel; // Get bit clears
+  if (BitSet   > 0) pPIO->PIO_SODR = BitSet;
+  if (BitClear > 0) pPIO->PIO_CODR = BitClear;
   return ERR_NONE;
 }
 
@@ -472,14 +484,27 @@ eERRORRESULT PORTSetOutputLevel_V71(PORT_Interface *pIntDev, const uint32_t pins
 //=============================================================================
 // GPIO set direction for V71
 //=============================================================================
-eERRORRESULT GPIOSetState_V71(GPIO_Interface *pIntDev, const eGPIO_State pinState)
+eERRORRESULT V71GPIO_SetPinState(GPIO_Interface *pIntDev, const eGPIO_State pinState)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
   Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+#ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
-
+#endif
+  switch (pinState)
+  {
+    default: return ERR__PARAMETER_ERROR;
+    case GPIO_STATE_OUTPUT: pPIO->PIO_OER  = pIntDev->PinBitMask; break;
+    case GPIO_STATE_INPUT : pPIO->PIO_ODR  = pIntDev->PinBitMask; break;
+    case GPIO_STATE_RESET : pPIO->PIO_CODR = pIntDev->PinBitMask; break;
+    case GPIO_STATE_SET   : pPIO->PIO_SODR = pIntDev->PinBitMask; break;
+    case GPIO_STATE_TOGGLE: if ((pPIO->PIO_PDSR & pIntDev->PinBitMask) > 0) // If set?
+                                 pPIO->PIO_CODR = pIntDev->PinBitMask;      // Clear
+							              else pPIO->PIO_SODR = pIntDev->PinBitMask;      // else Set
+							              break;
+  }
   return ERR_NONE;
 }
 
@@ -487,14 +512,16 @@ eERRORRESULT GPIOSetState_V71(GPIO_Interface *pIntDev, const eGPIO_State pinStat
 //=============================================================================
 // GPIO pin input level for V71
 //=============================================================================
-eERRORRESULT GPIOGetInputLevel_V71(GPIO_Interface *pIntDev, eGPIO_State *pinLevel)
+eERRORRESULT V71GPIO_GetPinInputLevel(GPIO_Interface *pIntDev, eGPIO_State *pinLevel)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
 #endif
   Pio* pPIO = (Pio*)(pIntDev->InterfaceDevice);
+#ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
-
+#endif
+  *pinLevel = ((pPIO->PIO_PDSR & pIntDev->PinBitMask) > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
   return ERR_NONE;
 }
 
