@@ -62,14 +62,6 @@ PORT_Interface* const PORT0to9[] =
 
 #endif
 //-----------------------------------------------------------------------------
-
-typedef union
-{
-  unsigned int Uint32[AT24MAC402_SERIALNUMBER_LEN / sizeof(unsigned int)];
-  uint8_t      Bytes[AT24MAC402_SERIALNUMBER_LEN  / sizeof(uint8_t)];
-} AT24_SN;
-
-//-----------------------------------------------------------------------------
 #ifdef USE_CONSOLE_EEPROM_COMMANDS
 #include "EEPROM.h"
 //! Description of each EEPROM devices on the V71 Xplained Ultra board
