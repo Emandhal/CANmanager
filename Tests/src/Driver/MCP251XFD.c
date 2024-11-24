@@ -748,7 +748,7 @@ eERRORRESULT MCP251XFD_ConfigurePins(MCP251XFD *pComp, eMCP251XFD_GPIO0Mode GPIO
 //=============================================================================
 // Set GPIO pins direction of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, uint8_t pinsDirection, uint8_t pinsChangeMask)
+eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, const uint8_t pinsDirection, uint8_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
@@ -764,7 +764,7 @@ eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, uint8_t pinsDirect
 //=============================================================================
 // Get GPIO pins input level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t* pinsState)
+eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t* const pinsState)
 {
   return MCP251XFD_ReadSFR8(pComp, RegMCP251XFD_IOCON_INLEVEL, pinsState); // Read actual state of the input pins in the IOCON register (third byte only)
 }
@@ -773,7 +773,7 @@ eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t* pinsStat
 //=============================================================================
 // Set GPIO pins output level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, uint8_t pinsLevel, uint8_t pinsChangeMask)
+eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, const uint8_t pinsLevel, uint8_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
@@ -794,36 +794,30 @@ eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, uint8_t pinsLeve
 //=============================================================================
 // Set PORT direction of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection)
+eERRORRESULT MCP251XFD_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP251XFD_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP251XFD* pDevice = (MCP251XFD*)(pIntDev->InterfaceDevice); // Get the MCP251XFD device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-#endif
-  return MCP251XFD_SetGPIOPinsDirection(pDevice, (uint8_t)pinsDirection, 0x3);
+  return MCP251XFD_SetGPIOPinsDirection(pDevice, (uint8_t)pinsDirection, (uint8_t)(pinsChangeMask & 0x3));
 }
 
 
 //=============================================================================
 // Get PORT pins input level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* pinsLevel)
+eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* const pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP251XFD_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP251XFD* pDevice = (MCP251XFD*)(pIntDev->InterfaceDevice); // Get the MCP251XFD device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-#endif
   uint8_t Value = 0;
   eERRORRESULT Error = MCP251XFD_GetGPIOPinsInputLevel(pDevice, &Value);
-  *pinsLevel = Value;
+  *pinsLevel = (uint32_t)Value & pinsChangeMask;
   return Error;
 }
 
@@ -831,17 +825,14 @@ eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* 
 //=============================================================================
 // Set PORT pins output level of the MCP251XFD device
 //=============================================================================
-eERRORRESULT MCP251XFD_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel)
+eERRORRESULT MCP251XFD_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP251XFD_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP251XFD* pDevice = (MCP251XFD*)(pIntDev->InterfaceDevice); // Get the MCP251XFD device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-#endif
-  return MCP251XFD_SetGPIOPinsOutputLevel(pDevice, (uint8_t)pinsLevel, 0x3);
+  return MCP251XFD_SetGPIOPinsOutputLevel(pDevice, (uint8_t)pinsLevel, (uint8_t)(pinsChangeMask & 0x3));
 }
 
 //-----------------------------------------------------------------------------

@@ -299,14 +299,17 @@ eERRORRESULT MCP23SXX_SetPinsDirection(MCP23SXX *pComp, const uint8_t port, cons
 //=============================================================================
 // Get PORT0 pins input level of the MCP23SXX device
 //=============================================================================
-eERRORRESULT MCP23SXX_GetPinsInputLevel(MCP23SXX *pComp, const uint8_t port, uint8_t *pinsState)
+eERRORRESULT MCP23SXX_GetPinsInputLevel(MCP23SXX *pComp, const uint8_t port, uint8_t* const pinsState, const uint8_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pComp == NULL) return ERR__PARAMETER_ERROR;
   if (port >= MCP23SXX_DevicesRegLinks[pComp->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
   const eMCP23SXX_Registers GPIOreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pComp->DeviceName].GPIO + port);
-  return MCP23SXX_ReadRegister(pComp, GPIOreg, pinsState, 1);
+  uint8_t Value = 0;
+  eERRORRESULT Error = MCP23SXX_ReadRegister(pComp, GPIOreg, &Value, 1);
+  *pinsState = Value & pinsChangeMask;
+  return Error;
 }
 
 
@@ -336,41 +339,30 @@ eERRORRESULT MCP23SXX_SetPinsOutputLevel(MCP23SXX *pComp, const uint8_t port, co
 //=============================================================================
 // Set PORT direction of the MCP23SXX device
 //=============================================================================
-eERRORRESULT MCP23SXX_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection)
+eERRORRESULT MCP23SXX_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP23SXX_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);           // Get the MCP23SXX device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-  if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
-#endif
-  pDevice->PORTdirection[pIntDev->PORTindex] = (uint8_t)pinsDirection; // Apply new output direction on PORT
-  const eMCP23SXX_Registers IODIRreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pDevice->DeviceName].IODIR + pIntDev->PORTindex);
-  return MCP23SXX_WriteRegister(pDevice, IODIRreg, &pDevice->PORTdirection[pIntDev->PORTindex], 1);
+  return MCP23SXX_SetPinsDirection(pDevice, pIntDev->PORTindex, pinsDirection, (uint8_t)(pinsChangeMask & 0xFF));
 }
 
 
 //=============================================================================
 // Get PORT pins input level of the MCP23SXX device
 //=============================================================================
-eERRORRESULT MCP23SXX_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t *pinsLevel)
+eERRORRESULT MCP23SXX_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t *pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP23SXX_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice); // Get the MCP23SXX device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-  if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
-#endif
-  const eMCP23SXX_Registers GPIOreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pDevice->DeviceName].GPIO + pIntDev->PORTindex);
   uint8_t Value = 0;
-  eERRORRESULT Error = MCP23SXX_ReadRegister(pDevice, GPIOreg, &Value, 1);
-  *pinsLevel = Value;
+  eERRORRESULT Error = MCP23SXX_GetPinsInputLevel(pDevice, pIntDev->PORTindex, &Value, 0xFF);
+  *pinsLevel = (uint32_t)Value & pinsChangeMask;
   return Error;
 }
 
@@ -378,20 +370,14 @@ eERRORRESULT MCP23SXX_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t *p
 //=============================================================================
 // Set PORT pins output level of the MCP23SXX device
 //=============================================================================
-eERRORRESULT MCP23SXX_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel)
+eERRORRESULT MCP23SXX_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__NULL_POINTER;
 #endif
   if (pIntDev->UniqueID != MCP23SXX_UNIQUE_ID) return ERR__UNKNOWN_ELEMENT;
   MCP23SXX* pDevice = (MCP23SXX*)(pIntDev->InterfaceDevice);       // Get the MCP23SXX device of this GPIO port
-#ifdef CHECK_NULL_PARAM
-  if (pDevice == NULL) return ERR__UNKNOWN_DEVICE;
-  if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
-#endif
-  pDevice->PORTdirection[pIntDev->PORTindex] = (uint8_t)pinsLevel; // Apply new output level on PORT
-  const eMCP23SXX_Registers OLATreg = (eMCP23SXX_Registers)((uint8_t)MCP23SXX_DevicesRegLinks[pDevice->DeviceName].OLAT + pIntDev->PORTindex);
-  return MCP23SXX_WriteRegister(pDevice, OLATreg, &pDevice->PORTdirection[pIntDev->PORTindex], 1);
+  return MCP23SXX_SetPinsOutputLevel(pDevice, pIntDev->PORTindex, pinsLevel, (uint8_t)(pinsChangeMask & 0xFF));
 }
 
 //-----------------------------------------------------------------------------
@@ -440,8 +426,8 @@ eERRORRESULT MCP23SXX_GetPinInputLevel_Gen(GPIO_Interface *pIntDev, eGPIO_State 
   if (pIntDev->PORTindex >= MCP23SXX_DevicesRegLinks[pDevice->DeviceName].DevPortCount) return ERR__PERIPHERAL_NOT_VALID;
 #endif
   uint8_t PinState = 0;
-  eERRORRESULT Error = MCP23SXX_GetPinsInputLevel(pDevice, pIntDev->PORTindex, &PinState);
-  *pinLevel = ((PinState & pIntDev->PinBitMask) > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
+  eERRORRESULT Error = MCP23SXX_GetPinsInputLevel(pDevice, pIntDev->PORTindex, &PinState, pIntDev->PinBitMask);
+  *pinLevel = (PinState > 0 ? GPIO_STATE_SET : GPIO_STATE_RESET);
   return Error;
 }
 

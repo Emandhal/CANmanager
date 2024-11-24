@@ -3904,7 +3904,7 @@ eERRORRESULT MCP251XFD_ConfigurePins(MCP251XFD *pComp, eMCP251XFD_GPIO0Mode GPIO
  * @param[in] pinsChangeMask If the bit is set to '1', then the corresponding GPIO must be modified
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, uint8_t pinsDirection, uint8_t pinsChangeMask);
+eERRORRESULT MCP251XFD_SetGPIOPinsDirection(MCP251XFD *pComp, const uint8_t pinsDirection, uint8_t pinsChangeMask);
 
 /*! @brief Get GPIO pins input level of the MCP251XFD device
  *
@@ -3921,7 +3921,7 @@ eERRORRESULT MCP251XFD_GetGPIOPinsInputLevel(MCP251XFD *pComp, uint8_t* const pi
  * @param[in] pinsChangeMask If the bit is set to '1', then the corresponding GPIO must be modified
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, uint8_t pinsLevel, uint8_t pinsChangeMask);
+eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, const uint8_t pinsLevel, uint8_t pinsChangeMask);
 
 //-----------------------------------------------------------------------------
 
@@ -3932,25 +3932,28 @@ eERRORRESULT MCP251XFD_SetGPIOPinsOutputLevel(MCP251XFD *pComp, uint8_t pinsLeve
  *
  * @param[in] *pIntDev Is the pointed structure of the PORT interface to be used
  * @param[in] pinsDirection Set the IO pins output level, if bit is '1' then the corresponding GPIO is level high else it's level low
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be configured
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251XFD_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection);
+eERRORRESULT MCP251XFD_SetPORTdirection_Gen(PORT_Interface *pIntDev, const uint32_t pinsDirection, const uint32_t pinsChangeMask);
 
 /*! @brief Get PORT pins input level of the MCP251XFD device
  *
  * @param[in] *pIntDev Is the PORT interface container structure used to get input level of a whole PORT
  * @param[out] *pinsLevel Return the actual level of the PORT pins. If bit is '1' then the corresponding GPIO is level high else it's level low
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be read
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* pinsLevel);
+eERRORRESULT MCP251XFD_GetPORTinputLevel_Gen(PORT_Interface *pIntDev, uint32_t* const pinsLevel, const uint32_t pinsChangeMask);
 
 /*! @brief Set PORT pins output level of the MCP251XFD device
  *
  * @param[in] *pIntDev Is the PORT interface container structure used to set output level of a whole PORT
  * @param[in] pinsLevel Set the PORT pins output level, if bit is '1' then the corresponding GPIO is level high else it's level low
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be configured
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT MCP251XFD_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel);
+eERRORRESULT MCP251XFD_SetPORToutputLevel_Gen(PORT_Interface *pIntDev, const uint32_t pinsLevel, const uint32_t pinsChangeMask);
 
 //-----------------------------------------------------------------------------
 

@@ -18,16 +18,6 @@
 #include "CAN_Shield_V71Interface.h"
 #include "Ultra_V71Interfaces.h"
 //-----------------------------------------------------------------------------
-#ifdef USE_CONSOLE_GPIO_COMMANDS
-
-extern PORT_Interface* const PORTAtoZ[]; //!< Description of each PORTs A to Z available on the V71 Xplained Ultra board
-extern const size_t PORTAtoZ_COUNT;      //!< Count of PORTs A to Z available on the V71 Xplained Ultra board
-
-extern PORT_Interface* const PORT0to9[]; //!< Description of each PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
-extern const size_t PORT0to9_COUNT;      //!< Count of PORTs 0 to 9 available on the V71 Xplained Ultra board with the CAN_Shield board
-
-#endif
-//-----------------------------------------------------------------------------
 
 
 

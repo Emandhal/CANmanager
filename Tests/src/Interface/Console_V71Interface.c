@@ -257,50 +257,112 @@ ConsoleRx Console_RxConf =
 
 //**********************************************************************************************************************************************************
 #ifdef USE_CONSOLE_GPIO_COMMANDS
+
+#include "GPIO_Interface.h"
+extern PORT_Interface* const PORTAtoZ[]; //!< Description of each PORTs on the V71 Xplained Ultra board
+extern const size_t PORTAtoZ_COUNT;      //!< Count of PORTs available on the V71 Xplained Ultra board
+extern PORT_Interface* const PORT0to9[]; //!< Description of each PORTs of external devices
+extern const size_t PORT0to9_COUNT;      //!< Count of PORTs of external devices available
+
 //=============================================================================
 // Process GPIO command Callback
 //=============================================================================
 void ConsoleRx_GPIOcommandCallBack(eConsoleActions action, eGPIO_PortPin portPin, uint8_t pinNum, uint32_t value, uint32_t mask)
 {
-  //--- Set GPIO command ---
-  if (portPin == No_PORTpin) return;
+  PORT_Interface* pPORT = NULL;
+  size_t SelectedPORT;
   uint32_t Result = 0;
-  switch (action)
+
+  if (portPin == No_PORTpin) return;
+  if (((portPin >= PORTA) && (portPin < PORTa_Max)) || ((portPin >= PORT0) && (portPin < PORTn_Max))) //** Operate on PORTs
   {
-    default:
-    case Action_None:
-      break;
+    //--- Select PORT ---
+    if ((portPin >= PORTA) && (portPin < PORTa_Max))
+    {
+      SelectedPORT = (size_t)portPin - (size_t)PORTA; // Extract selected port
+      if (SelectedPORT >= PORTAtoZ_COUNT)             // Shall be in range of available PORTs (A to ...)
+      {
+        LOGERROR("PORT not declared");
+        return;
+      }
+      pPORT = PORTAtoZ[SelectedPORT];                 // Select PORT pointer
+    }
+    else
+    {
+      SelectedPORT = (size_t)portPin - (size_t)PORT0; // Extract selected port
+      if (SelectedPORT >= PORT0to9_COUNT)             // Shall be in range of available PORTs (0 to ...)
+      {
+        LOGERROR("PORT not declared");
+        return;
+      }
+      pPORT = PORT0to9[SelectedPORT];                 // Select PORT pointer
+    }
+    //--- Set PORT action ---
+    switch (action)
+    {
+      default:
+      case Action_None:  break;
+      case Action_Dir:   pPORT->fnPORT_SetDirection(pPORT, value, mask); break;
 
-    case Action_Read:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) Result = ioport_get_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask);
-      else Result = ioport_get_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum));
-      LOGINFO("GPIO Direction: 0x%x", (unsigned int)Result);
-      break;
+      case Action_Write: pPORT->fnPORT_SetOutputLevel(pPORT, value,         mask); break;
+      case Action_Set:   pPORT->fnPORT_SetOutputLevel(pPORT, PORT_ALL_HIGH, value); break;
+      case Action_Clear: pPORT->fnPORT_SetOutputLevel(pPORT, PORT_ALL_LOW,  value); break;
 
-    case Action_Write:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, value);
-      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), value);
-      break;
+      case Action_Toggle:
+        pPORT->fnPORT_GetInputLevel(pPORT, &Result, PORT_ALL_PINS);
+        pPORT->fnPORT_SetOutputLevel(pPORT, Result ^ value, PORT_ALL_HIGH);
+        break;
 
-    case Action_Set:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, IOPORT_PIN_LEVEL_HIGH);
-      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), IOPORT_PIN_LEVEL_HIGH);
-      break;
+      case Action_Read:
+        pPORT->fnPORT_GetInputLevel(pPORT, &Result, PORT_ALL_PINS);
+        LOGINFO("PORT Read: 0x%X", (unsigned int)Result);
+        break;
+    }
+  }
+  else if (((portPin >= PA) && (portPin < Pa_Max)) || ((portPin >= P0) && (portPin < Pn_Max))) //** Operate on Pins
+  {
+    //--- Select PORT ---
+    if ((portPin >= PA) && (portPin < Pa_Max))
+    {
+      SelectedPORT = (size_t)portPin - (size_t)PA; // Extract selected port
+      if (SelectedPORT >= PORTAtoZ_COUNT)          // Shall be in range of available PORTs (A to ...)
+      {
+        LOGERROR("PORT not declared");
+        return;
+      }
+      pPORT = PORTAtoZ[SelectedPORT];              // Select PORT pointer
+    }
+    else
+    {
+      SelectedPORT = (size_t)portPin - (size_t)P0; // Extract selected port
+      if (SelectedPORT >= PORT0to9_COUNT)          // Shall be in range of available PORTs (0 to ...)
+      {
+        LOGERROR("PORT not declared");
+        return;
+      }
+      pPORT = PORT0to9[SelectedPORT];              // Select PORT pointer
+    }
+    //--- Set PORT action ---
+    switch (action)
+    {
+      default:
+      case Action_None:  break;
+      case Action_Dir:   pPORT->fnPORT_SetDirection(  pPORT, (value & 0x1) << pinNum, 1u << pinNum); break;
 
-    case Action_Clear:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask, IOPORT_PIN_LEVEL_LOW);
-      else ioport_set_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), IOPORT_PIN_LEVEL_LOW);
-      break;
+      case Action_Write: pPORT->fnPORT_SetOutputLevel(pPORT, (value & 0x1) << pinNum, 1u << pinNum); break;
+      case Action_Set:   pPORT->fnPORT_SetOutputLevel(pPORT, PORT_ALL_HIGH,           1u << pinNum); break;
+      case Action_Clear: pPORT->fnPORT_SetOutputLevel(pPORT, PORT_ALL_LOW,            1u << pinNum); break;
 
-    case Action_Toggle:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_toggle_port_level(((uint32_t)portPin - (uint32_t)PORTA), mask);
-      else ioport_toggle_pin_level(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum));
-      break;
+      case Action_Toggle:
+        pPORT->fnPORT_GetInputLevel(pPORT, &Result, PORT_ALL_PINS);
+        pPORT->fnPORT_SetOutputLevel(pPORT, Result ^ ((value & 0x1) << pinNum), PORT_ALL_HIGH);
+        break;
 
-    case Action_Dir:
-      if ((portPin >= PORTA) && (portPin < PORTa_Max)) ioport_set_port_dir(((uint32_t)portPin - (uint32_t)PORTA), mask, value);
-      else ioport_set_pin_dir(((((uint32_t)portPin - (uint32_t)PA) * 32) + pinNum), value);
-      break;
+      case Action_Read:
+        pPORT->fnPORT_GetInputLevel(pPORT, &Result, PORT_ALL_PINS);
+        LOGINFO("GPIO Read: %d", (unsigned int)((Result >> pinNum) & 0x1));
+        break;
+    }
   }
 }
 #endif // #ifdef USE_CONSOLE_GPIO_COMMANDS

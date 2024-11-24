@@ -150,25 +150,28 @@ uint32_t GetCurrentms_V71(void);
  * This function will be called to change the direction of a whole PORT
  * @param[in] *pIntDev Is the PORT interface container structure used for the PORT set direction
  * @param[in] pinsDirection Set the PORT pin direction, if bit is '1' then the corresponding GPIO is input else it's output
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be configured
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection);
+eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection, const uint32_t pinsChangeMask);
 
 /*! @brief PORT pins input level for V71
  *
  * @param[in] *pIntDev Is the PORT interface container structure used to get input level of a whole PORT
  * @param[out] *pinsLevel Return the actual level of the PORT pins. If bit is '1' then the corresponding GPIO is level high else it's level low
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be read
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel);
+eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t* const pinsLevel, const uint32_t pinsChangeMask);
 
 /*! @brief PORT pins output level for V71
  *
  * @param[in] *pIntDev Is the PORT interface container structure used to set output level of a whole PORT
  * @param[in] pinsLevel Set the PORT pins output level, if bit is '1' then the corresponding GPIO is level high else it's level low
+ * @param[in] pinsChangeMask Set the PORT pin mask, if bit is '1' then the corresponding GPIO will be configured
  * @return Returns an #eERRORRESULT value enum
  */
-eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel);
+eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel, const uint32_t pinsChangeMask);
 
 //-----------------------------------------------------------------------------
 

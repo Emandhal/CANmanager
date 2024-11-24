@@ -184,7 +184,7 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t* data, size_t size
 //-----------------------------------------------------------------------------
 
 # ifdef CONSOLE_RX_USE_COMMAND_RECALL
-#   define CONSOLE_RX_COMMAND_BUFFER_SIZE    400               //!< Define the console command recall buffer size, this set the character count of commands that can be recall
+#   define CONSOLE_RX_COMMAND_BUFFER_SIZE    400                 //!< Define the console command recall buffer size, this set the character count of commands that can be recall
     char ConsoleRxCommandBuffer[CONSOLE_RX_COMMAND_BUFFER_SIZE]; //!< The actual console command recall buffer
 # endif
 

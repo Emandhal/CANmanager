@@ -417,7 +417,7 @@ uint32_t GetCurrentms_V71(void)
 //=============================================================================
 // PORT set pins direction for V71
 //=============================================================================
-eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection)
+eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDirection, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
@@ -426,8 +426,8 @@ eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDi
 #ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  const uint32_t BitSet   =  pinsDirection; // Get bit set
-  const uint32_t BitClear = ~pinsDirection; // Get bit clears
+  const uint32_t BitSet   =   pinsDirection  & pinsChangeMask; // Get bit set
+  const uint32_t BitClear = (~pinsDirection) & pinsChangeMask; // Get bit clears
   if (BitSet   > 0) pPIO->PIO_ODR = BitSet;
   if (BitClear > 0) pPIO->PIO_OER = BitClear;
   return ERR_NONE;
@@ -437,7 +437,7 @@ eERRORRESULT V71PORT_SetDirection(PORT_Interface *pIntDev, const uint32_t pinsDi
 //=============================================================================
 // PORT pins input level for V71
 //=============================================================================
-eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel)
+eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t* const pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
@@ -446,7 +446,7 @@ eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel)
 #ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  *pinsLevel = pPIO->PIO_PDSR;
+  *pinsLevel = pPIO->PIO_PDSR & pinsChangeMask;
   return ERR_NONE;
 }
 
@@ -454,7 +454,7 @@ eERRORRESULT V71PORT_GetInputLevel(PORT_Interface *pIntDev, uint32_t *pinsLevel)
 //=============================================================================
 // PORT pins output level for V71
 //=============================================================================
-eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel)
+eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pinsLevel, const uint32_t pinsChangeMask)
 {
 #ifdef CHECK_NULL_PARAM
   if (pIntDev == NULL) return ERR__PARAMETER_ERROR;
@@ -463,8 +463,8 @@ eERRORRESULT V71PORT_SetOutputLevel(PORT_Interface *pIntDev, const uint32_t pins
 #ifdef CHECK_NULL_PARAM
   if (pPIO == NULL) return ERR__PARAMETER_ERROR;
 #endif
-  const uint32_t BitSet   =  pinsLevel; // Get bit set
-  const uint32_t BitClear = ~pinsLevel; // Get bit clears
+  const uint32_t BitSet   =   pinsLevel  & pinsChangeMask; // Get bit set
+  const uint32_t BitClear = (~pinsLevel) & pinsChangeMask; // Get bit clears
   if (BitSet   > 0) pPIO->PIO_SODR = BitSet;
   if (BitClear > 0) pPIO->PIO_CODR = BitClear;
   return ERR_NONE;

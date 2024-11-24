@@ -45,10 +45,10 @@
 #define SJA1000_PIN_LOW(pin)           Error = p##pin->fnGPIO_SetState(p##pin, GPIO_STATE_RESET)
 #define SJA1000_PIN_HIGH(pin)          Error = p##pin->fnGPIO_SetState(p##pin, GPIO_STATE_SET)
 #define SJA1000_PIN_OUTPUT(pin)        Error = p##pin->fnGPIO_SetState(p##pin, GPIO_STATE_OUTPUT)
-#define SJA1000_PORT_OUTPUT(port)      Error = p##port->fnPORT_SetDirection(p##port, PORT_AS_OUTPUT)
-#define SJA1000_PORT_INPUT(port)       Error = p##port->fnPORT_SetDirection(p##port, PORT_AS_INPUT)
-#define SJA1000_PORT_WRITE(port,data)  Error = p##port->fnPORT_SetOutputLevel(p##port, (uint8_t)(data))
-#define SJA1000_PORT_READ(port)        ({ uint32_t Read##__LINE__; Error = p##port->fnPORT_GetInputLevel(p##port, &Read##__LINE__); (uint8_t)Read##__LINE__; }) // Statement expression
+#define SJA1000_PORT_OUTPUT(port)      Error = p##port->fnPORT_SetDirection(p##port, PORT_AS_OUTPUT, PORT_ALL_PINS)
+#define SJA1000_PORT_INPUT(port)       Error = p##port->fnPORT_SetDirection(p##port, PORT_AS_INPUT, PORT_ALL_PINS)
+#define SJA1000_PORT_WRITE(port,data)  Error = p##port->fnPORT_SetOutputLevel(p##port, (uint8_t)(data), PORT_ALL_PINS)
+#define SJA1000_PORT_READ(port)        ({ uint32_t Read##__LINE__; Error = p##port->fnPORT_GetInputLevel(p##port, &Read##__LINE__, PORT_ALL_PINS); (uint8_t)Read##__LINE__; }) // Statement expression
 #define __SJA1000_CHECK_ERROR          if (Error != ERR_NONE) return Error
 //-----------------------------------------------------------------------------
 

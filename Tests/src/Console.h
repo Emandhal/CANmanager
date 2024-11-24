@@ -523,12 +523,12 @@ typedef enum
   PORTa_Max,                                       //!< Maximum alphabetical PORT Names
   PORT0, PORT1, PORT2, PORT3, PORT4,
   PORT5, PORT6, PORT7, PORT8, PORT9,
-  PORTx_Max,                                       //!< Maximum numerical PORT Names
+  PORTn_Max,                                       //!< Maximum numerical PORT Names
   PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM,
   PN, PO, PP, PQ, PR, PS, PT, PU, PV, PW, PX, PY, PZ,
   Pa_Max,                                          //!< Maximum alphabetical pin on port names
-//  P0, P1, P2, P3, P4, P5, P6, P7, P8, P9,
-//  Px_Max,                                          //!< Maximum numerical pin on port names
+  P0, P1, P2, P3, P4, P5, P6, P7, P8, P9,
+  Pn_Max,                                          //!< Maximum numerical pin on port names
 } eGPIO_PortPin;
 
 /*! @brief Process GPIO command Callback
