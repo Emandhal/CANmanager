@@ -61,9 +61,10 @@ void USART1_Handler(void)
 
 #ifdef USE_DYNAMIC_INTERFACE
 //! UART console interface definition for dynamic interfaces
-static UART_Interface Console_UART =
+UART_Interface Console_UART =
 {
   UART_MEMBER(InterfaceDevice) CONSOLE_UART,
+  UART_MEMBER(UniqueID)        0,
   UART_MEMBER(fnUART_Transmit) UARTtransmit_V71,
   UART_MEMBER(fnUART_Receive)  UARTreceive_V71,
   UART_MEMBER(Channel)         0,

@@ -76,7 +76,16 @@ const size_t EEPROM_DEVICE_COUNT = ( sizeof(EEPROMdevices) / sizeof(EEPROMdevice
 
 #endif // USE_CONSOLE_EEPROM_COMMANDS
 //-----------------------------------------------------------------------------
+
 #include "Console_V71Interface.h"
+
+//! Description of each UART available on the V71 Xplained Ultra board
+UART_Interface* const UARTdevices[] =
+{
+  &Console_UART,
+};
+const size_t UART_DEVICE_COUNT = ( sizeof(UARTdevices) / sizeof(UARTdevices[0]) ); //!< Count of UARTs available on the V71 Xplained Ultra board
+
 //-----------------------------------------------------------------------------
 
 

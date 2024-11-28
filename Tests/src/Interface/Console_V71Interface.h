@@ -154,6 +154,13 @@ eERRORRESULT UARTreceive_V71(UART_Interface *pIntDev, uint8_t* data, size_t size
 
 //-----------------------------------------------------------------------------
 
+#ifdef USE_DYNAMIC_INTERFACE
+//! UART console interface definition for dynamic interfaces
+extern UART_Interface Console_UART;
+#endif
+
+//-----------------------------------------------------------------------------
+
 
 
 

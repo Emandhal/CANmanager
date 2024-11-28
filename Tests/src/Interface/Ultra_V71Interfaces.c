@@ -502,8 +502,8 @@ eERRORRESULT V71GPIO_SetPinState(GPIO_Interface *pIntDev, const eGPIO_State pinS
     case GPIO_STATE_SET   : pPIO->PIO_SODR = pIntDev->PinBitMask; break;
     case GPIO_STATE_TOGGLE: if ((pPIO->PIO_PDSR & pIntDev->PinBitMask) > 0) // If set?
                                  pPIO->PIO_CODR = pIntDev->PinBitMask;      // Clear
-							              else pPIO->PIO_SODR = pIntDev->PinBitMask;      // else Set
-							              break;
+                            else pPIO->PIO_SODR = pIntDev->PinBitMask;      // else Set
+                            break;
   }
   return ERR_NONE;
 }
