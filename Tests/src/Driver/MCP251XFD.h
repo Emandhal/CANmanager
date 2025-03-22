@@ -1,8 +1,8 @@
 /*!*****************************************************************************
  * @file    MCP251XFD.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 2.0.0
- * @date    03/09/2023
+ * @version 2.0.1
+ * @date    05/01/2025
  * @brief   MCP251XFD C driver with C++ class wrapper
  * @details
  * The MCP251XFD component is a CAN-bus controller supporting CAN2.0A, CAN2.0B
@@ -14,7 +14,7 @@
  ******************************************************************************/
 /* @page License
  *
- * Copyright (c) 2020-2023 Fabien MAILLY
+ * Copyright (c) 2020-2025 Fabien MAILLY
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
  *****************************************************************************/
 
 /* Revision history:
+ * 2.0.1    Put 'ul' suffix instead of 'u' suffix on Masks values to remove warnings on 16-bits systems [Thanks to Bobbybigears]
  * 2.0.0    Update driver to match "SPI_Interface"
  * 1.1.0    Update driver for "CAN_common"
  * 1.0.6    Reduce code size by merging all Data Reads and all Data Writes
@@ -254,7 +255,7 @@ typedef enum
   MCP251XFD_DRIVER_USE_SAFE_WRITE           = 0x40, //!< Each SFR write or memory write is sent one at a time (slower but send only the 2 bytes for CRC)
 } eMCP251XFD_DriverConfig;
 
-typedef eMCP251XFD_DriverConfig setMCP251XFD_DriverConfig; //! Set of Driver configuration (can be OR'ed)
+typedef eMCP251XFD_DriverConfig setMCP251XFD_DriverConfig; //!< Set of Driver configuration (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -271,9 +272,9 @@ typedef eMCP251XFD_DriverConfig setMCP251XFD_DriverConfig; //! Set of Driver con
 #define MCP251XFD_SPI_INSTRUCTION_READ_CRC    ( 0x0B ) //!< Read with CRC instruction
 #define MCP251XFD_SPI_INSTRUCTION_SAFE_WRITE  ( 0x0C ) //!< Safe Write instruction
 
-#define MCP251XFD_SPI_FIRST_BYTE(instruction,address)   ( ((instruction) << 4) | (((address) >> 8) & 0xF) ) //!< Set first byte of SPI command
-#define MCP251XFD_SPI_SECOND_BYTE(address)              ( (address) & 0xFF )                                //!< Set next byte of SPI command
-#define MCP251XFD_SPI_16BITS_WORD(instruction,address)  ( ((instruction) << 12) | ((address) & 0xFFF) )     //!< Set first and second byte of SPI command into a 16-bit word
+#define MCP251XFD_SPI_FIRST_BYTE(instruction,address)   ( ((instruction) << 4) | (((address) >> 8) & 0xFu) ) //!< Set first byte of SPI command
+#define MCP251XFD_SPI_SECOND_BYTE(address)              ( (address) & 0xFFu )                                //!< Set next byte of SPI command
+#define MCP251XFD_SPI_16BITS_WORD(instruction,address)  ( ((instruction) << 12) | ((address) & 0xFFFu) )     //!< Set first and second byte of SPI command into a 16-bit word
 
 //-----------------------------------------------------------------------------
 
@@ -286,7 +287,7 @@ typedef enum
 } eMCP251XFD_Devices;
 
 #define MCP251XFD_DEV_ID_Pos         2
-#define MCP251XFD_DEV_ID_Mask        (0x1u << MCP251XFD_DEV_ID_Pos)
+#define MCP251XFD_DEV_ID_Mask        (0x1ul << MCP251XFD_DEV_ID_Pos)
 #define MCP251XFD_DEV_ID_SET(value)  (((uint8_t)(value) << MCP251XFD_DEV_ID_Pos) & MCP251XFD_DEV_ID_Mask) //!< Set Device ID
 #define MCP251XFD_DEV_ID_GET(value)  (((uint8_t)(value) & MCP251XFD_DEV_ID_Mask) >> MCP251XFD_DEV_ID_Pos) //!< Get Device ID
 
@@ -606,8 +607,8 @@ typedef enum
 
 //-----------------------------------------------------------------------------
 #if defined(__GNUC__) && !(defined(__cplusplus) && (__cplusplus >= 201103L/*C++11*/)) || (!defined(__cplusplus))
-   typedef __attribute__((deprecated)) eMCP251XFD_Registers eMCP251XFD_Registers_deprecated; //! Create a new type for deprecated registers
-#  define RegMCP251XFD_IOCON ((eMCP251XFD_Registers_deprecated)RegMCP251XFD_IOCON) //! Override RegMCP251XFD_IOCON definition to force deprecated warning for the use of this register
+   typedef __attribute__((deprecated)) eMCP251XFD_Registers eMCP251XFD_Registers_deprecated; //!< Create a new type for deprecated registers
+#  define RegMCP251XFD_IOCON ((eMCP251XFD_Registers_deprecated)RegMCP251XFD_IOCON) //!< Override RegMCP251XFD_IOCON definition to force deprecated warning for the use of this register
 #elif defined _MSC_VER
 #  pragma deprecated(RegMCP251XFD_IOCON)
 #endif
@@ -647,12 +648,12 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_OSC_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_OSC_Register, 4);
 
-#define MCP251XFD_SFR_OSC_PLLEN   ((uint32_t)(0x1u << 0)) //!< PLL Enable
-#define MCP251XFD_SFR_OSC_PLLDIS  ((uint32_t)(0x0u << 0)) //!< PLL Disable
-#define MCP251XFD_SFR_OSC_OSCDIS  ((uint32_t)(0x1u << 2)) //!< Clock (Oscillator) Disable, device is in sleep mode
-#define MCP251XFD_SFR_OSC_WAKEUP  ((uint32_t)(0x0u << 2)) //!< Device wake-up from sleep and put it in Configuration mode
-#define MCP251XFD_SFR_OSC_LPMEN   ((uint32_t)(0x1u << 3)) //!< Low Power Mode (LPM) Enable; Setting LPMEN doesn’t actually put the device in LPM. It selects which Sleep mode will be entered after requesting Sleep mode using CiCON.REQOP. In order to wake up on RXCAN activity, CiINT.WAKIE must be set
-#define MCP251XFD_SFR_OSC_LPMDIS  ((uint32_t)(0x0u << 3)) //!< Low Power Mode (LPM) Disable; The device is in sleep mode
+#define MCP251XFD_SFR_OSC_PLLEN   ((uint32_t)(0x1ul << 0)) //!< PLL Enable
+#define MCP251XFD_SFR_OSC_PLLDIS  ((uint32_t)(0x0ul << 0)) //!< PLL Disable
+#define MCP251XFD_SFR_OSC_OSCDIS  ((uint32_t)(0x1ul << 2)) //!< Clock (Oscillator) Disable, device is in sleep mode
+#define MCP251XFD_SFR_OSC_WAKEUP  ((uint32_t)(0x0ul << 2)) //!< Device wake-up from sleep and put it in Configuration mode
+#define MCP251XFD_SFR_OSC_LPMEN   ((uint32_t)(0x1ul << 3)) //!< Low Power Mode (LPM) Enable; Setting LPMEN doesn’t actually put the device in LPM. It selects which Sleep mode will be entered after requesting Sleep mode using CiCON.REQOP. In order to wake up on RXCAN activity, CiINT.WAKIE must be set
+#define MCP251XFD_SFR_OSC_LPMDIS  ((uint32_t)(0x0ul << 3)) //!< Low Power Mode (LPM) Disable; The device is in sleep mode
 
 //! System Clock Divisor for the OSC.SCLKDIV register
 typedef enum
@@ -662,7 +663,7 @@ typedef enum
 } eMCP251XFD_SCLKDIV;
 
 #define MCP251XFD_SFR_OSC_SCLKDIV_Pos         4
-#define MCP251XFD_SFR_OSC_SCLKDIV_Mask        (0x1u << MCP251XFD_SFR_OSC_SCLKDIV_Pos)
+#define MCP251XFD_SFR_OSC_SCLKDIV_Mask        (0x1ul << MCP251XFD_SFR_OSC_SCLKDIV_Pos)
 #define MCP251XFD_SFR_OSC_SCLKDIV_SET(value)  (((uint32_t)(value) << MCP251XFD_SFR_OSC_SCLKDIV_Pos) & MCP251XFD_SFR_OSC_SCLKDIV_Mask) //!< System Clock Divisor
 
 //! Clock Output Divisor for the OSC.CLKODIV register
@@ -676,11 +677,11 @@ typedef enum
 } eMCP251XFD_CLKODIV;
 
 #define MCP251XFD_SFR_OSC_CLKODIV_Pos         5
-#define MCP251XFD_SFR_OSC_CLKODIV_Mask        (0x3u << MCP251XFD_SFR_OSC_CLKODIV_Pos)
+#define MCP251XFD_SFR_OSC_CLKODIV_Mask        (0x3ul << MCP251XFD_SFR_OSC_CLKODIV_Pos)
 #define MCP251XFD_SFR_OSC_CLKODIV_SET(value)  (((uint32_t)(value) << MCP251XFD_SFR_OSC_CLKODIV_Pos) & MCP251XFD_SFR_OSC_CLKODIV_Mask) //!< Clock Output Divisor
-#define MCP251XFD_SFR_OSC_PLLRDY              ((uint32_t)(0x1u <<  8)) //!< PLL Ready
-#define MCP251XFD_SFR_OSC_OSCRDY              ((uint32_t)(0x1u << 10)) //!< Clock Ready
-#define MCP251XFD_SFR_OSC_SCLKRDY             ((uint32_t)(0x1u << 12)) //!< Synchronized SCLKDIV
+#define MCP251XFD_SFR_OSC_PLLRDY              ((uint32_t)(0x1ul <<  8)) //!< PLL Ready
+#define MCP251XFD_SFR_OSC_OSCRDY              ((uint32_t)(0x1ul << 10)) //!< Clock Ready
+#define MCP251XFD_SFR_OSC_SCLKRDY             ((uint32_t)(0x1ul << 12)) //!< Synchronized SCLKDIV
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_SFR_OSC8_PLLEN               ((uint8_t)(0x1u << 0)) //!< PLL Enable
@@ -759,25 +760,25 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_IOCON_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_IOCON_Register, 4);
 
-#define MCP251XFD_SFR_IOCON_GPIO0_INPUT   ((uint32_t)(0x1u <<  0)) //!< GPIO0 Data Input Direction
-#define MCP251XFD_SFR_IOCON_GPIO0_OUTPUT  ((uint32_t)(0x0u <<  0)) //!< GPIO0 Data Output Direction
-#define MCP251XFD_SFR_IOCON_GPIO1_INPUT   ((uint32_t)(0x1u <<  1)) //!< GPIO1 Data Input Direction
-#define MCP251XFD_SFR_IOCON_GPIO1_OUTPUT  ((uint32_t)(0x0u <<  1)) //!< GPIO1 Data Output Direction
-#define MCP251XFD_SFR_IOCON_XSTBYEN       ((uint32_t)(0x1u <<  6)) //!< Enable Transceiver Standby Pin Control
-#define MCP251XFD_SFR_IOCON_XSTBYDIS      ((uint32_t)(0x0u <<  6)) //!< Disable Transceiver Standby Pin Control
-#define MCP251XFD_SFR_IOCON_GPIO0_HIGH    ((uint32_t)(0x1u <<  8)) //!< GPIO0 Latch Drive Pin High
-#define MCP251XFD_SFR_IOCON_GPIO0_LOW     ((uint32_t)(0x0u <<  8)) //!< GPIO0 Latch Drive Pin Low
-#define MCP251XFD_SFR_IOCON_GPIO1_HIGH    ((uint32_t)(0x1u <<  9)) //!< GPIO1 Latch Drive Pin High
-#define MCP251XFD_SFR_IOCON_GPIO1_LOW     ((uint32_t)(0x0u <<  9)) //!< GPIO1 Latch Drive Pin Low
-#define MCP251XFD_SFR_IOCON_GPIO0_STATUS  ((uint32_t)(0x1u << 16)) //!< GPIO0 Status
-#define MCP251XFD_SFR_IOCON_GPIO1_STATUS  ((uint32_t)(0x1u << 17)) //!< GPIO1 Status
-#define MCP251XFD_SFR_IOCON_GPIO0_MODE    ((uint32_t)(0x1u << 24)) //!< GPIO0 GPIO Pin Mode
-#define MCP251XFD_SFR_IOCON_GPIO0_INT0    ((uint32_t)(0x0u << 24)) //!< GPIO0 Interrupt Pin INT0, asserted when CiINT.TXIF and TXIE are set
-#define MCP251XFD_SFR_IOCON_GPIO1_MODE    ((uint32_t)(0x1u << 25)) //!< GPIO1 GPIO Pin Mode
-#define MCP251XFD_SFR_IOCON_GPIO1_INT1    ((uint32_t)(0x0u << 25)) //!< GPIO1 Interrupt Pin INT1, asserted when CiINT.RXIF and RXIE are set
-#define MCP251XFD_SFR_IOCON_TXCANOD       ((uint32_t)(0x1u << 28)) //!< TXCAN Open Drain Mode
-#define MCP251XFD_SFR_IOCON_SOF           ((uint32_t)(0x1u << 29)) //!< Start-Of-Frame signal
-#define MCP251XFD_SFR_IOCON_INTOD         ((uint32_t)(0x1u << 30)) //!< Interrupt pins Open Drain Mode
+#define MCP251XFD_SFR_IOCON_GPIO0_INPUT   ((uint32_t)(0x1ul <<  0)) //!< GPIO0 Data Input Direction
+#define MCP251XFD_SFR_IOCON_GPIO0_OUTPUT  ((uint32_t)(0x0ul <<  0)) //!< GPIO0 Data Output Direction
+#define MCP251XFD_SFR_IOCON_GPIO1_INPUT   ((uint32_t)(0x1ul <<  1)) //!< GPIO1 Data Input Direction
+#define MCP251XFD_SFR_IOCON_GPIO1_OUTPUT  ((uint32_t)(0x0ul <<  1)) //!< GPIO1 Data Output Direction
+#define MCP251XFD_SFR_IOCON_XSTBYEN       ((uint32_t)(0x1ul <<  6)) //!< Enable Transceiver Standby Pin Control
+#define MCP251XFD_SFR_IOCON_XSTBYDIS      ((uint32_t)(0x0ul <<  6)) //!< Disable Transceiver Standby Pin Control
+#define MCP251XFD_SFR_IOCON_GPIO0_HIGH    ((uint32_t)(0x1ul <<  8)) //!< GPIO0 Latch Drive Pin High
+#define MCP251XFD_SFR_IOCON_GPIO0_LOW     ((uint32_t)(0x0ul <<  8)) //!< GPIO0 Latch Drive Pin Low
+#define MCP251XFD_SFR_IOCON_GPIO1_HIGH    ((uint32_t)(0x1ul <<  9)) //!< GPIO1 Latch Drive Pin High
+#define MCP251XFD_SFR_IOCON_GPIO1_LOW     ((uint32_t)(0x0ul <<  9)) //!< GPIO1 Latch Drive Pin Low
+#define MCP251XFD_SFR_IOCON_GPIO0_STATUS  ((uint32_t)(0x1ul << 16)) //!< GPIO0 Status
+#define MCP251XFD_SFR_IOCON_GPIO1_STATUS  ((uint32_t)(0x1ul << 17)) //!< GPIO1 Status
+#define MCP251XFD_SFR_IOCON_GPIO0_MODE    ((uint32_t)(0x1ul << 24)) //!< GPIO0 GPIO Pin Mode
+#define MCP251XFD_SFR_IOCON_GPIO0_INT0    ((uint32_t)(0x0ul << 24)) //!< GPIO0 Interrupt Pin INT0, asserted when CiINT.TXIF and TXIE are set
+#define MCP251XFD_SFR_IOCON_GPIO1_MODE    ((uint32_t)(0x1ul << 25)) //!< GPIO1 GPIO Pin Mode
+#define MCP251XFD_SFR_IOCON_GPIO1_INT1    ((uint32_t)(0x0ul << 25)) //!< GPIO1 Interrupt Pin INT1, asserted when CiINT.RXIF and RXIE are set
+#define MCP251XFD_SFR_IOCON_TXCANOD       ((uint32_t)(0x1ul << 28)) //!< TXCAN Open Drain Mode
+#define MCP251XFD_SFR_IOCON_SOF           ((uint32_t)(0x1ul << 29)) //!< Start-Of-Frame signal
+#define MCP251XFD_SFR_IOCON_INTOD         ((uint32_t)(0x1ul << 30)) //!< Interrupt pins Open Drain Mode
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_SFR_IOCON8_GPIO0_INPUT   ((uint8_t)(0x1u << 0)) //!< GPIO0 Data Input Direction
@@ -850,12 +851,12 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CRC_Register, 4);
 
 #define MCP251XFD_SFR_CRC_Pos           0
-#define MCP251XFD_SFR_CRC_Mask          (0xFFFFu << MCP251XFD_SFR_CRC_Pos)
+#define MCP251XFD_SFR_CRC_Mask          (0xFFFFul << MCP251XFD_SFR_CRC_Pos)
 #define MCP251XFD_SFR_CRC_SET(value)    (((uint32_t)(value) << MCP251XFD_SFR_CRC_Pos) & MCP251XFD_SFR_CRC_Mask) //!< Cycle Redundancy Check from last CRC mismatch
-#define MCP251XFD_SFR_CRC_CRCERRIF      ((uint32_t)(0x1u << 16)) //!< CRC Error Interrupt Flag
-#define MCP251XFD_SFR_CRC_FERRIF        ((uint32_t)(0x1u << 17)) //!< CRC Command Format Error Interrupt Flag
-#define MCP251XFD_SFR_CRC_CRCERRIE      ((uint32_t)(0x1u << 24)) //!< CRC Error Interrupt Enable
-#define MCP251XFD_SFR_CRC_FERRIE        ((uint32_t)(0x1u << 25)) //!< CRC Command Format Error Interrupt Enable
+#define MCP251XFD_SFR_CRC_CRCERRIF      ((uint32_t)(0x1ul << 16)) //!< CRC Error Interrupt Flag
+#define MCP251XFD_SFR_CRC_FERRIF        ((uint32_t)(0x1ul << 17)) //!< CRC Command Format Error Interrupt Flag
+#define MCP251XFD_SFR_CRC_CRCERRIE      ((uint32_t)(0x1ul << 24)) //!< CRC Error Interrupt Enable
+#define MCP251XFD_SFR_CRC_FERRIE        ((uint32_t)(0x1ul << 25)) //!< CRC Command Format Error Interrupt Enable
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_SFR_CRC16_Pos          0
@@ -878,7 +879,7 @@ typedef enum
   MCP251XFD_CRC_EVENTS_MASK   = 0x03, //!< CRC events mask
 } eMCP251XFD_CRCEvents;
 
-typedef eMCP251XFD_CRCEvents setMCP251XFD_CRCEvents; //! Set of CRC Events (can be OR'ed)
+typedef eMCP251XFD_CRCEvents setMCP251XFD_CRCEvents; //!< Set of CRC Events (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -901,14 +902,14 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_ECCCON_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_ECCCON_Register, 4);
 
-#define MCP251XFD_SFR_ECCCON_ECCEN              ((uint32_t)(0x1u << 0)) //!< ECC Enable
-#define MCP251XFD_SFR_ECCCON_ECCDIS             ((uint32_t)(0x0u << 0)) //!< ECC Disable
-#define MCP251XFD_SFR_ECCCON_SECIE              ((uint32_t)(0x1u << 1)) //!< Single Error Correction Interrupt Enable Flag
-#define MCP251XFD_SFR_ECCCON_SECID              ((uint32_t)(0x0u << 1)) //!< Single Error Correction Interrupt Disable Flag
-#define MCP251XFD_SFR_ECCCON_DEDIE              ((uint32_t)(0x1u << 2)) //!< Double Error Detection Interrupt Enable Flag
-#define MCP251XFD_SFR_ECCCON_DEDID              ((uint32_t)(0x0u << 2)) //!< Double Error Detection Interrupt Disable Flag
+#define MCP251XFD_SFR_ECCCON_ECCEN              ((uint32_t)(0x1ul << 0)) //!< ECC Enable
+#define MCP251XFD_SFR_ECCCON_ECCDIS             ((uint32_t)(0x0ul << 0)) //!< ECC Disable
+#define MCP251XFD_SFR_ECCCON_SECIE              ((uint32_t)(0x1ul << 1)) //!< Single Error Correction Interrupt Enable Flag
+#define MCP251XFD_SFR_ECCCON_SECID              ((uint32_t)(0x0ul << 1)) //!< Single Error Correction Interrupt Disable Flag
+#define MCP251XFD_SFR_ECCCON_DEDIE              ((uint32_t)(0x1ul << 2)) //!< Double Error Detection Interrupt Enable Flag
+#define MCP251XFD_SFR_ECCCON_DEDID              ((uint32_t)(0x0ul << 2)) //!< Double Error Detection Interrupt Disable Flag
 #define MCP251XFD_SFR_ECCCON_PARITY_Pos         8
-#define MCP251XFD_SFR_ECCCON_PARITY_Mask        (0x3Fu << MCP251XFD_SFR_ECCCON_PARITY_Pos)
+#define MCP251XFD_SFR_ECCCON_PARITY_Mask        (0x3Ful << MCP251XFD_SFR_ECCCON_PARITY_Pos)
 #define MCP251XFD_SFR_ECCCON_PARITY_GET(value)  (((uint32_t)(value) & MCP251XFD_SFR_ECCCON_PARITY_Mask) >> MCP251XFD_SFR_ECCCON_PARITY_Pos) //!< Parity bits used during write to RAM when ECC is disabled
 #define MCP251XFD_SFR_ECCCON_PARITY_SET(value)  (((uint32_t)(value) << MCP251XFD_SFR_ECCCON_PARITY_Pos) & MCP251XFD_SFR_ECCCON_PARITY_Mask) //!< Get parity bits used during write to RAM when ECC is disabled
 
@@ -945,10 +946,10 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_ECCSTAT_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_ECCSTAT_Register, 4);
 
-#define MCP251XFD_SFR_ECCSTAT_SECIF               ((uint32_t)(0x1u << 1)) //!< Single Error Correction Interrupt Flag
-#define MCP251XFD_SFR_ECCSTAT_DEDIF               ((uint32_t)(0x1u << 2)) //!< Double Error Detection Interrupt Flag
+#define MCP251XFD_SFR_ECCSTAT_SECIF               ((uint32_t)(0x1ul << 1)) //!< Single Error Correction Interrupt Flag
+#define MCP251XFD_SFR_ECCSTAT_DEDIF               ((uint32_t)(0x1ul << 2)) //!< Double Error Detection Interrupt Flag
 #define MCP251XFD_SFR_ECCSTAT_ERRADDR_Pos         16
-#define MCP251XFD_SFR_ECCSTAT_ERRADDR_Mask        (0xFFFu << MCP251XFD_SFR_ECCSTAT_ERRADDR_Pos)
+#define MCP251XFD_SFR_ECCSTAT_ERRADDR_Mask        (0xFFFul << MCP251XFD_SFR_ECCSTAT_ERRADDR_Pos)
 #define MCP251XFD_SFR_ECCSTAT_ERRADDR_GET(value)  (((uint32_t)(value) & MCP251XFD_SFR_ECCSTAT_ERRADDR_Mask) >> MCP251XFD_SFR_ECCSTAT_ERRADDR_Pos) //!< Get address where last ECC error occurred
 
 //*** Byte version access to Registers ***
@@ -968,7 +969,7 @@ typedef enum
   MCP251XFD_ECC_EVENTS_MASK = 0x06, //!< ECC events mask
 } eMCP251XFD_ECCEvents;
 
-typedef eMCP251XFD_ECCEvents setMCP251XFD_ECCEvents; //! Set of ECC Events (can be OR'ed)
+typedef eMCP251XFD_ECCEvents setMCP251XFD_ECCEvents; //!< Set of ECC Events (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -989,19 +990,19 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_DEVID_Register, 4);
 
 #define MCP251XFD_SFR_DEVID_REV_Pos         0
-#define MCP251XFD_SFR_DEVID_REV_Mask        (0xFu << MCP251XFD_SFR_DEVID_REV_Pos)
+#define MCP251XFD_SFR_DEVID_REV_Mask        (0xFul << MCP251XFD_SFR_DEVID_REV_Pos)
 #define MCP251XFD_SFR_DEVID_REV_GET(value)  (((uint32_t)(value) & MCP251XFD_SFR_DEVID_REV_Mask) >> MCP251XFD_SFR_DEVID_REV_Pos) //!< Get Silicon Revision
 #define MCP251XFD_SFR_DEVID_ID_Pos          4
-#define MCP251XFD_SFR_DEVID_ID_Mask         (0xFu << MCP251XFD_SFR_DEVID_ID_Pos)
+#define MCP251XFD_SFR_DEVID_ID_Mask         (0xFul << MCP251XFD_SFR_DEVID_ID_Pos)
 #define MCP251XFD_SFR_DEVID_ID_GET(value)   (((uint32_t)(value) & MCP251XFD_SFR_DEVID_ID_Mask) >> MCP251XFD_SFR_DEVID_ID_Pos)   //!< Get Device ID
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_SFR_DEVID8_REV_Pos         0
 #define MCP251XFD_SFR_DEVID8_REV_Mask        (0xFu << MCP251XFD_SFR_DEVID8_REV_Pos)
-#define MCP251XFD_SFR_DEVID8_REV_GET(value)  (((uint32_t)(value) & MCP251XFD_SFR_DEVID8_REV_Mask) >> MCP251XFD_SFR_DEVID8_REV_Pos) //!< Get Silicon Revision
+#define MCP251XFD_SFR_DEVID8_REV_GET(value)  (((uint8_t)(value) & MCP251XFD_SFR_DEVID8_REV_Mask) >> MCP251XFD_SFR_DEVID8_REV_Pos) //!< Get Silicon Revision
 #define MCP251XFD_SFR_DEVID8_ID_Pos          4
 #define MCP251XFD_SFR_DEVID8_ID_Mask         (0xFu << MCP251XFD_SFR_DEVID8_ID_Pos)
-#define MCP251XFD_SFR_DEVID8_ID_GET(value)   (((uint32_t)(value) & MCP251XFD_SFR_DEVID8_ID_Mask) >> MCP251XFD_SFR_DEVID8_ID_Pos)   //!< Get Device ID
+#define MCP251XFD_SFR_DEVID8_ID_GET(value)   (((uint8_t)(value) & MCP251XFD_SFR_DEVID8_ID_Mask) >> MCP251XFD_SFR_DEVID8_ID_Pos)   //!< Get Device ID
 
 //-----------------------------------------------------------------------------
 
@@ -1078,11 +1079,11 @@ typedef enum
 } eMCP251XFD_DNETFilter;
 
 #define MCP251XFD_CAN_CiCON_DNCNT_Pos         0
-#define MCP251XFD_CAN_CiCON_DNCNT_Mask        (0x1Fu << MCP251XFD_CAN_CiCON_DNCNT_Pos)
+#define MCP251XFD_CAN_CiCON_DNCNT_Mask        (0x1Ful << MCP251XFD_CAN_CiCON_DNCNT_Pos)
 #define MCP251XFD_CAN_CiCON_DNCNT_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiCON_DNCNT_Pos) & MCP251XFD_CAN_CiCON_DNCNT_Mask) //!< Set Device Net Filter Bit Number
-#define MCP251XFD_CAN_CiCON_ISOCRCEN          (0x1u << 5) //!< Enable ISO CRC in CAN FD Frames
-#define MCP251XFD_CAN_CiCON_PXEDIS            (0x1u << 6) //!< Protocol Exception Event Detection Disabled
-#define MCP251XFD_CAN_CiCON_WAKFIL            (0x1u << 8) //!< Enable CAN Bus Line Wake-up Filter
+#define MCP251XFD_CAN_CiCON_ISOCRCEN          (0x1ul << 5) //!< Enable ISO CRC in CAN FD Frames
+#define MCP251XFD_CAN_CiCON_PXEDIS            (0x1ul << 6) //!< Protocol Exception Event Detection Disabled
+#define MCP251XFD_CAN_CiCON_WAKFIL            (0x1ul << 8) //!< Enable CAN Bus Line Wake-up Filter
 
 /*! @enum eMCP251XFD_WakeUpFilter
  * @brief Wake-up Filter Time bits for the CiCON.WFT register
@@ -1098,15 +1099,15 @@ typedef enum
 } eMCP251XFD_WakeUpFilter;
 
 #define MCP251XFD_CAN_CiCON_WFT_Pos         9
-#define MCP251XFD_CAN_CiCON_WFT_Mask        (0x3u << MCP251XFD_CAN_CiCON_WFT_Pos)
+#define MCP251XFD_CAN_CiCON_WFT_Mask        (0x3ul << MCP251XFD_CAN_CiCON_WFT_Pos)
 #define MCP251XFD_CAN_CiCON_WFT_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiCON_WFT_Pos) & MCP251XFD_CAN_CiCON_WFT_Mask) //!< Selectable Wake-up Filter Time
-#define MCP251XFD_CAN_CiCON_BUSY            (0x1u << 11) //!< CAN Module is Busy
-#define MCP251XFD_CAN_CiCON_BRSDIS          (0x1u << 12) //!< Bit Rate Switching Disable
-#define MCP251XFD_CAN_CiCON_RTXAT           (0x1u << 16) //!< Restrict Retransmission Attempts
-#define MCP251XFD_CAN_CiCON_ESIGM           (0x1u << 17) //!< Transmit ESI in Gateway Mode
-#define MCP251XFD_CAN_CiCON_SERR2LOM        (0x1u << 18) //!< Transition to Listen Only Mode on System Error
-#define MCP251XFD_CAN_CiCON_STEF            (0x1u << 19) //!< Store in Transmit Event FIFO
-#define MCP251XFD_CAN_CiCON_TXQEN           (0x1u << 20) //!< Enable Transmit Queue
+#define MCP251XFD_CAN_CiCON_BUSY            (0x1ul << 11) //!< CAN Module is Busy
+#define MCP251XFD_CAN_CiCON_BRSDIS          (0x1ul << 12) //!< Bit Rate Switching Disable
+#define MCP251XFD_CAN_CiCON_RTXAT           (0x1ul << 16) //!< Restrict Retransmission Attempts
+#define MCP251XFD_CAN_CiCON_ESIGM           (0x1ul << 17) //!< Transmit ESI in Gateway Mode
+#define MCP251XFD_CAN_CiCON_SERR2LOM        (0x1ul << 18) //!< Transition to Listen Only Mode on System Error
+#define MCP251XFD_CAN_CiCON_STEF            (0x1ul << 19) //!< Store in Transmit Event FIFO
+#define MCP251XFD_CAN_CiCON_TXQEN           (0x1ul << 20) //!< Enable Transmit Queue
 
 //! CAN Controller Operation Modes for the CiCON.OPMOD and CiCON.REQOP registers
 typedef enum
@@ -1122,12 +1123,12 @@ typedef enum
 } eMCP251XFD_OperationMode;
 
 #define MCP251XFD_CAN_CiCON_OPMOD_Pos         21
-#define MCP251XFD_CAN_CiCON_OPMOD_Mask        (0x7u << MCP251XFD_CAN_CiCON_OPMOD_Pos)
+#define MCP251XFD_CAN_CiCON_OPMOD_Mask        (0x7ul << MCP251XFD_CAN_CiCON_OPMOD_Pos)
 #define MCP251XFD_CAN_CiCON_OPMOD_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiCON_OPMOD_Mask) >> MCP251XFD_CAN_CiCON_OPMOD_Pos) //!< Get Operation Mode Status
 #define MCP251XFD_CAN_CiCON_REQOP_Pos         24
-#define MCP251XFD_CAN_CiCON_REQOP_Mask        (0x7u << MCP251XFD_CAN_CiCON_REQOP_Pos)
+#define MCP251XFD_CAN_CiCON_REQOP_Mask        (0x7ul << MCP251XFD_CAN_CiCON_REQOP_Pos)
 #define MCP251XFD_CAN_CiCON_REQOP_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiCON_REQOP_Pos) & MCP251XFD_CAN_CiCON_REQOP_Mask) //!< Set Request Operation Mode
-#define MCP251XFD_CAN_CiCON_ABAT              (0x1u << 24)                                                                            //!< Set Abort All Pending Transmissions
+#define MCP251XFD_CAN_CiCON_ABAT              (0x1ul << 24)                                                                            //!< Set Abort All Pending Transmissions
 
 /*! CAN Controller Transmit Bandwidth Sharing bits for the CiCON.TXBWS register
  * Delay between two consecutive transmissions (in arbitration bit times)
@@ -1150,7 +1151,7 @@ typedef enum
 } eMCP251XFD_Bandwidth;
 
 #define MCP251XFD_CAN_CiCON_TXBWS_Pos          28
-#define MCP251XFD_CAN_CiCON_TXBWS_Mask         (0xFu << MCP251XFD_CAN_CiCON_TXBWS_Pos)
+#define MCP251XFD_CAN_CiCON_TXBWS_Mask         (0xFul << MCP251XFD_CAN_CiCON_TXBWS_Pos)
 #define MCP251XFD_CAN_CiCON_TXBWS_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiCON_TXBWS_Pos) & MCP251XFD_CAN_CiCON_TXBWS_Mask) //!< Set Transmit Bandwidth Sharing
 
 //*** Byte version access to Registers ***
@@ -1203,16 +1204,16 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiNBTCFG_Register, 4);
 
 #define MCP251XFD_CAN_CiNBTCFG_SJW_Pos           0
-#define MCP251XFD_CAN_CiNBTCFG_SJW_Mask          (0x7Fu << MCP251XFD_CAN_CiNBTCFG_SJW_Pos)
+#define MCP251XFD_CAN_CiNBTCFG_SJW_Mask          (0x7Ful << MCP251XFD_CAN_CiNBTCFG_SJW_Pos)
 #define MCP251XFD_CAN_CiNBTCFG_SJW_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiNBTCFG_SJW_Pos) & MCP251XFD_CAN_CiNBTCFG_SJW_Mask)     //!< Synchronization Jump Width bits; Length is value x TQ
 #define MCP251XFD_CAN_CiNBTCFG_TSEG2_Pos         8
-#define MCP251XFD_CAN_CiNBTCFG_TSEG2_Mask        (0x7Fu << MCP251XFD_CAN_CiNBTCFG_TSEG2_Pos)
+#define MCP251XFD_CAN_CiNBTCFG_TSEG2_Mask        (0x7Ful << MCP251XFD_CAN_CiNBTCFG_TSEG2_Pos)
 #define MCP251XFD_CAN_CiNBTCFG_TSEG2_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiNBTCFG_TSEG2_Pos) & MCP251XFD_CAN_CiNBTCFG_TSEG2_Mask) //!< Time Segment 2 bits (Phase Segment 2); Length is value x TQ
 #define MCP251XFD_CAN_CiNBTCFG_TSEG1_Pos         16
-#define MCP251XFD_CAN_CiNBTCFG_TSEG1_Mask        (0xFFu << MCP251XFD_CAN_CiNBTCFG_TSEG1_Pos)
+#define MCP251XFD_CAN_CiNBTCFG_TSEG1_Mask        (0xFFul << MCP251XFD_CAN_CiNBTCFG_TSEG1_Pos)
 #define MCP251XFD_CAN_CiNBTCFG_TSEG1_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiNBTCFG_TSEG1_Pos) & MCP251XFD_CAN_CiNBTCFG_TSEG1_Mask) //!< Time Segment 1 bits (Propagation Segment + Phase Segment 1); Length is value x TQ
 #define MCP251XFD_CAN_CiNBTCFG_BRP_Pos           24
-#define MCP251XFD_CAN_CiNBTCFG_BRP_Mask          (0xFFu << MCP251XFD_CAN_CiNBTCFG_BRP_Pos)
+#define MCP251XFD_CAN_CiNBTCFG_BRP_Mask          (0xFFul << MCP251XFD_CAN_CiNBTCFG_BRP_Pos)
 #define MCP251XFD_CAN_CiNBTCFG_BRP_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiNBTCFG_BRP_Pos) & MCP251XFD_CAN_CiNBTCFG_BRP_Mask)     //!< Baud Rate Prescaler bits; TQ = value/Fsys
 
 //-----------------------------------------------------------------------------
@@ -1238,16 +1239,16 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiDBTCFG_Register, 4);
 
 #define MCP251XFD_CAN_CiDBTCFG_SJW_Pos           0
-#define MCP251XFD_CAN_CiDBTCFG_SJW_Mask          (0xFu << MCP251XFD_CAN_CiDBTCFG_SJW_Pos)
+#define MCP251XFD_CAN_CiDBTCFG_SJW_Mask          (0xFul << MCP251XFD_CAN_CiDBTCFG_SJW_Pos)
 #define MCP251XFD_CAN_CiDBTCFG_SJW_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiDBTCFG_SJW_Pos) & MCP251XFD_CAN_CiDBTCFG_SJW_Mask)     //!< Synchronization Jump Width bits; Length is value x TQ
 #define MCP251XFD_CAN_CiDBTCFG_TSEG2_Pos         8
-#define MCP251XFD_CAN_CiDBTCFG_TSEG2_Mask        (0xFu << MCP251XFD_CAN_CiDBTCFG_TSEG2_Pos)
+#define MCP251XFD_CAN_CiDBTCFG_TSEG2_Mask        (0xFul << MCP251XFD_CAN_CiDBTCFG_TSEG2_Pos)
 #define MCP251XFD_CAN_CiDBTCFG_TSEG2_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiDBTCFG_TSEG2_Pos) & MCP251XFD_CAN_CiDBTCFG_TSEG2_Mask) //!< Time Segment 2 bits (Phase Segment 2); Length is value x TQ
 #define MCP251XFD_CAN_CiDBTCFG_TSEG1_Pos         16
-#define MCP251XFD_CAN_CiDBTCFG_TSEG1_Mask        (0x1Fu << MCP251XFD_CAN_CiDBTCFG_TSEG1_Pos)
+#define MCP251XFD_CAN_CiDBTCFG_TSEG1_Mask        (0x1Ful << MCP251XFD_CAN_CiDBTCFG_TSEG1_Pos)
 #define MCP251XFD_CAN_CiDBTCFG_TSEG1_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiDBTCFG_TSEG1_Pos) & MCP251XFD_CAN_CiDBTCFG_TSEG1_Mask) //!< Time Segment 1 bits (Propagation Segment + Phase Segment 1); Length is value x TQ
 #define MCP251XFD_CAN_CiDBTCFG_BRP_Pos           24
-#define MCP251XFD_CAN_CiDBTCFG_BRP_Mask          (0xFFu << MCP251XFD_CAN_CiDBTCFG_BRP_Pos)
+#define MCP251XFD_CAN_CiDBTCFG_BRP_Mask          (0xFFul << MCP251XFD_CAN_CiDBTCFG_BRP_Pos)
 #define MCP251XFD_CAN_CiDBTCFG_BRP_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiDBTCFG_BRP_Pos) & MCP251XFD_CAN_CiDBTCFG_BRP_Mask)     //!< Baud Rate Prescaler bits; TQ = value/Fsys
 
 //-----------------------------------------------------------------------------
@@ -1275,11 +1276,11 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTDC_Register, 4);
 
 #define MCP251XFD_CAN_CiTDC_TDCV_Pos         0
-#define MCP251XFD_CAN_CiTDC_TDCV_Mask        (0x3Fu << MCP251XFD_CAN_CiTDC_TDCV_Pos)
+#define MCP251XFD_CAN_CiTDC_TDCV_Mask        (0x3Ful << MCP251XFD_CAN_CiTDC_TDCV_Pos)
 #define MCP251XFD_CAN_CiTDC_TDCV_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTDC_TDCV_Pos) & MCP251XFD_CAN_CiTDC_TDCV_Mask) //!< Transmitter Delay Compensation Value bits; Secondary Sample Point (SSP); Length is value x TSYSCLK
 #define MCP251XFD_CAN_CiTDC_TDCO_Pos         8
 #define MCP251XFD_CAN_CiTDC_TDCO_BitWidth    7
-#define MCP251XFD_CAN_CiTDC_TDCO_Mask        (0x7Fu << MCP251XFD_CAN_CiTDC_TDCO_Pos)
+#define MCP251XFD_CAN_CiTDC_TDCO_Mask        (0x7Ful << MCP251XFD_CAN_CiTDC_TDCO_Pos)
 #define MCP251XFD_CAN_CiTDC_TDCO_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTDC_TDCO_Pos) & MCP251XFD_CAN_CiTDC_TDCO_Mask) //!< Set the Transmitter Delay Compensation Offset bits; Secondary Sample Point (SSP). Two’s complement; offset can be positive, zero, or negative; value x TSYSCLK (min is –64 (0b1111111 x TSYSCLK ; max is 63 (0b0111111) x TSYSCLK)
 #define MCP251XFD_CAN_CiTDC_TDCO_GET(value)  ( (int8_t)(((((uint32_t)(value) >> MCP251XFD_CAN_CiTDC_TDCO_Pos) & ((1 << MCP251XFD_CAN_CiTDC_TDCO_BitWidth) - 1)) ^ (1 << (MCP251XFD_CAN_CiTDC_TDCO_BitWidth - 1))) - (1 << (MCP251XFD_CAN_CiTDC_TDCO_BitWidth - 1))) ) //!< Get the Transmitter Delay Compensation Offset bits; Secondary Sample Point (SSP). Two’s complement; offset can be positive, zero, or negative; value x TSYSCLK (min is –64 (0b1111111 x TSYSCLK ; max is 63 (0b0111111) x TSYSCLK)
 
@@ -1292,11 +1293,11 @@ typedef enum
 } eMCP251XFD_TDCMode;
 
 #define MCP251XFD_CAN_CiTDC_TDCMOD_Pos         16
-#define MCP251XFD_CAN_CiTDC_TDCMOD_Mask        (0x3u << MCP251XFD_CAN_CiTDC_TDCMOD_Pos)
+#define MCP251XFD_CAN_CiTDC_TDCMOD_Mask        (0x3ul << MCP251XFD_CAN_CiTDC_TDCMOD_Pos)
 #define MCP251XFD_CAN_CiTDC_TDCMOD_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTDC_TDCMOD_Pos) & MCP251XFD_CAN_CiTDC_TDCMOD_Mask) //!< Transmitter Delay Compensation Mode bits; Secondary Sample Point (SSP)
-#define MCP251XFD_CAN_CiTDC_SID11EN            (0x1u << 24) //!< Enable 12-Bit SID in CAN FD Base Format Messages
-#define MCP251XFD_CAN_CiTDC_EDGFLTEN           (0x1u << 25) //!< Enable Edge Filtering during Bus Integration state
-#define MCP251XFD_CAN_CiTDC_EDGFLTDIS          (0x0u << 25) //!< Disable Edge Filtering during Bus Integration state
+#define MCP251XFD_CAN_CiTDC_SID11EN            (0x1ul << 24) //!< Enable 12-Bit SID in CAN FD Base Format Messages
+#define MCP251XFD_CAN_CiTDC_EDGFLTEN           (0x1ul << 25) //!< Enable Edge Filtering during Bus Integration state
+#define MCP251XFD_CAN_CiTDC_EDGFLTDIS          (0x0ul << 25) //!< Disable Edge Filtering during Bus Integration state
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiTDC8_TDCV_Pos           0
@@ -1371,7 +1372,7 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTBC_Register, 4);
 
 #define MCP251XFD_CAN_CiTBC_Pos         0
-#define MCP251XFD_CAN_CiTBC_Mask        (0xFFFFFFFFu << MCP251XFD_CAN_CiTBC_Pos)
+#define MCP251XFD_CAN_CiTBC_Mask        (0xFFFFFFFFul << MCP251XFD_CAN_CiTBC_Pos)
 #define MCP251XFD_CAN_CiTBC_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTBC_Pos) & MCP251XFD_CAN_CiTBC_Mask) //!< Time Base Counter. This is a free running timer that increments every TBCPRE clocks when TBCEN is set
 
 //-----------------------------------------------------------------------------
@@ -1405,29 +1406,29 @@ typedef enum
   MCP251XFD_TS_CAN20_EOF_CANFD_EOF = 0b01, //!< Time Stamp at "end-on-frame" of Frame: CAN2.0 at sample point of EOF & CAN-FD at sample point of EOF
 } eMCP251XFD_SamplePoint;
 
-#define MCP251XFD_CAN_CiTSCON_TBCPRE_MINVALUE    (0x00u)
+#define MCP251XFD_CAN_CiTSCON_TBCPRE_MINVALUE    (0x0000u)
 #define MCP251XFD_CAN_CiTSCON_TBCPRE_Pos         0
 #define MCP251XFD_CAN_CiTSCON_TBCPRE_Bits        10
 #define MCP251XFD_CAN_CiTSCON_TBCPRE_MAXVALUE    ((1 << MCP251XFD_CAN_CiTSCON_TBCPRE_Bits) - 1)
 #define MCP251XFD_CAN_CiTSCON_TBCPRE_Mask        (MCP251XFD_CAN_CiTSCON_TBCPRE_MAXVALUE << MCP251XFD_CAN_CiTSCON_TBCPRE_Pos)
 #define MCP251XFD_CAN_CiTSCON_TBCPRE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTSCON_TBCPRE_Pos) & MCP251XFD_CAN_CiTSCON_TBCPRE_Mask) //!< Time Base Counter Prescaler bits. TBC increments every 'value' clocks
 #define MCP251XFD_CAN_CiTSCON_TSSP_Pos           16
-#define MCP251XFD_CAN_CiTSCON_TSSP_Mask          (0x3 << MCP251XFD_CAN_CiTSCON_TSSP_Pos)
+#define MCP251XFD_CAN_CiTSCON_TSSP_Mask          (0x3ul << MCP251XFD_CAN_CiTSCON_TSSP_Pos)
 #define MCP251XFD_CAN_CiTSCON_TSSP_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiTSCON_TSSP_Pos) & MCP251XFD_CAN_CiTSCON_TSSP_Mask)     //!< Time Stamp sample point position
-#define MCP251XFD_CAN_CiTSCON_TBCEN              (0x1u << 16) //!< Time Base Counter Enable
-#define MCP251XFD_CAN_CiTSCON_TBCDIS             (0x0u << 16) //!< Time Base Counter Disable
-#define MCP251XFD_CAN_CiTSCON_TIMESTAMP_SOF      (0x0u << 17) //!< Time Stamp at "beginning" of Frame: Classical Frame: at sample point of SOF, FD Frame: see TSRES bit
-#define MCP251XFD_CAN_CiTSCON_TIMESTAMP_EOF      (0x1u << 17) //!< Time Stamp when frame is taken valid: RX no error until last but one bit of EOF, TX no error until the end of EOF
-#define MCP251XFD_CAN_CiTSCON_TIMESTAMPFD_SOF    (0x0u << 18) //!< Time Stamp res (FD Frames only) at sample point of SOF
-#define MCP251XFD_CAN_CiTSCON_TIMESTAMPFD_FDF    (0x1u << 18) //!< Time Stamp res (FD Frames only) at sample point of the bit following the FDF bit
+#define MCP251XFD_CAN_CiTSCON_TBCEN              (0x1ul << 16) //!< Time Base Counter Enable
+#define MCP251XFD_CAN_CiTSCON_TBCDIS             (0x0ul << 16) //!< Time Base Counter Disable
+#define MCP251XFD_CAN_CiTSCON_TIMESTAMP_SOF      (0x0ul << 17) //!< Time Stamp at "beginning" of Frame: Classical Frame: at sample point of SOF, FD Frame: see TSRES bit
+#define MCP251XFD_CAN_CiTSCON_TIMESTAMP_EOF      (0x1ul << 17) //!< Time Stamp when frame is taken valid: RX no error until last but one bit of EOF, TX no error until the end of EOF
+#define MCP251XFD_CAN_CiTSCON_TIMESTAMPFD_SOF    (0x0ul << 18) //!< Time Stamp res (FD Frames only) at sample point of SOF
+#define MCP251XFD_CAN_CiTSCON_TIMESTAMPFD_FDF    (0x1ul << 18) //!< Time Stamp res (FD Frames only) at sample point of the bit following the FDF bit
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiTSCON16_TBCPRE_Pos         0
 #define MCP251XFD_CAN_CiTSCON16_TBCPRE_Mask        (MCP251XFD_CAN_CiTSCON_TBCPRE_Bits << MCP251XFD_CAN_CiTSCON16_TBCPRE_Pos)
-#define MCP251XFD_CAN_CiTSCON16_TBCPRE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTSCON16_TBCPRE_Pos) & MCP251XFD_CAN_CiTSCON16_TBCPRE_Mask) //!< Time Base Counter Prescaler bits. TBC increments every 'value' clocks
+#define MCP251XFD_CAN_CiTSCON16_TBCPRE_SET(value)  (((uint16_t)(value) << MCP251XFD_CAN_CiTSCON16_TBCPRE_Pos) & MCP251XFD_CAN_CiTSCON16_TBCPRE_Mask) //!< Time Base Counter Prescaler bits. TBC increments every 'value' clocks
 #define MCP251XFD_CAN_CiTSCON8_TSSP_Pos            0
-#define MCP251XFD_CAN_CiTSCON8_TSSP_Mask           (0x3 << MCP251XFD_CAN_CiTSCON8_TSSP_Pos)
-#define MCP251XFD_CAN_CiTSCON8_TSSP_SET(value)     (((uint32_t)(value) << MCP251XFD_CAN_CiTSCON8_TSSP_Pos) & MCP251XFD_CAN_CiTSCON8_TSSP_Mask)       //!< Time Stamp sample point position
+#define MCP251XFD_CAN_CiTSCON8_TSSP_Mask           (0x3u << MCP251XFD_CAN_CiTSCON8_TSSP_Pos)
+#define MCP251XFD_CAN_CiTSCON8_TSSP_SET(value)     (((uint8_t)(value) << MCP251XFD_CAN_CiTSCON8_TSSP_Pos) & MCP251XFD_CAN_CiTSCON8_TSSP_Mask)       //!< Time Stamp sample point position
 #define MCP251XFD_CAN_CiTSCON8_TBCEN               (0x1u << 0) //!< Time Base Counter Enable
 #define MCP251XFD_CAN_CiTSCON8_TBCDIS              (0x0u << 0) //!< Time Base Counter Disable
 #define MCP251XFD_CAN_CiTSCON8_TIMESTAMP_SOF       (0x0u << 1) //!< Time Stamp at "beginning" of Frame: Classical Frame: at sample point of SOF, FD Frame: see TSRES bit
@@ -1507,31 +1508,31 @@ typedef enum
 } eMCP251XFD_InterruptFlagCode;
 
 #define MCP251XFD_CAN_CiVEC_ICODE_Pos          0
-#define MCP251XFD_CAN_CiVEC_ICODE_Mask         (0x7Fu << MCP251XFD_CAN_CiVEC_ICODE_Pos)
+#define MCP251XFD_CAN_CiVEC_ICODE_Mask         (0x7Ful << MCP251XFD_CAN_CiVEC_ICODE_Pos)
 #define MCP251XFD_CAN_CiVEC_ICODE_GET(value)   (((uint32_t)(value) & MCP251XFD_CAN_CiVEC_ICODE_Mask) >> MCP251XFD_CAN_CiVEC_ICODE_Pos)   //!< Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC_FILHIT_Pos         8
-#define MCP251XFD_CAN_CiVEC_FILHIT_Mask        (0x1Fu << MCP251XFD_CAN_CiVEC_FILHIT_Pos)
+#define MCP251XFD_CAN_CiVEC_FILHIT_Mask        (0x1Ful << MCP251XFD_CAN_CiVEC_FILHIT_Pos)
 #define MCP251XFD_CAN_CiVEC_FILHIT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC_FILHIT_Mask) >> MCP251XFD_CAN_CiVEC_FILHIT_Pos) //!< Filter Hit Number. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC_TXCODE_Pos         16
-#define MCP251XFD_CAN_CiVEC_TXCODE_Mask        (0x7Fu << MCP251XFD_CAN_CiVEC_TXCODE_Pos)
+#define MCP251XFD_CAN_CiVEC_TXCODE_Mask        (0x7Ful << MCP251XFD_CAN_CiVEC_TXCODE_Pos)
 #define MCP251XFD_CAN_CiVEC_TXCODE_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC_TXCODE_Mask) >> MCP251XFD_CAN_CiVEC_TXCODE_Pos) //!< Transmit Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC_RXCODE_Pos         24
-#define MCP251XFD_CAN_CiVEC_RXCODE_Mask        (0x7Fu << MCP251XFD_CAN_CiVEC_RXCODE_Pos)
+#define MCP251XFD_CAN_CiVEC_RXCODE_Mask        (0x7Ful << MCP251XFD_CAN_CiVEC_RXCODE_Pos)
 #define MCP251XFD_CAN_CiVEC_RXCODE_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC_RXCODE_Mask) >> MCP251XFD_CAN_CiVEC_RXCODE_Pos) //!< Receive Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiVEC8_ICODE_Pos          0
 #define MCP251XFD_CAN_CiVEC8_ICODE_Mask         (0x7Fu << MCP251XFD_CAN_CiVEC8_ICODE_Pos)
-#define MCP251XFD_CAN_CiVEC8_ICODE_GET(value)   (((uint32_t)(value) & MCP251XFD_CAN_CiVEC8_ICODE_Mask) >> MCP251XFD_CAN_CiVEC8_ICODE_Pos)   //!< Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
+#define MCP251XFD_CAN_CiVEC8_ICODE_GET(value)   (((uint8_t)(value) & MCP251XFD_CAN_CiVEC8_ICODE_Mask) >> MCP251XFD_CAN_CiVEC8_ICODE_Pos)   //!< Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC8_FILHIT_Pos         0
 #define MCP251XFD_CAN_CiVEC8_FILHIT_Mask        (0x1Fu << MCP251XFD_CAN_CiVEC8_FILHIT_Pos)
-#define MCP251XFD_CAN_CiVEC8_FILHIT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC8_FILHIT_Mask) >> MCP251XFD_CAN_CiVEC8_FILHIT_Pos) //!< Filter Hit Number. If multiple interrupts are pending, the interrupt with the highest number will be indicated
+#define MCP251XFD_CAN_CiVEC8_FILHIT_GET(value)  (((uint8_t)(value) & MCP251XFD_CAN_CiVEC8_FILHIT_Mask) >> MCP251XFD_CAN_CiVEC8_FILHIT_Pos) //!< Filter Hit Number. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC8_TXCODE_Pos         0
 #define MCP251XFD_CAN_CiVEC8_TXCODE_Mask        (0x7Fu << MCP251XFD_CAN_CiVEC8_TXCODE_Pos)
-#define MCP251XFD_CAN_CiVEC8_TXCODE_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC8_TXCODE_Mask) >> MCP251XFD_CAN_CiVEC8_TXCODE_Pos) //!< Transmit Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
+#define MCP251XFD_CAN_CiVEC8_TXCODE_GET(value)  (((uint8_t)(value) & MCP251XFD_CAN_CiVEC8_TXCODE_Mask) >> MCP251XFD_CAN_CiVEC8_TXCODE_Pos) //!< Transmit Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 #define MCP251XFD_CAN_CiVEC8_RXCODE_Pos         0
 #define MCP251XFD_CAN_CiVEC8_RXCODE_Mask        (0x7Fu << MCP251XFD_CAN_CiVEC8_RXCODE_Pos)
-#define MCP251XFD_CAN_CiVEC8_RXCODE_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiVEC8_RXCODE_Mask) >> MCP251XFD_CAN_CiVEC8_RXCODE_Pos) //!< Receive Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
+#define MCP251XFD_CAN_CiVEC8_RXCODE_GET(value)  (((uint8_t)(value) & MCP251XFD_CAN_CiVEC8_RXCODE_Mask) >> MCP251XFD_CAN_CiVEC8_RXCODE_Pos) //!< Receive Interrupt Flag Code. If multiple interrupts are pending, the interrupt with the highest number will be indicated
 
 //-----------------------------------------------------------------------------
 
@@ -1576,32 +1577,32 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiINT_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiINT_Register, 4);
 
-#define MCP251XFD_CAN_CiINT_TXIF      (0x1u <<  0) //!< Transmit FIFO Interrupt Flag
-#define MCP251XFD_CAN_CiINT_RXIF      (0x1u <<  1) //!< Receive FIFO Interrupt Flag
-#define MCP251XFD_CAN_CiINT_TBCIF     (0x1u <<  2) //!< Time Base Counter Overflow Interrupt Flag
-#define MCP251XFD_CAN_CiINT_MODIF     (0x1u <<  3) //!< Operation Mode Change Interrupt Flag
-#define MCP251XFD_CAN_CiINT_TEFIF     (0x1u <<  4) //!< Transmit Event FIFO Interrupt Flag
-#define MCP251XFD_CAN_CiINT_ECCIF     (0x1u <<  8) //!< ECC Error Interrupt Flag
-#define MCP251XFD_CAN_CiINT_SPICRCIF  (0x1u <<  9) //!< SPI CRC Error Interrupt Flag
-#define MCP251XFD_CAN_CiINT_TXATIF    (0x1u << 10) //!< Transmit Attempt Interrupt Flag
-#define MCP251XFD_CAN_CiINT_RXOVIF    (0x1u << 11) //!< Receive Object Overflow Interrupt Flag
-#define MCP251XFD_CAN_CiINT_SERRIF    (0x1u << 12) //!< System Error Interrupt Flag
-#define MCP251XFD_CAN_CiINT_CERRIF    (0x1u << 13) //!< CAN Bus Error Interrupt Flag
-#define MCP251XFD_CAN_CiINT_WAKIF     (0x1u << 14) //!< Bus Wake Up Interrupt Flag
-#define MCP251XFD_CAN_CiINT_IVMIF     (0x1u << 15) //!< Invalid Message Interrupt Flag
-#define MCP251XFD_CAN_CiINT_TXIE      (0x1u << 16) //!< Transmit FIFO Interrupt Enable
-#define MCP251XFD_CAN_CiINT_RXIE      (0x1u << 17) //!< Receive FIFO Interrupt Enable
-#define MCP251XFD_CAN_CiINT_TBCIE     (0x1u << 18) //!< Time Base Counter Interrupt Enable
-#define MCP251XFD_CAN_CiINT_MODIE     (0x1u << 19) //!< Mode Change Interrupt Enable
-#define MCP251XFD_CAN_CiINT_TEFIE     (0x1u << 20) //!< Transmit Event FIFO Interrupt Enable
-#define MCP251XFD_CAN_CiINT_ECCIE     (0x1u << 24) //!< ECC Error Interrupt Enable
-#define MCP251XFD_CAN_CiINT_SPICRCIE  (0x1u << 25) //!< SPI CRC Error Interrupt Enable
-#define MCP251XFD_CAN_CiINT_TXATIE    (0x1u << 26) //!< Transmit Attempt Interrupt Enable
-#define MCP251XFD_CAN_CiINT_RXOVIE    (0x1u << 27) //!< Receive FIFO Overflow Interrupt Enable
-#define MCP251XFD_CAN_CiINT_SERRIE    (0x1u << 28) //!< System Error Interrupt Enable
-#define MCP251XFD_CAN_CiINT_CERRIE    (0x1u << 29) //!< CAN Bus Error Interrupt Enable
-#define MCP251XFD_CAN_CiINT_WAKIE     (0x1u << 30) //!< Bus Wake Up Interrupt Enable
-#define MCP251XFD_CAN_CiINT_IVMIE     (0x1u << 31) //!< Invalid Message Interrupt Enable
+#define MCP251XFD_CAN_CiINT_TXIF      (0x1ul <<  0) //!< Transmit FIFO Interrupt Flag
+#define MCP251XFD_CAN_CiINT_RXIF      (0x1ul <<  1) //!< Receive FIFO Interrupt Flag
+#define MCP251XFD_CAN_CiINT_TBCIF     (0x1ul <<  2) //!< Time Base Counter Overflow Interrupt Flag
+#define MCP251XFD_CAN_CiINT_MODIF     (0x1ul <<  3) //!< Operation Mode Change Interrupt Flag
+#define MCP251XFD_CAN_CiINT_TEFIF     (0x1ul <<  4) //!< Transmit Event FIFO Interrupt Flag
+#define MCP251XFD_CAN_CiINT_ECCIF     (0x1ul <<  8) //!< ECC Error Interrupt Flag
+#define MCP251XFD_CAN_CiINT_SPICRCIF  (0x1ul <<  9) //!< SPI CRC Error Interrupt Flag
+#define MCP251XFD_CAN_CiINT_TXATIF    (0x1ul << 10) //!< Transmit Attempt Interrupt Flag
+#define MCP251XFD_CAN_CiINT_RXOVIF    (0x1ul << 11) //!< Receive Object Overflow Interrupt Flag
+#define MCP251XFD_CAN_CiINT_SERRIF    (0x1ul << 12) //!< System Error Interrupt Flag
+#define MCP251XFD_CAN_CiINT_CERRIF    (0x1ul << 13) //!< CAN Bus Error Interrupt Flag
+#define MCP251XFD_CAN_CiINT_WAKIF     (0x1ul << 14) //!< Bus Wake Up Interrupt Flag
+#define MCP251XFD_CAN_CiINT_IVMIF     (0x1ul << 15) //!< Invalid Message Interrupt Flag
+#define MCP251XFD_CAN_CiINT_TXIE      (0x1ul << 16) //!< Transmit FIFO Interrupt Enable
+#define MCP251XFD_CAN_CiINT_RXIE      (0x1ul << 17) //!< Receive FIFO Interrupt Enable
+#define MCP251XFD_CAN_CiINT_TBCIE     (0x1ul << 18) //!< Time Base Counter Interrupt Enable
+#define MCP251XFD_CAN_CiINT_MODIE     (0x1ul << 19) //!< Mode Change Interrupt Enable
+#define MCP251XFD_CAN_CiINT_TEFIE     (0x1ul << 20) //!< Transmit Event FIFO Interrupt Enable
+#define MCP251XFD_CAN_CiINT_ECCIE     (0x1ul << 24) //!< ECC Error Interrupt Enable
+#define MCP251XFD_CAN_CiINT_SPICRCIE  (0x1ul << 25) //!< SPI CRC Error Interrupt Enable
+#define MCP251XFD_CAN_CiINT_TXATIE    (0x1ul << 26) //!< Transmit Attempt Interrupt Enable
+#define MCP251XFD_CAN_CiINT_RXOVIE    (0x1ul << 27) //!< Receive FIFO Overflow Interrupt Enable
+#define MCP251XFD_CAN_CiINT_SERRIE    (0x1ul << 28) //!< System Error Interrupt Enable
+#define MCP251XFD_CAN_CiINT_CERRIE    (0x1ul << 29) //!< CAN Bus Error Interrupt Enable
+#define MCP251XFD_CAN_CiINT_WAKIE     (0x1ul << 30) //!< Bus Wake Up Interrupt Enable
+#define MCP251XFD_CAN_CiINT_IVMIE     (0x1ul << 31) //!< Invalid Message Interrupt Enable
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiINT8_TXIF      (0x1u << 0) //!< Transmit FIFO Interrupt Flag
@@ -1738,37 +1739,37 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiRXIF_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiRXIF_Register, 4);
 
-#define MCP251XFD_CAN_CiRXIF_RFIF1   (0x1u <<  1) //!< Receive FIFO  1 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF2   (0x1u <<  2) //!< Receive FIFO  2 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF3   (0x1u <<  3) //!< Receive FIFO  3 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF4   (0x1u <<  4) //!< Receive FIFO  4 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF5   (0x1u <<  5) //!< Receive FIFO  5 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF6   (0x1u <<  6) //!< Receive FIFO  6 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF7   (0x1u <<  7) //!< Receive FIFO  7 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF8   (0x1u <<  8) //!< Receive FIFO  8 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF9   (0x1u <<  9) //!< Receive FIFO  9 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF10  (0x1u << 10) //!< Receive FIFO 10 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF11  (0x1u << 11) //!< Receive FIFO 11 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF12  (0x1u << 12) //!< Receive FIFO 12 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF13  (0x1u << 13) //!< Receive FIFO 13 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF14  (0x1u << 14) //!< Receive FIFO 14 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF15  (0x1u << 15) //!< Receive FIFO 15 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF16  (0x1u << 16) //!< Receive FIFO 16 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF17  (0x1u << 17) //!< Receive FIFO 17 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF18  (0x1u << 18) //!< Receive FIFO 18 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF19  (0x1u << 19) //!< Receive FIFO 19 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF20  (0x1u << 20) //!< Receive FIFO 20 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF21  (0x1u << 21) //!< Receive FIFO 21 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF22  (0x1u << 22) //!< Receive FIFO 22 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF23  (0x1u << 23) //!< Receive FIFO 23 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF24  (0x1u << 24) //!< Receive FIFO 24 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF25  (0x1u << 25) //!< Receive FIFO 25 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF26  (0x1u << 26) //!< Receive FIFO 26 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF27  (0x1u << 27) //!< Receive FIFO 27 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF28  (0x1u << 28) //!< Receive FIFO 28 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF29  (0x1u << 29) //!< Receive FIFO 29 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF30  (0x1u << 30) //!< Receive FIFO 30 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_RFIF31  (0x1u << 31) //!< Receive FIFO 31 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF1   (0x1ul <<  1) //!< Receive FIFO  1 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF2   (0x1ul <<  2) //!< Receive FIFO  2 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF3   (0x1ul <<  3) //!< Receive FIFO  3 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF4   (0x1ul <<  4) //!< Receive FIFO  4 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF5   (0x1ul <<  5) //!< Receive FIFO  5 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF6   (0x1ul <<  6) //!< Receive FIFO  6 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF7   (0x1ul <<  7) //!< Receive FIFO  7 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF8   (0x1ul <<  8) //!< Receive FIFO  8 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF9   (0x1ul <<  9) //!< Receive FIFO  9 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF10  (0x1ul << 10) //!< Receive FIFO 10 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF11  (0x1ul << 11) //!< Receive FIFO 11 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF12  (0x1ul << 12) //!< Receive FIFO 12 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF13  (0x1ul << 13) //!< Receive FIFO 13 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF14  (0x1ul << 14) //!< Receive FIFO 14 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF15  (0x1ul << 15) //!< Receive FIFO 15 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF16  (0x1ul << 16) //!< Receive FIFO 16 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF17  (0x1ul << 17) //!< Receive FIFO 17 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF18  (0x1ul << 18) //!< Receive FIFO 18 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF19  (0x1ul << 19) //!< Receive FIFO 19 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF20  (0x1ul << 20) //!< Receive FIFO 20 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF21  (0x1ul << 21) //!< Receive FIFO 21 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF22  (0x1ul << 22) //!< Receive FIFO 22 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF23  (0x1ul << 23) //!< Receive FIFO 23 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF24  (0x1ul << 24) //!< Receive FIFO 24 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF25  (0x1ul << 25) //!< Receive FIFO 25 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF26  (0x1ul << 26) //!< Receive FIFO 26 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF27  (0x1ul << 27) //!< Receive FIFO 27 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF28  (0x1ul << 28) //!< Receive FIFO 28 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF29  (0x1ul << 29) //!< Receive FIFO 29 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF30  (0x1ul << 30) //!< Receive FIFO 30 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_RFIF31  (0x1ul << 31) //!< Receive FIFO 31 Interrupt Pending
 
 //-----------------------------------------------------------------------------
 
@@ -1817,37 +1818,37 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiRXOVIF_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiRXOVIF_Register, 4);
 
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF1   (0x1u <<  1) //!< Receive FIFO  1 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF2   (0x1u <<  2) //!< Receive FIFO  2 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF3   (0x1u <<  3) //!< Receive FIFO  3 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF4   (0x1u <<  4) //!< Receive FIFO  4 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF5   (0x1u <<  5) //!< Receive FIFO  5 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF6   (0x1u <<  6) //!< Receive FIFO  6 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF7   (0x1u <<  7) //!< Receive FIFO  7 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF8   (0x1u <<  8) //!< Receive FIFO  8 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF9   (0x1u <<  9) //!< Receive FIFO  9 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF10  (0x1u << 10) //!< Receive FIFO 10 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF11  (0x1u << 11) //!< Receive FIFO 11 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF12  (0x1u << 12) //!< Receive FIFO 12 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF13  (0x1u << 13) //!< Receive FIFO 13 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF14  (0x1u << 14) //!< Receive FIFO 14 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF15  (0x1u << 15) //!< Receive FIFO 15 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF16  (0x1u << 16) //!< Receive FIFO 16 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF17  (0x1u << 17) //!< Receive FIFO 17 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF18  (0x1u << 18) //!< Receive FIFO 18 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF19  (0x1u << 19) //!< Receive FIFO 19 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF20  (0x1u << 20) //!< Receive FIFO 20 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF21  (0x1u << 21) //!< Receive FIFO 21 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF22  (0x1u << 22) //!< Receive FIFO 22 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF23  (0x1u << 23) //!< Receive FIFO 23 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF24  (0x1u << 24) //!< Receive FIFO 24 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF25  (0x1u << 25) //!< Receive FIFO 25 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF26  (0x1u << 26) //!< Receive FIFO 26 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF27  (0x1u << 27) //!< Receive FIFO 27 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF28  (0x1u << 28) //!< Receive FIFO 28 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF29  (0x1u << 29) //!< Receive FIFO 29 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF30  (0x1u << 30) //!< Receive FIFO 30 Overflow Interrupt Pending
-#define MCP251XFD_CAN_CiRXOVIF_RFOVIF31  (0x1u << 31) //!< Receive FIFO 31 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF1   (0x1ul <<  1) //!< Receive FIFO  1 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF2   (0x1ul <<  2) //!< Receive FIFO  2 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF3   (0x1ul <<  3) //!< Receive FIFO  3 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF4   (0x1ul <<  4) //!< Receive FIFO  4 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF5   (0x1ul <<  5) //!< Receive FIFO  5 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF6   (0x1ul <<  6) //!< Receive FIFO  6 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF7   (0x1ul <<  7) //!< Receive FIFO  7 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF8   (0x1ul <<  8) //!< Receive FIFO  8 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF9   (0x1ul <<  9) //!< Receive FIFO  9 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF10  (0x1ul << 10) //!< Receive FIFO 10 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF11  (0x1ul << 11) //!< Receive FIFO 11 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF12  (0x1ul << 12) //!< Receive FIFO 12 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF13  (0x1ul << 13) //!< Receive FIFO 13 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF14  (0x1ul << 14) //!< Receive FIFO 14 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF15  (0x1ul << 15) //!< Receive FIFO 15 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF16  (0x1ul << 16) //!< Receive FIFO 16 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF17  (0x1ul << 17) //!< Receive FIFO 17 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF18  (0x1ul << 18) //!< Receive FIFO 18 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF19  (0x1ul << 19) //!< Receive FIFO 19 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF20  (0x1ul << 20) //!< Receive FIFO 20 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF21  (0x1ul << 21) //!< Receive FIFO 21 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF22  (0x1ul << 22) //!< Receive FIFO 22 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF23  (0x1ul << 23) //!< Receive FIFO 23 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF24  (0x1ul << 24) //!< Receive FIFO 24 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF25  (0x1ul << 25) //!< Receive FIFO 25 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF26  (0x1ul << 26) //!< Receive FIFO 26 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF27  (0x1ul << 27) //!< Receive FIFO 27 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF28  (0x1ul << 28) //!< Receive FIFO 28 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF29  (0x1ul << 29) //!< Receive FIFO 29 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF30  (0x1ul << 30) //!< Receive FIFO 30 Overflow Interrupt Pending
+#define MCP251XFD_CAN_CiRXOVIF_RFOVIF31  (0x1ul << 31) //!< Receive FIFO 31 Overflow Interrupt Pending
 
 //-----------------------------------------------------------------------------
 
@@ -1896,38 +1897,38 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTXIF_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXIF_Register, 4);
 
-#define MCP251XFD_CAN_CiRXIF_TFIF0   (0x1u <<  0) //!< Transmit TXQ Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF1   (0x1u <<  1) //!< Transmit FIFO  1 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF2   (0x1u <<  2) //!< Transmit FIFO  2 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF3   (0x1u <<  3) //!< Transmit FIFO  3 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF4   (0x1u <<  4) //!< Transmit FIFO  4 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF5   (0x1u <<  5) //!< Transmit FIFO  5 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF6   (0x1u <<  6) //!< Transmit FIFO  6 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF7   (0x1u <<  7) //!< Transmit FIFO  7 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF8   (0x1u <<  8) //!< Transmit FIFO  8 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF9   (0x1u <<  9) //!< Transmit FIFO  9 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF10  (0x1u << 10) //!< Transmit FIFO 10 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF11  (0x1u << 11) //!< Transmit FIFO 11 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF12  (0x1u << 12) //!< Transmit FIFO 12 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF13  (0x1u << 13) //!< Transmit FIFO 13 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF14  (0x1u << 14) //!< Transmit FIFO 14 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF15  (0x1u << 15) //!< Transmit FIFO 15 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF16  (0x1u << 16) //!< Transmit FIFO 16 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF17  (0x1u << 17) //!< Transmit FIFO 17 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF18  (0x1u << 18) //!< Transmit FIFO 18 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF19  (0x1u << 19) //!< Transmit FIFO 19 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF20  (0x1u << 20) //!< Transmit FIFO 20 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF21  (0x1u << 21) //!< Transmit FIFO 21 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF22  (0x1u << 22) //!< Transmit FIFO 22 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF23  (0x1u << 23) //!< Transmit FIFO 23 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF24  (0x1u << 24) //!< Transmit FIFO 24 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF25  (0x1u << 25) //!< Transmit FIFO 25 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF26  (0x1u << 26) //!< Transmit FIFO 26 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF27  (0x1u << 27) //!< Transmit FIFO 27 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF28  (0x1u << 28) //!< Transmit FIFO 28 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF29  (0x1u << 29) //!< Transmit FIFO 29 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF30  (0x1u << 30) //!< Transmit FIFO 30 Interrupt Pending
-#define MCP251XFD_CAN_CiRXIF_TFIF31  (0x1u << 31) //!< Transmit FIFO 31 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF0   (0x1ul <<  0) //!< Transmit TXQ Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF1   (0x1ul <<  1) //!< Transmit FIFO  1 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF2   (0x1ul <<  2) //!< Transmit FIFO  2 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF3   (0x1ul <<  3) //!< Transmit FIFO  3 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF4   (0x1ul <<  4) //!< Transmit FIFO  4 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF5   (0x1ul <<  5) //!< Transmit FIFO  5 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF6   (0x1ul <<  6) //!< Transmit FIFO  6 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF7   (0x1ul <<  7) //!< Transmit FIFO  7 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF8   (0x1ul <<  8) //!< Transmit FIFO  8 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF9   (0x1ul <<  9) //!< Transmit FIFO  9 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF10  (0x1ul << 10) //!< Transmit FIFO 10 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF11  (0x1ul << 11) //!< Transmit FIFO 11 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF12  (0x1ul << 12) //!< Transmit FIFO 12 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF13  (0x1ul << 13) //!< Transmit FIFO 13 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF14  (0x1ul << 14) //!< Transmit FIFO 14 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF15  (0x1ul << 15) //!< Transmit FIFO 15 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF16  (0x1ul << 16) //!< Transmit FIFO 16 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF17  (0x1ul << 17) //!< Transmit FIFO 17 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF18  (0x1ul << 18) //!< Transmit FIFO 18 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF19  (0x1ul << 19) //!< Transmit FIFO 19 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF20  (0x1ul << 20) //!< Transmit FIFO 20 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF21  (0x1ul << 21) //!< Transmit FIFO 21 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF22  (0x1ul << 22) //!< Transmit FIFO 22 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF23  (0x1ul << 23) //!< Transmit FIFO 23 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF24  (0x1ul << 24) //!< Transmit FIFO 24 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF25  (0x1ul << 25) //!< Transmit FIFO 25 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF26  (0x1ul << 26) //!< Transmit FIFO 26 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF27  (0x1ul << 27) //!< Transmit FIFO 27 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF28  (0x1ul << 28) //!< Transmit FIFO 28 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF29  (0x1ul << 29) //!< Transmit FIFO 29 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF30  (0x1ul << 30) //!< Transmit FIFO 30 Interrupt Pending
+#define MCP251XFD_CAN_CiRXIF_TFIF31  (0x1ul << 31) //!< Transmit FIFO 31 Interrupt Pending
 
 //-----------------------------------------------------------------------------
 
@@ -1976,38 +1977,38 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTXATIF_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXATIF_Register, 4);
 
-#define MCP251XFD_CAN_CiTXATIF_TFATIF0   (0x1u <<  0) //!< Transmit TXQ Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF1   (0x1u <<  1) //!< Transmit FIFO  1 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF2   (0x1u <<  2) //!< Transmit FIFO  2 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF3   (0x1u <<  3) //!< Transmit FIFO  3 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF4   (0x1u <<  4) //!< Transmit FIFO  4 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF5   (0x1u <<  5) //!< Transmit FIFO  5 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF6   (0x1u <<  6) //!< Transmit FIFO  6 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF7   (0x1u <<  7) //!< Transmit FIFO  7 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF8   (0x1u <<  8) //!< Transmit FIFO  8 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF9   (0x1u <<  9) //!< Transmit FIFO  9 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF10  (0x1u << 10) //!< Transmit FIFO 10 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF11  (0x1u << 11) //!< Transmit FIFO 11 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF12  (0x1u << 12) //!< Transmit FIFO 12 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF13  (0x1u << 13) //!< Transmit FIFO 13 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF14  (0x1u << 14) //!< Transmit FIFO 14 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF15  (0x1u << 15) //!< Transmit FIFO 15 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF16  (0x1u << 16) //!< Transmit FIFO 16 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF17  (0x1u << 17) //!< Transmit FIFO 17 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF18  (0x1u << 18) //!< Transmit FIFO 18 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF19  (0x1u << 19) //!< Transmit FIFO 19 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF20  (0x1u << 20) //!< Transmit FIFO 20 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF21  (0x1u << 21) //!< Transmit FIFO 21 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF22  (0x1u << 22) //!< Transmit FIFO 22 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF23  (0x1u << 23) //!< Transmit FIFO 23 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF24  (0x1u << 24) //!< Transmit FIFO 24 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF25  (0x1u << 25) //!< Transmit FIFO 25 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF26  (0x1u << 26) //!< Transmit FIFO 26 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF27  (0x1u << 27) //!< Transmit FIFO 27 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF28  (0x1u << 28) //!< Transmit FIFO 28 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF29  (0x1u << 29) //!< Transmit FIFO 29 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF30  (0x1u << 30) //!< Transmit FIFO 30 Attempt Interrupt Pending
-#define MCP251XFD_CAN_CiTXATIF_TFATIF31  (0x1u << 31) //!< Transmit FIFO 31 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF0   (0x1ul <<  0) //!< Transmit TXQ Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF1   (0x1ul <<  1) //!< Transmit FIFO  1 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF2   (0x1ul <<  2) //!< Transmit FIFO  2 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF3   (0x1ul <<  3) //!< Transmit FIFO  3 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF4   (0x1ul <<  4) //!< Transmit FIFO  4 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF5   (0x1ul <<  5) //!< Transmit FIFO  5 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF6   (0x1ul <<  6) //!< Transmit FIFO  6 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF7   (0x1ul <<  7) //!< Transmit FIFO  7 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF8   (0x1ul <<  8) //!< Transmit FIFO  8 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF9   (0x1ul <<  9) //!< Transmit FIFO  9 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF10  (0x1ul << 10) //!< Transmit FIFO 10 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF11  (0x1ul << 11) //!< Transmit FIFO 11 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF12  (0x1ul << 12) //!< Transmit FIFO 12 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF13  (0x1ul << 13) //!< Transmit FIFO 13 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF14  (0x1ul << 14) //!< Transmit FIFO 14 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF15  (0x1ul << 15) //!< Transmit FIFO 15 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF16  (0x1ul << 16) //!< Transmit FIFO 16 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF17  (0x1ul << 17) //!< Transmit FIFO 17 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF18  (0x1ul << 18) //!< Transmit FIFO 18 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF19  (0x1ul << 19) //!< Transmit FIFO 19 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF20  (0x1ul << 20) //!< Transmit FIFO 20 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF21  (0x1ul << 21) //!< Transmit FIFO 21 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF22  (0x1ul << 22) //!< Transmit FIFO 22 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF23  (0x1ul << 23) //!< Transmit FIFO 23 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF24  (0x1ul << 24) //!< Transmit FIFO 24 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF25  (0x1ul << 25) //!< Transmit FIFO 25 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF26  (0x1ul << 26) //!< Transmit FIFO 26 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF27  (0x1ul << 27) //!< Transmit FIFO 27 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF28  (0x1ul << 28) //!< Transmit FIFO 28 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF29  (0x1ul << 29) //!< Transmit FIFO 29 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF30  (0x1ul << 30) //!< Transmit FIFO 30 Attempt Interrupt Pending
+#define MCP251XFD_CAN_CiTXATIF_TFATIF31  (0x1ul << 31) //!< Transmit FIFO 31 Attempt Interrupt Pending
 
 //-----------------------------------------------------------------------------
 
@@ -2048,7 +2049,7 @@ typedef enum
   MCP251XFD_INTERRUPT_ON_FIFO31 = 0x80000000, //!< Interrupt is pending on FIFO 31 (TFIF<31> or TFATIF<31> or RFIF<31> or RFOVIF<31> set)
 } eMCP251XFD_InterruptOnFIFO;
 
-typedef eMCP251XFD_InterruptOnFIFO setMCP251XFD_InterruptOnFIFO; //! Set of Receive Interrupt Status (can be OR'ed)
+typedef eMCP251XFD_InterruptOnFIFO setMCP251XFD_InterruptOnFIFO; //!< Set of Receive Interrupt Status (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -2099,38 +2100,38 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTXREQ_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXREQ_Register, 4);
 
-#define MCP251XFD_CAN_CiTXREQ_TXREQ0   (0x1u <<  0) //!< Transmit Queue Message Send Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ1   (0x1u <<  1) //!< Message Send FIFO  1 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ2   (0x1u <<  2) //!< Message Send FIFO  2 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ3   (0x1u <<  3) //!< Message Send FIFO  3 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ4   (0x1u <<  4) //!< Message Send FIFO  4 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ5   (0x1u <<  5) //!< Message Send FIFO  5 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ6   (0x1u <<  6) //!< Message Send FIFO  6 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ7   (0x1u <<  7) //!< Message Send FIFO  7 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ8   (0x1u <<  8) //!< Message Send FIFO  8 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ9   (0x1u <<  9) //!< Message Send FIFO  9 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ10  (0x1u << 10) //!< Message Send FIFO 10 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ11  (0x1u << 11) //!< Message Send FIFO 11 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ12  (0x1u << 12) //!< Message Send FIFO 12 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ13  (0x1u << 13) //!< Message Send FIFO 13 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ14  (0x1u << 14) //!< Message Send FIFO 14 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ15  (0x1u << 15) //!< Message Send FIFO 15 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ16  (0x1u << 16) //!< Message Send FIFO 16 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ17  (0x1u << 17) //!< Message Send FIFO 17 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ18  (0x1u << 18) //!< Message Send FIFO 18 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ19  (0x1u << 19) //!< Message Send FIFO 19 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ20  (0x1u << 20) //!< Message Send FIFO 20 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ21  (0x1u << 21) //!< Message Send FIFO 21 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ22  (0x1u << 22) //!< Message Send FIFO 22 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ23  (0x1u << 23) //!< Message Send FIFO 23 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ24  (0x1u << 24) //!< Message Send FIFO 24 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ25  (0x1u << 25) //!< Message Send FIFO 25 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ26  (0x1u << 26) //!< Message Send FIFO 26 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ27  (0x1u << 27) //!< Message Send FIFO 27 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ28  (0x1u << 28) //!< Message Send FIFO 28 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ29  (0x1u << 29) //!< Message Send FIFO 29 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ30  (0x1u << 30) //!< Message Send FIFO 30 Request
-#define MCP251XFD_CAN_CiTXREQ_TXREQ31  (0x1u << 31) //!< Message Send FIFO 31 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ0   (0x1ul <<  0) //!< Transmit Queue Message Send Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ1   (0x1ul <<  1) //!< Message Send FIFO  1 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ2   (0x1ul <<  2) //!< Message Send FIFO  2 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ3   (0x1ul <<  3) //!< Message Send FIFO  3 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ4   (0x1ul <<  4) //!< Message Send FIFO  4 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ5   (0x1ul <<  5) //!< Message Send FIFO  5 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ6   (0x1ul <<  6) //!< Message Send FIFO  6 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ7   (0x1ul <<  7) //!< Message Send FIFO  7 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ8   (0x1ul <<  8) //!< Message Send FIFO  8 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ9   (0x1ul <<  9) //!< Message Send FIFO  9 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ10  (0x1ul << 10) //!< Message Send FIFO 10 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ11  (0x1ul << 11) //!< Message Send FIFO 11 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ12  (0x1ul << 12) //!< Message Send FIFO 12 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ13  (0x1ul << 13) //!< Message Send FIFO 13 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ14  (0x1ul << 14) //!< Message Send FIFO 14 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ15  (0x1ul << 15) //!< Message Send FIFO 15 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ16  (0x1ul << 16) //!< Message Send FIFO 16 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ17  (0x1ul << 17) //!< Message Send FIFO 17 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ18  (0x1ul << 18) //!< Message Send FIFO 18 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ19  (0x1ul << 19) //!< Message Send FIFO 19 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ20  (0x1ul << 20) //!< Message Send FIFO 20 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ21  (0x1ul << 21) //!< Message Send FIFO 21 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ22  (0x1ul << 22) //!< Message Send FIFO 22 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ23  (0x1ul << 23) //!< Message Send FIFO 23 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ24  (0x1ul << 24) //!< Message Send FIFO 24 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ25  (0x1ul << 25) //!< Message Send FIFO 25 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ26  (0x1ul << 26) //!< Message Send FIFO 26 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ27  (0x1ul << 27) //!< Message Send FIFO 27 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ28  (0x1ul << 28) //!< Message Send FIFO 28 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ29  (0x1ul << 29) //!< Message Send FIFO 29 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ30  (0x1ul << 30) //!< Message Send FIFO 30 Request
+#define MCP251XFD_CAN_CiTXREQ_TXREQ31  (0x1ul << 31) //!< Message Send FIFO 31 Request
 
 //-----------------------------------------------------------------------------
 
@@ -2157,17 +2158,17 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTREC_Register, 4);
 
 #define MCP251XFD_CAN_CiTREC_REC_Pos         0
-#define MCP251XFD_CAN_CiTREC_REC_Mask        (0xFFu << MCP251XFD_CAN_CiTREC_REC_Pos)
+#define MCP251XFD_CAN_CiTREC_REC_Mask        (0xFFul << MCP251XFD_CAN_CiTREC_REC_Pos)
 #define MCP251XFD_CAN_CiTREC_REC_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTREC_REC_Pos) & MCP251XFD_CAN_CiTREC_REC_Mask) //!< Receive Error Counter
 #define MCP251XFD_CAN_CiTREC_TEC_Pos         8
-#define MCP251XFD_CAN_CiTREC_TEC_Mask        (0xFFu << MCP251XFD_CAN_CiTREC_TEC_Pos)
+#define MCP251XFD_CAN_CiTREC_TEC_Mask        (0xFFul << MCP251XFD_CAN_CiTREC_TEC_Pos)
 #define MCP251XFD_CAN_CiTREC_TEC_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTREC_TEC_Pos) & MCP251XFD_CAN_CiTREC_TEC_Mask) //!< Transmit Error Counter
-#define MCP251XFD_CAN_CiTREC_EWARN           (0x1u << 16) //!< Transmitter or Receiver is in Error Warning State
-#define MCP251XFD_CAN_CiTREC_RXWARN          (0x1u << 17) //!< Receiver in Error Warning State (128 > REC > 95)
-#define MCP251XFD_CAN_CiTREC_TXWARN          (0x1u << 18) //!< Transmitter in Error Warning State (128 > TEC > 95)
-#define MCP251XFD_CAN_CiTREC_RXBP            (0x1u << 19) //!< Receiver in Error Passive State (REC > 127)
-#define MCP251XFD_CAN_CiTREC_TXBP            (0x1u << 20) //!< Transmitter in Error Passive State (TEC > 127)
-#define MCP251XFD_CAN_CiTREC_TXBO            (0x1u << 21) //!< Transmitter in Bus Off State (TEC > 255). In Configuration mode, TXBO is set, since the module is not on the bus
+#define MCP251XFD_CAN_CiTREC_EWARN           (0x1ul << 16) //!< Transmitter or Receiver is in Error Warning State
+#define MCP251XFD_CAN_CiTREC_RXWARN          (0x1ul << 17) //!< Receiver in Error Warning State (128 > REC > 95)
+#define MCP251XFD_CAN_CiTREC_TXWARN          (0x1ul << 18) //!< Transmitter in Error Warning State (128 > TEC > 95)
+#define MCP251XFD_CAN_CiTREC_RXBP            (0x1ul << 19) //!< Receiver in Error Passive State (REC > 127)
+#define MCP251XFD_CAN_CiTREC_TXBP            (0x1ul << 20) //!< Transmitter in Error Passive State (TEC > 127)
+#define MCP251XFD_CAN_CiTREC_TXBO            (0x1ul << 21) //!< Transmitter in Bus Off State (TEC > 255). In Configuration mode, TXBO is set, since the module is not on the bus
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiTREC8_EWARN          (0x1u << 0) //!< Transmitter or Receiver is in Error Warning State
@@ -2228,16 +2229,16 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiBDIAG0_Register, 4);
 
 #define MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Pos         0
-#define MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Mask        (0xFFu << MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Pos)
+#define MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Mask        (0xFFul << MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Pos)
 #define MCP251XFD_CAN_CiBDIAG0_NRERRCNT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Mask) >> MCP251XFD_CAN_CiBDIAG0_NRERRCNT_Pos) //!< Nominal Bit Rate Receive Error Counter
 #define MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Pos         8
-#define MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Mask        (0xFFu << MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Pos)
+#define MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Mask        (0xFFul << MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Pos)
 #define MCP251XFD_CAN_CiBDIAG0_NTERRCNT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Mask) >> MCP251XFD_CAN_CiBDIAG0_NTERRCNT_Pos) //!< Nominal Bit Rate Transmit Error Counter
 #define MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Pos         16
-#define MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Mask        (0xFFu << MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Pos)
+#define MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Mask        (0xFFul << MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Pos)
 #define MCP251XFD_CAN_CiBDIAG0_DRERRCNT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Mask) >> MCP251XFD_CAN_CiBDIAG0_DRERRCNT_Pos) //!< Data Bit Rate Receive Error Counter
 #define MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Pos         24
-#define MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Mask        (0xFFu << MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Pos)
+#define MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Mask        (0xFFul << MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Pos)
 #define MCP251XFD_CAN_CiBDIAG0_DTERRCNT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Mask) >> MCP251XFD_CAN_CiBDIAG0_DTERRCNT_Pos) //!< Data Bit Rate Transmit Error Counter
 
 //-----------------------------------------------------------------------------
@@ -2305,22 +2306,22 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiBDIAG1_Register, 4);
 
 #define MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Pos         0
-#define MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Mask        (0xFFFFu << MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Pos)
+#define MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Mask        (0xFFFFul << MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Pos)
 #define MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Mask) >> MCP251XFD_CAN_CiBDIAG1_EFMSGCNT_Pos) //!< Error Free Message Counter
-#define MCP251XFD_CAN_CiBDIAG1_NBIT0ERR             (0x1u << 16) //!< Normal Bitrate: During the transmission of a message (or acknowledge bit, or active error flag, or overload flag), the device wanted to send a dominant level (data or identifier bit logical value ‘0’), but the monitored bus value was recessive
-#define MCP251XFD_CAN_CiBDIAG1_NBIT1ERR             (0x1u << 17) //!< Normal Bitrate: During the transmission of a message (with the exception of the arbitration field), the device wanted to send a recessive level (bit of logical value '1'), but the monitored bus value was dominant
-#define MCP251XFD_CAN_CiBDIAG1_NACKERR              (0x1u << 18) //!< Normal Bitrate: Transmitted message was not acknowledged
-#define MCP251XFD_CAN_CiBDIAG1_NFORMERR             (0x1u << 19) //!< Normal Bitrate: A fixed format part of a received frame has the wrong format
-#define MCP251XFD_CAN_CiBDIAG1_NSTUFERR             (0x1u << 20) //!< Normal Bitrate: More than 5 equal bits in a sequence have occurred in a part of a received message where this is not allowed
-#define MCP251XFD_CAN_CiBDIAG1_NCRCERR              (0x1u << 21) //!< Normal Bitrate: The CRC check sum of a received message was incorrect. The CRC of an incoming message does not match with the CRC calculated from the received data
-#define MCP251XFD_CAN_CiBDIAG1_TXBOERR              (0x1u << 23) //!< Device went to bus-off (and auto-recovered)
-#define MCP251XFD_CAN_CiBDIAG1_DBIT0ERR             (0x1u << 24) //!< Data Bitrate: During the transmission of a message (or acknowledge bit, or active error flag, or overload flag), the device wanted to send a dominant level (data or identifier bit logical value ‘0’), but the monitored bus value was recessive
-#define MCP251XFD_CAN_CiBDIAG1_DBIT1ERR             (0x1u << 25) //!< Data Bitrate: During the transmission of a message (with the exception of the arbitration field), the device wanted to send a recessive level (bit of logical value '1'), but the monitored bus value was dominant
-#define MCP251XFD_CAN_CiBDIAG1_DFORMERR             (0x1u << 27) //!< Data Bitrate: A fixed format part of a received frame has the wrong format
-#define MCP251XFD_CAN_CiBDIAG1_DSTUFERR             (0x1u << 28) //!< Data Bitrate: More than 5 equal bits in a sequence have occurred in a part of a received message where this is not allowed
-#define MCP251XFD_CAN_CiBDIAG1_DCRCERR              (0x1u << 29) //!< Data Bitrate: The CRC check sum of a received message was incorrect. The CRC of an incoming message does not match with the CRC calculated from the received data
-#define MCP251XFD_CAN_CiBDIAG1_ESI                  (0x1u << 30) //!< ESI flag of a received CAN FD message was set
-#define MCP251XFD_CAN_CiBDIAG1_DLCMM                (0x1u << 31) //!< DLC Mismatch bit. During a transmission or reception, the specified DLC is larger than the PLSIZE of the FIFO element
+#define MCP251XFD_CAN_CiBDIAG1_NBIT0ERR             (0x1ul << 16) //!< Normal Bitrate: During the transmission of a message (or acknowledge bit, or active error flag, or overload flag), the device wanted to send a dominant level (data or identifier bit logical value ‘0’), but the monitored bus value was recessive
+#define MCP251XFD_CAN_CiBDIAG1_NBIT1ERR             (0x1ul << 17) //!< Normal Bitrate: During the transmission of a message (with the exception of the arbitration field), the device wanted to send a recessive level (bit of logical value '1'), but the monitored bus value was dominant
+#define MCP251XFD_CAN_CiBDIAG1_NACKERR              (0x1ul << 18) //!< Normal Bitrate: Transmitted message was not acknowledged
+#define MCP251XFD_CAN_CiBDIAG1_NFORMERR             (0x1ul << 19) //!< Normal Bitrate: A fixed format part of a received frame has the wrong format
+#define MCP251XFD_CAN_CiBDIAG1_NSTUFERR             (0x1ul << 20) //!< Normal Bitrate: More than 5 equal bits in a sequence have occurred in a part of a received message where this is not allowed
+#define MCP251XFD_CAN_CiBDIAG1_NCRCERR              (0x1ul << 21) //!< Normal Bitrate: The CRC check sum of a received message was incorrect. The CRC of an incoming message does not match with the CRC calculated from the received data
+#define MCP251XFD_CAN_CiBDIAG1_TXBOERR              (0x1ul << 23) //!< Device went to bus-off (and auto-recovered)
+#define MCP251XFD_CAN_CiBDIAG1_DBIT0ERR             (0x1ul << 24) //!< Data Bitrate: During the transmission of a message (or acknowledge bit, or active error flag, or overload flag), the device wanted to send a dominant level (data or identifier bit logical value ‘0’), but the monitored bus value was recessive
+#define MCP251XFD_CAN_CiBDIAG1_DBIT1ERR             (0x1ul << 25) //!< Data Bitrate: During the transmission of a message (with the exception of the arbitration field), the device wanted to send a recessive level (bit of logical value '1'), but the monitored bus value was dominant
+#define MCP251XFD_CAN_CiBDIAG1_DFORMERR             (0x1ul << 27) //!< Data Bitrate: A fixed format part of a received frame has the wrong format
+#define MCP251XFD_CAN_CiBDIAG1_DSTUFERR             (0x1ul << 28) //!< Data Bitrate: More than 5 equal bits in a sequence have occurred in a part of a received message where this is not allowed
+#define MCP251XFD_CAN_CiBDIAG1_DCRCERR              (0x1ul << 29) //!< Data Bitrate: The CRC check sum of a received message was incorrect. The CRC of an incoming message does not match with the CRC calculated from the received data
+#define MCP251XFD_CAN_CiBDIAG1_ESI                  (0x1ul << 30) //!< ESI flag of a received CAN FD message was set
+#define MCP251XFD_CAN_CiBDIAG1_DLCMM                (0x1ul << 31) //!< DLC Mismatch bit. During a transmission or reception, the specified DLC is larger than the PLSIZE of the FIFO element
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiBDIAG18_NBIT0ERR  (0x1u << 0) //!< Normal Bitrate: During the transmission of a message (or acknowledge bit, or active error flag, or overload flag), the device wanted to send a dominant level (data or identifier bit logical value ‘0’), but the monitored bus value was recessive
@@ -2408,13 +2409,13 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTEFCON_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTEFCON_Register, 4);
 
-#define MCP251XFD_CAN_CiTEFCON_TEFNEIE  (0x1u <<  0) //!< Transmit Event FIFO Not Empty Interrupt Enable
-#define MCP251XFD_CAN_CiTEFCON_TEFHIE   (0x1u <<  1) //!< Transmit Event FIFO Half Full Interrupt Enable
-#define MCP251XFD_CAN_CiTEFCON_TEFFIE   (0x1u <<  2) //!< Transmit Event FIFO Full Interrupt Enable
-#define MCP251XFD_CAN_CiTEFCON_TEFOVIE  (0x1u <<  3) //!< Transmit Event FIFO Overflow Interrupt Enable
-#define MCP251XFD_CAN_CiTEFCON_TEFTSEN  (0x1u <<  5) //!< Transmit Event FIFO Time Stamp Enable
-#define MCP251XFD_CAN_CiTEFCON_UINC     (0x1u <<  8) //!< Increment Tail
-#define MCP251XFD_CAN_CiTEFCON_FRESET   (0x1u << 10) //!< FIFO Reset
+#define MCP251XFD_CAN_CiTEFCON_TEFNEIE  (0x1ul <<  0) //!< Transmit Event FIFO Not Empty Interrupt Enable
+#define MCP251XFD_CAN_CiTEFCON_TEFHIE   (0x1ul <<  1) //!< Transmit Event FIFO Half Full Interrupt Enable
+#define MCP251XFD_CAN_CiTEFCON_TEFFIE   (0x1ul <<  2) //!< Transmit Event FIFO Full Interrupt Enable
+#define MCP251XFD_CAN_CiTEFCON_TEFOVIE  (0x1ul <<  3) //!< Transmit Event FIFO Overflow Interrupt Enable
+#define MCP251XFD_CAN_CiTEFCON_TEFTSEN  (0x1ul <<  5) //!< Transmit Event FIFO Time Stamp Enable
+#define MCP251XFD_CAN_CiTEFCON_UINC     (0x1ul <<  8) //!< Increment Tail
+#define MCP251XFD_CAN_CiTEFCON_FRESET   (0x1ul << 10) //!< FIFO Reset
 
 //! FIFO Size for the CiTEFCON.FSIZE, CiTXQCON.FSIZE and CiFIFOCONm.FSIZE
 typedef enum
@@ -2454,7 +2455,7 @@ typedef enum
 } eMCP251XFD_MessageDeep;
 
 #define MCP251XFD_CAN_CiTEFCON_FSIZE_Pos         24
-#define MCP251XFD_CAN_CiTEFCON_FSIZE_Mask        (0x1Fu << MCP251XFD_CAN_CiTEFCON_FSIZE_Pos)
+#define MCP251XFD_CAN_CiTEFCON_FSIZE_Mask        (0x1Ful << MCP251XFD_CAN_CiTEFCON_FSIZE_Pos)
 #define MCP251XFD_CAN_CiTEFCON_FSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTEFCON_FSIZE_Pos) & MCP251XFD_CAN_CiTEFCON_FSIZE_Mask) //!< FIFO Size
 
 //*** Byte version access to Registers ***
@@ -2489,10 +2490,10 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTEFSTA_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTEFSTA_Register, 4);
 
-#define MCP251XFD_CAN_CiTEFSTA_TEFNEIF  (0x1u << 0) //!< Transmit Event FIFO Not Empty Interrupt Flag
-#define MCP251XFD_CAN_CiTEFSTA_TEFHIF   (0x1u << 1) //!< Transmit Event FIFO Half Full Interrupt Flag
-#define MCP251XFD_CAN_CiTEFSTA_TEFFIF   (0x1u << 2) //!< Transmit Event FIFO Full Interrupt Flag
-#define MCP251XFD_CAN_CiTEFSTA_TEFOVIF  (0x1u << 3) //!< Transmit Event FIFO Overflow Interrupt Flag
+#define MCP251XFD_CAN_CiTEFSTA_TEFNEIF  (0x1ul << 0) //!< Transmit Event FIFO Not Empty Interrupt Flag
+#define MCP251XFD_CAN_CiTEFSTA_TEFHIF   (0x1ul << 1) //!< Transmit Event FIFO Half Full Interrupt Flag
+#define MCP251XFD_CAN_CiTEFSTA_TEFFIF   (0x1ul << 2) //!< Transmit Event FIFO Full Interrupt Flag
+#define MCP251XFD_CAN_CiTEFSTA_TEFOVIF  (0x1ul << 3) //!< Transmit Event FIFO Overflow Interrupt Flag
 
 //*** Byte version access to Registers ***
 #define MCP251XFD_CAN_CiTEFSTA8_TEFNEIF  (0x1u << 0) //!< Transmit Event FIFO Not Empty Interrupt Flag
@@ -2513,7 +2514,7 @@ typedef enum
   MCP251XFD_TEF_FIFO_STATUS_MASK = MCP251XFD_CAN_CiTEFSTA8_ALL_EVENTS, //!< TEF status mask
 } eMCP251XFD_TEFstatus;
 
-typedef eMCP251XFD_TEFstatus setMCP251XFD_TEFstatus; //! Set of Transmit Event FIFO status (can be OR'ed)
+typedef eMCP251XFD_TEFstatus setMCP251XFD_TEFstatus; //!< Set of Transmit Event FIFO status (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -2530,7 +2531,7 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTEFUA_Register, 4);
 
 #define MCP251XFD_CAN_CiTEFUA_Pos         0
-#define MCP251XFD_CAN_CiTEFUA_Mask        (0xFFFFFFFFu << MCP251XFD_CAN_CiTEFUA_Pos)
+#define MCP251XFD_CAN_CiTEFUA_Mask        (0xFFFFFFFFul << MCP251XFD_CAN_CiTEFUA_Pos)
 #define MCP251XFD_CAN_CiTEFUA_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTEFUA_Pos) & MCP251XFD_CAN_CiTEFUA_Mask) //!< Transmit Event FIFO User Address
 
 //-----------------------------------------------------------------------------
@@ -2564,13 +2565,13 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTXQCON_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXQCON_Register, 4);
 
-#define MCP251XFD_CAN_CiTXQCON_TXQNIE  (0x1u <<  0) //!< Transmit Queue Not Full Interrupt Enable
-#define MCP251XFD_CAN_CiTXQCON_TXQEIE  (0x1u <<  2) //!< Transmit Queue Empty Interrupt Enable
-#define MCP251XFD_CAN_CiTXQCON_TXATIE  (0x1u <<  4) //!< Transmit Attempts Exhausted Interrupt Enable
-#define MCP251XFD_CAN_CiTXQCON_TXEN    (0x1u <<  7) //!< TX Enable
-#define MCP251XFD_CAN_CiTXQCON_UINC    (0x1u <<  8) //!< Increment Head
-#define MCP251XFD_CAN_CiTXQCON_TXREQ   (0x1u <<  9) //!< Message Send Request
-#define MCP251XFD_CAN_CiTXQCON_FRESET  (0x1u << 10) //!< FIFO Reset
+#define MCP251XFD_CAN_CiTXQCON_TXQNIE  (0x1ul <<  0) //!< Transmit Queue Not Full Interrupt Enable
+#define MCP251XFD_CAN_CiTXQCON_TXQEIE  (0x1ul <<  2) //!< Transmit Queue Empty Interrupt Enable
+#define MCP251XFD_CAN_CiTXQCON_TXATIE  (0x1ul <<  4) //!< Transmit Attempts Exhausted Interrupt Enable
+#define MCP251XFD_CAN_CiTXQCON_TXEN    (0x1ul <<  7) //!< TX Enable
+#define MCP251XFD_CAN_CiTXQCON_UINC    (0x1ul <<  8) //!< Increment Head
+#define MCP251XFD_CAN_CiTXQCON_TXREQ   (0x1ul <<  9) //!< Message Send Request
+#define MCP251XFD_CAN_CiTXQCON_FRESET  (0x1ul << 10) //!< FIFO Reset
 
 //! Message Transmit Priority for the CiTXQCON.TXPRI
 typedef enum
@@ -2610,7 +2611,7 @@ typedef enum
 } eMCP251XFD_Priority;
 
 #define MCP251XFD_CAN_CiTXQCON_TXPRI_Pos         16
-#define MCP251XFD_CAN_CiTXQCON_TXPRI_Mask        (0x1Fu << MCP251XFD_CAN_CiTXQCON_TXPRI_Pos)
+#define MCP251XFD_CAN_CiTXQCON_TXPRI_Mask        (0x1Ful << MCP251XFD_CAN_CiTXQCON_TXPRI_Pos)
 #define MCP251XFD_CAN_CiTXQCON_TXPRI_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON_TXPRI_Pos) & MCP251XFD_CAN_CiTXQCON_TXPRI_Mask) //!< Message transmit priority
 
 //! Retransmission Attempts for the CiTXQCON.TXAT and CiFIFOCONm.TXAT
@@ -2622,10 +2623,10 @@ typedef enum
 } eMCP251XFD_Attempts;
 
 #define MCP251XFD_CAN_CiTXQCON_TXAT_Pos          21
-#define MCP251XFD_CAN_CiTXQCON_TXAT_Mask         (0x3u << MCP251XFD_CAN_CiTXQCON_TXAT_Pos)
+#define MCP251XFD_CAN_CiTXQCON_TXAT_Mask         (0x3ul << MCP251XFD_CAN_CiTXQCON_TXAT_Pos)
 #define MCP251XFD_CAN_CiTXQCON_TXAT_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON_TXAT_Pos) & MCP251XFD_CAN_CiTXQCON_TXAT_Mask)   //!< Retransmission Attempts
 #define MCP251XFD_CAN_CiTXQCON_FSIZE_Pos         24
-#define MCP251XFD_CAN_CiTXQCON_FSIZE_Mask        (0x1Fu << MCP251XFD_CAN_CiTXQCON_FSIZE_Pos)
+#define MCP251XFD_CAN_CiTXQCON_FSIZE_Mask        (0x1Ful << MCP251XFD_CAN_CiTXQCON_FSIZE_Pos)
 #define MCP251XFD_CAN_CiTXQCON_FSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON_FSIZE_Pos) & MCP251XFD_CAN_CiTXQCON_FSIZE_Mask) //!< FIFO Size
 
 //! Payload Size for the CiTXQCON.PLSIZE and CiFIFOCONm.PLSIZE
@@ -2643,7 +2644,7 @@ typedef enum
 } eMCP251XFD_PayloadSize;
 
 #define MCP251XFD_CAN_CiTXQCON_PLSIZE_Pos         29
-#define MCP251XFD_CAN_CiTXQCON_PLSIZE_Mask        (0x7u << MCP251XFD_CAN_CiTXQCON_PLSIZE_Pos)
+#define MCP251XFD_CAN_CiTXQCON_PLSIZE_Mask        (0x7ul << MCP251XFD_CAN_CiTXQCON_PLSIZE_Pos)
 #define MCP251XFD_CAN_CiTXQCON_PLSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON_PLSIZE_Pos) & MCP251XFD_CAN_CiTXQCON_PLSIZE_Mask) //!< Payload Size
 
 //*** Byte version access to Registers ***
@@ -2656,16 +2657,16 @@ typedef enum
 #define MCP251XFD_CAN_CiTXQCON8_FRESET             (0x1u << 2) //!< FIFO Reset
 #define MCP251XFD_CAN_CiTXQCON8_TXPRI_Pos          0
 #define MCP251XFD_CAN_CiTXQCON8_TXPRI_Mask         (0x1Fu << MCP251XFD_CAN_CiTXQCON8_TXPRI_Pos)
-#define MCP251XFD_CAN_CiTXQCON8_TXPRI_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON8_TXPRI_Pos) & MCP251XFD_CAN_CiTXQCON8_TXPRI_Mask)   //!< Message transmit priority
+#define MCP251XFD_CAN_CiTXQCON8_TXPRI_SET(value)   (((uint8_t)(value) << MCP251XFD_CAN_CiTXQCON8_TXPRI_Pos) & MCP251XFD_CAN_CiTXQCON8_TXPRI_Mask)   //!< Message transmit priority
 #define MCP251XFD_CAN_CiTXQCON8_TXAT_Pos           5
 #define MCP251XFD_CAN_CiTXQCON8_TXAT_Mask          (0x3u << MCP251XFD_CAN_CiTXQCON8_TXAT_Pos)
-#define MCP251XFD_CAN_CiTXQCON8_TXAT_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON8_TXAT_Pos) & MCP251XFD_CAN_CiTXQCON8_TXAT_Mask)     //!< Retransmission Attempts
+#define MCP251XFD_CAN_CiTXQCON8_TXAT_SET(value)    (((uint8_t)(value) << MCP251XFD_CAN_CiTXQCON8_TXAT_Pos) & MCP251XFD_CAN_CiTXQCON8_TXAT_Mask)     //!< Retransmission Attempts
 #define MCP251XFD_CAN_CiTXQCON8_FSIZE_Pos          0
 #define MCP251XFD_CAN_CiTXQCON8_FSIZE_Mask         (0x1Fu << MCP251XFD_CAN_CiTXQCON8_FSIZE_Pos)
-#define MCP251XFD_CAN_CiTXQCON8_FSIZE_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON8_FSIZE_Pos) & MCP251XFD_CAN_CiTXQCON8_FSIZE_Mask)   //!< FIFO Size
+#define MCP251XFD_CAN_CiTXQCON8_FSIZE_SET(value)   (((uint8_t)(value) << MCP251XFD_CAN_CiTXQCON8_FSIZE_Pos) & MCP251XFD_CAN_CiTXQCON8_FSIZE_Mask)   //!< FIFO Size
 #define MCP251XFD_CAN_CiTXQCON8_PLSIZE_Pos         5
 #define MCP251XFD_CAN_CiTXQCON8_PLSIZE_Mask        (0x7u << MCP251XFD_CAN_CiTXQCON8_PLSIZE_Pos)
-#define MCP251XFD_CAN_CiTXQCON8_PLSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQCON8_PLSIZE_Pos) & MCP251XFD_CAN_CiTXQCON8_PLSIZE_Mask) //!< Payload Size
+#define MCP251XFD_CAN_CiTXQCON8_PLSIZE_SET(value)  (((uint8_t)(value) << MCP251XFD_CAN_CiTXQCON8_PLSIZE_Pos) & MCP251XFD_CAN_CiTXQCON8_PLSIZE_Mask) //!< Payload Size
 
 //-----------------------------------------------------------------------------
 
@@ -2692,14 +2693,14 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiTXQSTA_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXQSTA_Register, 4);
 
-#define MCP251XFD_CAN_CiTXQSTA_TXQNIF            (0x1u << 0) //!< Transmit Queue Not Full Interrupt Flag
-#define MCP251XFD_CAN_CiTXQSTA_TXQEIF            (0x1u << 2) //!< Transmit Queue Empty Interrupt Flag
-#define MCP251XFD_CAN_CiTXQSTA_TXATIF            (0x1u << 4) //!< Transmit Attempts Exhausted Interrupt Pending
-#define MCP251XFD_CAN_CiTXQSTA_TXERR             (0x1u << 5) //!< Error Detected During Transmission
-#define MCP251XFD_CAN_CiTXQSTA_TXLARB            (0x1u << 6) //!< Message Lost Arbitration Status
-#define MCP251XFD_CAN_CiTXQSTA_TXABT             (0x1u << 7) //!< Message Aborted Status
+#define MCP251XFD_CAN_CiTXQSTA_TXQNIF            (0x1ul << 0) //!< Transmit Queue Not Full Interrupt Flag
+#define MCP251XFD_CAN_CiTXQSTA_TXQEIF            (0x1ul << 2) //!< Transmit Queue Empty Interrupt Flag
+#define MCP251XFD_CAN_CiTXQSTA_TXATIF            (0x1ul << 4) //!< Transmit Attempts Exhausted Interrupt Pending
+#define MCP251XFD_CAN_CiTXQSTA_TXERR             (0x1ul << 5) //!< Error Detected During Transmission
+#define MCP251XFD_CAN_CiTXQSTA_TXLARB            (0x1ul << 6) //!< Message Lost Arbitration Status
+#define MCP251XFD_CAN_CiTXQSTA_TXABT             (0x1ul << 7) //!< Message Aborted Status
 #define MCP251XFD_CAN_CiTXQSTA_TXQCI_Pos         8
-#define MCP251XFD_CAN_CiTXQSTA_TXQCI_Mask        (0x1Fu << MCP251XFD_CAN_CiTXQSTA_TXQCI_Pos)
+#define MCP251XFD_CAN_CiTXQSTA_TXQCI_Mask        (0x1Ful << MCP251XFD_CAN_CiTXQSTA_TXQCI_Pos)
 #define MCP251XFD_CAN_CiTXQSTA_TXQCI_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQSTA_TXQCI_Pos) & MCP251XFD_CAN_CiTXQSTA_TXQCI_Mask) //!< Transmit Queue Message Index
 
 //*** Byte version access to Registers ***
@@ -2711,7 +2712,7 @@ MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXQSTA_Register, 4);
 #define MCP251XFD_CAN_CiTXQSTA8_TXABT             (0x1u << 7) //!< Message Aborted Status
 #define MCP251XFD_CAN_CiTXQSTA8_TXQCI_Pos         0
 #define MCP251XFD_CAN_CiTXQSTA8_TXQCI_Mask        (0x1Fu << MCP251XFD_CAN_CiTXQSTA8_TXQCI_Pos)
-#define MCP251XFD_CAN_CiTXQSTA8_TXQCI_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQSTA8_TXQCI_Pos) & MCP251XFD_CAN_CiTXQSTA8_TXQCI_Mask) //!< Transmit Queue Message Index
+#define MCP251XFD_CAN_CiTXQSTA8_TXQCI_SET(value)  (((uint8_t)(value) << MCP251XFD_CAN_CiTXQSTA8_TXQCI_Pos) & MCP251XFD_CAN_CiTXQSTA8_TXQCI_Mask) //!< Transmit Queue Message Index
 
 #define MCP251XFD_CAN_CiTXQSTA8_ALL_EVENTS  ( MCP251XFD_CAN_CiTXQSTA8_TXQNIF | MCP251XFD_CAN_CiTXQSTA8_TXQEIF | MCP251XFD_CAN_CiTXQSTA8_TXATIF \
                                             | MCP251XFD_CAN_CiTXQSTA8_TXERR | MCP251XFD_CAN_CiTXQSTA8_TXLARB | MCP251XFD_CAN_CiTXQSTA8_TXABT )
@@ -2729,7 +2730,7 @@ typedef enum
   MCP251XFD_TXQ_STATUS_MASK        = MCP251XFD_CAN_CiTXQSTA8_ALL_EVENTS, //!< TXQ status mask
 } eMCP251XFD_TXQstatus;
 
-typedef eMCP251XFD_TXQstatus setMCP251XFD_TXQstatus; //! Set of Transmit Queue status (can be OR'ed)
+typedef eMCP251XFD_TXQstatus setMCP251XFD_TXQstatus; //!< Set of Transmit Queue status (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -2746,7 +2747,7 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiTXQUA_Register, 4);
 
 #define MCP251XFD_CAN_CiTXQUA_Pos         0
-#define MCP251XFD_CAN_CiTXQUA_Mask        (0xFFFFFFFFu << MCP251XFD_CAN_CiTXQUA_Pos)
+#define MCP251XFD_CAN_CiTXQUA_Mask        (0xFFFFFFFFul << MCP251XFD_CAN_CiTXQUA_Pos)
 #define MCP251XFD_CAN_CiTXQUA_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiTXQUA_Pos) & MCP251XFD_CAN_CiTXQUA_Mask) //!< Transmit Event FIFO User Address
 
 //-----------------------------------------------------------------------------
@@ -2781,13 +2782,13 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiFIFOCONm_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFIFOCONm_Register, 4);
 
-#define MCP251XFD_CAN_CiFIFOCONm_TFNRFNIE       (0x1u <<  0) //!< Transmit/Receive FIFO Not Full/Not Empty Interrupt Enable
-#define MCP251XFD_CAN_CiFIFOCONm_TFHRFHIE       (0x1u <<  1) //!< Transmit/Receive FIFO Half Empty/Half Full Interrupt Enable
-#define MCP251XFD_CAN_CiFIFOCONm_TFERFFIE       (0x1u <<  2) //!< Transmit/Receive FIFO Empty/Full Interrupt Enable
-#define MCP251XFD_CAN_CiFIFOCONm_RXOVIE         (0x1u <<  3) //!< Overflow Interrupt Enable
-#define MCP251XFD_CAN_CiFIFOCONm_TXATIE         (0x1u <<  4) //!< Transmit Attempts Exhausted Interrupt Enable
-#define MCP251XFD_CAN_CiFIFOCONm_RXTSEN         (0x1u <<  5) //!< Received Message Time Stamp Enable
-#define MCP251XFD_CAN_CiFIFOCONm_RTREN          (0x1u <<  6) //!< Auto RTR Enable
+#define MCP251XFD_CAN_CiFIFOCONm_TFNRFNIE       (0x1ul <<  0) //!< Transmit/Receive FIFO Not Full/Not Empty Interrupt Enable
+#define MCP251XFD_CAN_CiFIFOCONm_TFHRFHIE       (0x1ul <<  1) //!< Transmit/Receive FIFO Half Empty/Half Full Interrupt Enable
+#define MCP251XFD_CAN_CiFIFOCONm_TFERFFIE       (0x1ul <<  2) //!< Transmit/Receive FIFO Empty/Full Interrupt Enable
+#define MCP251XFD_CAN_CiFIFOCONm_RXOVIE         (0x1ul <<  3) //!< Overflow Interrupt Enable
+#define MCP251XFD_CAN_CiFIFOCONm_TXATIE         (0x1ul <<  4) //!< Transmit Attempts Exhausted Interrupt Enable
+#define MCP251XFD_CAN_CiFIFOCONm_RXTSEN         (0x1ul <<  5) //!< Received Message Time Stamp Enable
+#define MCP251XFD_CAN_CiFIFOCONm_RTREN          (0x1ul <<  6) //!< Auto RTR Enable
 
 //! FIFO Direction for the CiFIFOCONm.TXEN
 typedef enum
@@ -2796,21 +2797,21 @@ typedef enum
   MCP251XFD_TRANSMIT_FIFO = 0b1, //!< Transmit FIFO
 } eMCP251XFD_SelTXRX;
 
-#define MCP251XFD_CAN_CiFIFOCONm_TXEN               (0x1u <<  7) //!< TX/RX FIFO Selection
-#define MCP251XFD_CAN_CiFIFOCONm_UINC               (0x1u <<  8) //!< Increment Head/Tail
-#define MCP251XFD_CAN_CiFIFOCONm_TXREQ              (0x1u <<  9) //!< Message Send Request
-#define MCP251XFD_CAN_CiFIFOCONm_FRESET             (0x1u << 10) //!< FIFO Reset
+#define MCP251XFD_CAN_CiFIFOCONm_TXEN               (0x1ul <<  7) //!< TX/RX FIFO Selection
+#define MCP251XFD_CAN_CiFIFOCONm_UINC               (0x1ul <<  8) //!< Increment Head/Tail
+#define MCP251XFD_CAN_CiFIFOCONm_TXREQ              (0x1ul <<  9) //!< Message Send Request
+#define MCP251XFD_CAN_CiFIFOCONm_FRESET             (0x1ul << 10) //!< FIFO Reset
 #define MCP251XFD_CAN_CiFIFOCONm_TXPRI_Pos          16
-#define MCP251XFD_CAN_CiFIFOCONm_TXPRI_Mask         (0x1Fu << MCP251XFD_CAN_CiFIFOCONm_TXPRI_Pos)
+#define MCP251XFD_CAN_CiFIFOCONm_TXPRI_Mask         (0x1Ful << MCP251XFD_CAN_CiFIFOCONm_TXPRI_Pos)
 #define MCP251XFD_CAN_CiFIFOCONm_TXPRI_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm_TXPRI_Pos) & MCP251XFD_CAN_CiFIFOCONm_TXPRI_Mask)   //!< Message transmit priority
 #define MCP251XFD_CAN_CiFIFOCONm_TXAT_Pos           21
-#define MCP251XFD_CAN_CiFIFOCONm_TXAT_Mask          (0x3u << MCP251XFD_CAN_CiFIFOCONm_TXAT_Pos)
+#define MCP251XFD_CAN_CiFIFOCONm_TXAT_Mask          (0x3ul << MCP251XFD_CAN_CiFIFOCONm_TXAT_Pos)
 #define MCP251XFD_CAN_CiFIFOCONm_TXAT_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm_TXAT_Pos) & MCP251XFD_CAN_CiFIFOCONm_TXAT_Mask)     //!< Retransmission Attempts
 #define MCP251XFD_CAN_CiFIFOCONm_FSIZE_Pos          24
-#define MCP251XFD_CAN_CiFIFOCONm_FSIZE_Mask         (0x1Fu << MCP251XFD_CAN_CiFIFOCONm_FSIZE_Pos)
+#define MCP251XFD_CAN_CiFIFOCONm_FSIZE_Mask         (0x1Ful << MCP251XFD_CAN_CiFIFOCONm_FSIZE_Pos)
 #define MCP251XFD_CAN_CiFIFOCONm_FSIZE_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm_FSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm_FSIZE_Mask)   //!< FIFO Size
 #define MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Pos         29
-#define MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Mask        (0x7u << MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Pos)
+#define MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Mask        (0x7ul << MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Pos)
 #define MCP251XFD_CAN_CiFIFOCONm_PLSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm_PLSIZE_Mask) //!< Payload Size
 
 //*** Byte version access to Registers ***
@@ -2827,16 +2828,16 @@ typedef enum
 #define MCP251XFD_CAN_CiFIFOCONm8_FRESET             (0x1u << 2) //!< FIFO Reset
 #define MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Pos          0
 #define MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Mask         (0x1Fu << MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Pos)
-#define MCP251XFD_CAN_CiFIFOCONm8_TXPRI_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Pos) & MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Mask)   //!< Message transmit priority
+#define MCP251XFD_CAN_CiFIFOCONm8_TXPRI_SET(value)   (((uint8_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Pos) & MCP251XFD_CAN_CiFIFOCONm8_TXPRI_Mask)   //!< Message transmit priority
 #define MCP251XFD_CAN_CiFIFOCONm8_TXAT_Pos           5
 #define MCP251XFD_CAN_CiFIFOCONm8_TXAT_Mask          (0x3u << MCP251XFD_CAN_CiFIFOCONm8_TXAT_Pos)
-#define MCP251XFD_CAN_CiFIFOCONm8_TXAT_SET(value)    (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_TXAT_Pos) & MCP251XFD_CAN_CiFIFOCONm8_TXAT_Mask)     //!< Retransmission Attempts
+#define MCP251XFD_CAN_CiFIFOCONm8_TXAT_SET(value)    (((uint8_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_TXAT_Pos) & MCP251XFD_CAN_CiFIFOCONm8_TXAT_Mask)     //!< Retransmission Attempts
 #define MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Pos          0
 #define MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Mask         (0x1Fu << MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Pos)
-#define MCP251XFD_CAN_CiFIFOCONm8_FSIZE_SET(value)   (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Mask)   //!< FIFO Size
+#define MCP251XFD_CAN_CiFIFOCONm8_FSIZE_SET(value)   (((uint8_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm8_FSIZE_Mask)   //!< FIFO Size
 #define MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Pos         5
 #define MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Mask        (0x7u << MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Pos)
-#define MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Mask) //!< Payload Size
+#define MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_SET(value)  (((uint8_t)(value) << MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Pos) & MCP251XFD_CAN_CiFIFOCONm8_PLSIZE_Mask) //!< Payload Size
 
 //-----------------------------------------------------------------------------
 
@@ -2863,16 +2864,16 @@ typedef union __MCP251XFD_PACKED__ MCP251XFD_CiFIFOSTAm_Register
 MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFIFOSTAm_Register, 4);
 
-#define MCP251XFD_CAN_CiFIFOSTAm_TFNRFNIF           (0x1u << 0) //!< Transmit/Receive FIFO Not Full/Not Empty Interrupt Flag
-#define MCP251XFD_CAN_CiFIFOSTAm_TFHRFHIF           (0x1u << 1) //!< Transmit/Receive FIFO Half Empty/Half Full Interrupt Flag
-#define MCP251XFD_CAN_CiFIFOSTAm_TFERFFIF           (0x1u << 2) //!< Transmit/Receive FIFO Empty/Full Interrupt Flag
-#define MCP251XFD_CAN_CiFIFOSTAm_RXOVIF             (0x1u << 3) //!< Receive FIFO Overflow Interrupt Flag
-#define MCP251XFD_CAN_CiFIFOSTAm_TXATIF             (0x1u << 4) //!< Transmit Attempts Exhausted Interrupt Pending
-#define MCP251XFD_CAN_CiFIFOSTAm_TXERR              (0x1u << 5) //!< Error Detected During Transmission
-#define MCP251XFD_CAN_CiFIFOSTAm_TXLARB             (0x1u << 6) //!< Message Lost Arbitration Status
-#define MCP251XFD_CAN_CiFIFOSTAm_TXABT              (0x1u << 7) //!< Message Aborted Status
+#define MCP251XFD_CAN_CiFIFOSTAm_TFNRFNIF           (0x1ul << 0) //!< Transmit/Receive FIFO Not Full/Not Empty Interrupt Flag
+#define MCP251XFD_CAN_CiFIFOSTAm_TFHRFHIF           (0x1ul << 1) //!< Transmit/Receive FIFO Half Empty/Half Full Interrupt Flag
+#define MCP251XFD_CAN_CiFIFOSTAm_TFERFFIF           (0x1ul << 2) //!< Transmit/Receive FIFO Empty/Full Interrupt Flag
+#define MCP251XFD_CAN_CiFIFOSTAm_RXOVIF             (0x1ul << 3) //!< Receive FIFO Overflow Interrupt Flag
+#define MCP251XFD_CAN_CiFIFOSTAm_TXATIF             (0x1ul << 4) //!< Transmit Attempts Exhausted Interrupt Pending
+#define MCP251XFD_CAN_CiFIFOSTAm_TXERR              (0x1ul << 5) //!< Error Detected During Transmission
+#define MCP251XFD_CAN_CiFIFOSTAm_TXLARB             (0x1ul << 6) //!< Message Lost Arbitration Status
+#define MCP251XFD_CAN_CiFIFOSTAm_TXABT              (0x1ul << 7) //!< Message Aborted Status
 #define MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Pos         8
-#define MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Mask        (0x1Fu << MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Pos)
+#define MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Mask        (0x1Ful << MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Pos)
 #define MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Pos) & MCP251XFD_CAN_CiFIFOSTAm_FIFOCI_Mask) //!< FIFO Message Index
 
 
@@ -2887,7 +2888,7 @@ MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFIFOSTAm_Register, 4);
 #define MCP251XFD_CAN_CiFIFOSTAm8_TXABT              (0x1u << 7) //!< Message Aborted Status
 #define MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Pos         0
 #define MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Mask        (0x1Fu << MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Pos)
-#define MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Pos) & MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Mask) //!< FIFO Message Index
+#define MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_SET(value)  (((uint8_t)(value) << MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Pos) & MCP251XFD_CAN_CiFIFOSTAm8_FIFOCI_Mask) //!< FIFO Message Index
 
 
 #define MCP251XFD_CAN_CiFIFOSTAm8_TX_FIFO  ( MCP251XFD_CAN_CiFIFOSTAm8_TFNRFNIF | MCP251XFD_CAN_CiFIFOSTAm8_TFHRFHIF | MCP251XFD_CAN_CiFIFOSTAm8_TFERFFIF | \
@@ -2920,7 +2921,7 @@ typedef enum
   MCP251XFD_RX_FIFO_STATUS_MASK = MCP251XFD_CAN_CiFIFOSTAm8_RX_FIFO , //!< Receive FIFO status mask
 } eMCP251XFD_FIFOstatus;
 
-typedef eMCP251XFD_FIFOstatus setMCP251XFD_FIFOstatus; //! Set of Transmit and Receive FIFO status (can be OR'ed)
+typedef eMCP251XFD_FIFOstatus setMCP251XFD_FIFOstatus; //!< Set of Transmit and Receive FIFO status (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -2937,7 +2938,7 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFIFOUAm_Register, 4);
 
 #define MCP251XFD_CAN_CiFIFOUAm_Pos         0
-#define MCP251XFD_CAN_CiFIFOUAm_Mask        (0xFFFFFFFFu << MCP251XFD_CAN_CiFIFOUAm_Pos)
+#define MCP251XFD_CAN_CiFIFOUAm_Mask        (0xFFFFFFFFul << MCP251XFD_CAN_CiFIFOUAm_Pos)
 #define MCP251XFD_CAN_CiFIFOUAm_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_CiFIFOUAm_Mask) << MCP251XFD_CAN_CiFIFOUAm_Pos) //!< FIFO User Address
 
 //-----------------------------------------------------------------------------
@@ -3010,10 +3011,10 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFLTCONm_Register, 1);
 
 #define MCP251XFD_CAN_CiFLTCONm_FBP_Pos         0
-#define MCP251XFD_CAN_CiFLTCONm_FBP_Mask        (0x1Fu << MCP251XFD_CAN_CiFLTCONm_FBP_Pos)
+#define MCP251XFD_CAN_CiFLTCONm_FBP_Mask        (0x1Ful << MCP251XFD_CAN_CiFLTCONm_FBP_Pos)
 #define MCP251XFD_CAN_CiFLTCONm_FBP_SET(value)  (((uint8_t)(value) << MCP251XFD_CAN_CiFLTCONm_FBP_Pos) & MCP251XFD_CAN_CiFLTCONm_FBP_Mask) //!< Pointer to FIFO when Filter hits
-#define MCP251XFD_CAN_CiFLTCONm_ENABLE          (0x1u << 7) //!< Enable Filter to Accept Messages
-#define MCP251XFD_CAN_CiFLTCONm_DISABLE         (0x0u << 7) //!< Disable Filter to Accept Messages
+#define MCP251XFD_CAN_CiFLTCONm_ENABLE          (0x1ul << 7) //!< Enable Filter to Accept Messages
+#define MCP251XFD_CAN_CiFLTCONm_DISABLE         (0x0ul << 7) //!< Disable Filter to Accept Messages
 
 
 //*** Byte version access to Registers ***
@@ -3044,18 +3045,18 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiFLTOBJm_Register, 4);
 
 #define MCP251XFD_CAN_CiFLTOBJm_SID_Pos         0
-#define MCP251XFD_CAN_CiFLTOBJm_SID_Mask        (0x7FFu << MCP251XFD_CAN_CiFLTOBJm_SID_Pos)
+#define MCP251XFD_CAN_CiFLTOBJm_SID_Mask        (0x7FFul << MCP251XFD_CAN_CiFLTOBJm_SID_Pos)
 #define MCP251XFD_CAN_CiFLTOBJm_SID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFLTOBJm_SID_Pos) & MCP251XFD_CAN_CiFLTOBJm_SID_Mask) //!< Standard Identifier filter
 #define MCP251XFD_CAN_CiFLTOBJm_EID_Pos         11
-#define MCP251XFD_CAN_CiFLTOBJm_EID_Mask        (0x3FFFFu << MCP251XFD_CAN_CiFLTOBJm_EID_Pos)
+#define MCP251XFD_CAN_CiFLTOBJm_EID_Mask        (0x3FFFFul << MCP251XFD_CAN_CiFLTOBJm_EID_Pos)
 #define MCP251XFD_CAN_CiFLTOBJm_EID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiFLTOBJm_EID_Pos) & MCP251XFD_CAN_CiFLTOBJm_EID_Mask) //!< Extended Identifier filter
-#define MCP251XFD_CAN_CiFLTOBJm_SID11           (0x1u << 29) //!< Standard Identifier filter in FD mode
-#define MCP251XFD_CAN_CiFLTOBJm_EXIDE           (0x1u << 30) //!< Extended Identifier Enable
+#define MCP251XFD_CAN_CiFLTOBJm_SID11           (0x1ul << 29) //!< Standard Identifier filter in FD mode
+#define MCP251XFD_CAN_CiFLTOBJm_EXIDE           (0x1ul << 30) //!< Extended Identifier Enable
 
 #define MCP251XFD_SID_Size  11
-#define MCP251XFD_SID_Mask  ((1 << MCP251XFD_SID_Size) - 1)
+#define MCP251XFD_SID_Mask  ((1ul << MCP251XFD_SID_Size) - 1)
 #define MCP251XFD_EID_Size  18
-#define MCP251XFD_EID_Mask  ((1 << MCP251XFD_EID_Size) - 1)
+#define MCP251XFD_EID_Mask  ((1ul << MCP251XFD_EID_Size) - 1)
 
 //-----------------------------------------------------------------------------
 
@@ -3078,13 +3079,13 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CiMASKm_Register, 4);
 
 #define MCP251XFD_CAN_CiMASKm_MSID_Pos         0
-#define MCP251XFD_CAN_CiMASKm_MSID_Mask        (0x7FFu << MCP251XFD_CAN_CiMASKm_MSID_Pos)
+#define MCP251XFD_CAN_CiMASKm_MSID_Mask        (0x7FFul << MCP251XFD_CAN_CiMASKm_MSID_Pos)
 #define MCP251XFD_CAN_CiMASKm_MSID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiMASKm_MSID_Pos) & MCP251XFD_CAN_CiMASKm_MSID_Mask) //!< Standard Identifier Mask
 #define MCP251XFD_CAN_CiMASKm_MEID_Pos         11
-#define MCP251XFD_CAN_CiMASKm_MEID_Mask        (0x3FFFFu << MCP251XFD_CAN_CiMASKm_MEID_Pos)
+#define MCP251XFD_CAN_CiMASKm_MEID_Mask        (0x3FFFFul << MCP251XFD_CAN_CiMASKm_MEID_Pos)
 #define MCP251XFD_CAN_CiMASKm_MEID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_CiMASKm_MEID_Pos) & MCP251XFD_CAN_CiMASKm_MEID_Mask) //!< Extended Identifier Mask
-#define MCP251XFD_CAN_CiMASKm_MSID11           (0x1u << 29) //!< Standard Identifier Mask in FD mode
-#define MCP251XFD_CAN_CiMASKm_MIDE             (0x1u << 30) //!< Extended Identifier Enable
+#define MCP251XFD_CAN_CiMASKm_MSID11           (0x1ul << 29) //!< Standard Identifier Mask in FD mode
+#define MCP251XFD_CAN_CiMASKm_MIDE             (0x1ul << 30) //!< Extended Identifier Enable
 
 //-----------------------------------------------------------------------------
 
@@ -3118,12 +3119,12 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CAN_TX_Message_Identifier, 4);
 
 #define MCP251XFD_CAN_MSGT0_SID_Pos         0
-#define MCP251XFD_CAN_MSGT0_SID_Mask        (0x7FFu << MCP251XFD_CAN_MSGT0_SID_Pos)
+#define MCP251XFD_CAN_MSGT0_SID_Mask        (0x7FFul << MCP251XFD_CAN_MSGT0_SID_Pos)
 #define MCP251XFD_CAN_MSGT0_SID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_MSGT0_SID_Pos) & MCP251XFD_CAN_MSGT0_SID_Mask) //!< Set Standard Identifier
 #define MCP251XFD_CAN_MSGT0_EID_Pos         11
-#define MCP251XFD_CAN_MSGT0_EID_Mask        (0x3FFFFu << MCP251XFD_CAN_MSGT0_EID_Pos)
+#define MCP251XFD_CAN_MSGT0_EID_Mask        (0x3FFFFul << MCP251XFD_CAN_MSGT0_EID_Pos)
 #define MCP251XFD_CAN_MSGT0_EID_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_MSGT0_EID_Pos) & MCP251XFD_CAN_MSGT0_EID_Mask) //!< Set Extended Identifier
-#define MCP251XFD_CAN_MSGT0_SID11           (0x1u << 29) //!< In FD mode the standard ID can be extended to 12 bit using r1
+#define MCP251XFD_CAN_MSGT0_SID11           (0x1ul << 29) //!< In FD mode the standard ID can be extended to 12 bit using r1
 
 //-----------------------------------------------------------------------------
 
@@ -3148,21 +3149,21 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CAN_TX_Message_Control, 4);
 
 #define MCP251XFD_CAN_MSGT1_DLC_Pos         0
-#define MCP251XFD_CAN_MSGT1_DLC_Mask        (0xFu << MCP251XFD_CAN_MSGT1_DLC_Pos)
+#define MCP251XFD_CAN_MSGT1_DLC_Mask        (0xFul << MCP251XFD_CAN_MSGT1_DLC_Pos)
 #define MCP251XFD_CAN_MSGT1_DLC_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_MSGT1_DLC_Pos) & MCP251XFD_CAN_MSGT1_DLC_Mask) //!< Set Data Length Code
-#define MCP251XFD_CAN_MSGT1_IDE             (0x1u << 4) //!< Identifier Extension Flag
-#define MCP251XFD_CAN_MSGT1_RTR             (0x1u << 5) //!< Remote Transmission Request
-#define MCP251XFD_CAN_MSGT1_BRS             (0x1u << 6) //!< Bit Rate Switch
-#define MCP251XFD_CAN_MSGT1_FDF             (0x1u << 7) //!< FD Frame
-#define MCP251XFD_CAN_MSGT1_ESI             (0x1u << 8) //!< Error Status Indicator
+#define MCP251XFD_CAN_MSGT1_IDE             (0x1ul << 4) //!< Identifier Extension Flag
+#define MCP251XFD_CAN_MSGT1_RTR             (0x1ul << 5) //!< Remote Transmission Request
+#define MCP251XFD_CAN_MSGT1_BRS             (0x1ul << 6) //!< Bit Rate Switch
+#define MCP251XFD_CAN_MSGT1_FDF             (0x1ul << 7) //!< FD Frame
+#define MCP251XFD_CAN_MSGT1_ESI             (0x1ul << 8) //!< Error Status Indicator
 #define MCP251XFD_CAN_MSGT1_SEQ_Pos         9
-#define MCP251XFD_CAN_MSGT1_SEQ_Mask        (0x7FFFFFu << MCP251XFD_CAN_MSGT1_SEQ_Pos)
+#define MCP251XFD_CAN_MSGT1_SEQ_Mask        (0x7FFFFFul << MCP251XFD_CAN_MSGT1_SEQ_Pos)
 #define MCP251XFD_CAN_MSGT1_SEQ_SET(value)  (((uint32_t)(value) << MCP251XFD_CAN_MSGT1_SEQ_Pos) & MCP251XFD_CAN_MSGT1_SEQ_Mask) //!< Set sequence to keep track of transmitted messages in Transmit Event FIFO
 
 //-----------------------------------------------------------------------------
 
-#define MCP2517FD_SEQUENCE_MAX  ((1 << 23) - 1)
-#define MCP2518FD_SEQUENCE_MAX  ((1 <<  7) - 1)
+#define MCP2517FD_SEQUENCE_MAX  ((1ul << 23) - 1)
+#define MCP2518FD_SEQUENCE_MAX  ((1ul <<  7) - 1)
 
 //-----------------------------------------------------------------------------
 
@@ -3233,12 +3234,12 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CAN_RX_Message_Identifier, 4);
 
 #define MCP251XFD_CAN_MSGR0_SID_Pos         0
-#define MCP251XFD_CAN_MSGR0_SID_Mask        (0x7FFu << MCP251XFD_CAN_MSGR0_SID_Pos)
+#define MCP251XFD_CAN_MSGR0_SID_Mask        (0x7FFul << MCP251XFD_CAN_MSGR0_SID_Pos)
 #define MCP251XFD_CAN_MSGR0_SID_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_MSGR0_SID_Mask) << MCP251XFD_CAN_MSGR0_SID_Pos) //!< Get Standard Identifier
 #define MCP251XFD_CAN_MSGR0_EID_Pos         11
-#define MCP251XFD_CAN_MSGR0_EID_Mask        (0x3FFFFu << MCP251XFD_CAN_MSGR0_EID_Pos)
+#define MCP251XFD_CAN_MSGR0_EID_Mask        (0x3FFFFul << MCP251XFD_CAN_MSGR0_EID_Pos)
 #define MCP251XFD_CAN_MSGR0_EID_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_MSGR0_EID_Mask) << MCP251XFD_CAN_MSGR0_EID_Pos) //!< Get Extended Identifier
-#define MCP251XFD_CAN_MSGR0_SID11           (0x1u << 29) //!< In FD mode the standard ID can be extended to 12 bit using r1
+#define MCP251XFD_CAN_MSGR0_SID11           (0x1ul << 29) //!< In FD mode the standard ID can be extended to 12 bit using r1
 
 //-----------------------------------------------------------------------------
 
@@ -3265,15 +3266,15 @@ MCP251XFD_UNPACKITEM;
 MCP251XFD_CONTROL_ITEM_SIZE(MCP251XFD_CAN_RX_Message_Control, 4);
 
 #define MCP251XFD_CAN_MSGR1_DLC_Pos             0
-#define MCP251XFD_CAN_MSGR1_DLC_Mask            (0xFu << MCP251XFD_CAN_MSGR1_DLC_Pos)
+#define MCP251XFD_CAN_MSGR1_DLC_Mask            (0xFul << MCP251XFD_CAN_MSGR1_DLC_Pos)
 #define MCP251XFD_CAN_MSGR1_DLC_GET(value)      (eCAN_DataLength)(((uint32_t)(value) & MCP251XFD_CAN_MSGR1_DLC_Mask) >> MCP251XFD_CAN_MSGR1_DLC_Pos) //!< Get Data Length Code
-#define MCP251XFD_CAN_MSGR1_IDE                 (0x1u << 4) //!< Identifier Extension Flag
-#define MCP251XFD_CAN_MSGR1_RTR                 (0x1u << 5) //!< Remote Transmission Request
-#define MCP251XFD_CAN_MSGR1_BRS                 (0x1u << 6) //!< Bit Rate Switch
-#define MCP251XFD_CAN_MSGR1_FDF                 (0x1u << 7) //!< FD Frame
-#define MCP251XFD_CAN_MSGR1_ESI                 (0x1u << 8) //!< Error Status Indicator
+#define MCP251XFD_CAN_MSGR1_IDE                 (0x1ul << 4) //!< Identifier Extension Flag
+#define MCP251XFD_CAN_MSGR1_RTR                 (0x1ul << 5) //!< Remote Transmission Request
+#define MCP251XFD_CAN_MSGR1_BRS                 (0x1ul << 6) //!< Bit Rate Switch
+#define MCP251XFD_CAN_MSGR1_FDF                 (0x1ul << 7) //!< FD Frame
+#define MCP251XFD_CAN_MSGR1_ESI                 (0x1ul << 8) //!< Error Status Indicator
 #define MCP251XFD_CAN_MSGR1_FILTHIT_Pos         11
-#define MCP251XFD_CAN_MSGR1_FILTHIT_Mask        (0x1Fu << MCP251XFD_CAN_MSGR1_FILTHIT_Pos)
+#define MCP251XFD_CAN_MSGR1_FILTHIT_Mask        (0x1Ful << MCP251XFD_CAN_MSGR1_FILTHIT_Pos)
 #define MCP251XFD_CAN_MSGR1_FILTHIT_GET(value)  (((uint32_t)(value) & MCP251XFD_CAN_MSGR1_FILTHIT_Mask) >> MCP251XFD_CAN_MSGR1_FILTHIT_Pos) //!< Get Filter Hit, number of filter that matched
 
 //-----------------------------------------------------------------------------
@@ -3325,14 +3326,14 @@ typedef enum
 } eMCP251XFD_PowerStates;
 
 #define MCP251XFD_DEV_PS_Pos         0
-#define MCP251XFD_DEV_PS_Mask        (0x3u << MCP251XFD_DEV_PS_Pos)
+#define MCP251XFD_DEV_PS_Mask        (0x3ul << MCP251XFD_DEV_PS_Pos)
 #define MCP251XFD_DEV_PS_SET(value)  (((uint32_t)(value) << MCP251XFD_DEV_PS_Pos) & MCP251XFD_DEV_PS_Mask)                         //!< Set Device Power State
 #define MCP251XFD_DEV_PS_GET(value)  (eMCP251XFD_PowerStates)(((uint32_t)(value) & MCP251XFD_DEV_PS_Mask) >> MCP251XFD_DEV_PS_Pos) //!< Get Device Power State
 
 //-----------------------------------------------------------------------------
 
-typedef struct MCP251XFD MCP251XFD;       //! Typedef of MCP251XFD device object structure
-typedef uint8_t TMCP251XFDDriverInternal; //! Alias for Driver Internal data flags
+typedef struct MCP251XFD MCP251XFD;       //!< Typedef of MCP251XFD device object structure
+typedef uint8_t TMCP251XFDDriverInternal; //!< Alias for Driver Internal data flags
 
 //-----------------------------------------------------------------------------
 
@@ -3410,7 +3411,7 @@ typedef enum
   MCP251XFD_CANFD_USE_RRS_BIT_AS_SID11        = 0x40, //!< RRS is used as SID11 in CAN FD base format messages: SID<11:0> = {SID<10:0>, SID11}
 } eMCP251XFD_CANCtrlFlags;
 
-typedef eMCP251XFD_CANCtrlFlags setMCP251XFD_CANCtrlFlags; //! Set of CAN control configuration flags (can be OR'ed)
+typedef eMCP251XFD_CANCtrlFlags setMCP251XFD_CANCtrlFlags; //!< Set of CAN control configuration flags (can be OR'ed)
 
 //! MCP251XFD Controller and CAN configuration structure
 typedef struct MCP251XFD_Config

@@ -1,8 +1,8 @@
 /*!*****************************************************************************
  * @file    TCAN455X.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.4
- * @date    15/07/2023
+ * @version 1.0.1
+ * @date    22/03/2025
  * @brief   TCAN4550 and TCAN4551 driver
  * @details
  * The TCAN4550/TCAN4551 component is a CAN-bus controller supporting CAN2.0A, CAN2.0B
@@ -13,7 +13,7 @@
  ******************************************************************************/
 /* @page License
  *
- * Copyright (c) 2020-2023 Fabien MAILLY
+ * Copyright (c) 2020-2025 Fabien MAILLY
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
  *****************************************************************************/
 
 /* Revision history:
+ * 1.0.1    Put 'ul' suffix instead of 'u' suffix on Masks values to remove warnings on 16-bits systems
  * 1.0.0    Release version
  *****************************************************************************/
 #ifndef TCAN455X_H_INC
@@ -183,7 +184,7 @@ typedef enum
   TCAN455X_DRIVER_INIT_SET_RAM_AT_0        = 0x08, //!< Set all bytes of the RAM to 0x00 (slower at initialization)
 } eTCAN455X_DriverConfig;
 
-typedef eTCAN455X_DriverConfig setTCAN455X_DriverConfig; //! Set of Driver configuration (can be OR'ed)
+typedef eTCAN455X_DriverConfig setTCAN455X_DriverConfig; //!< Set of Driver configuration (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -290,10 +291,10 @@ typedef enum
   eTCAN455X_DEVICE_COUNT, //!< Device count, KEEP LAST
 } eTCAN455X_Devices;
 
-#define TCAN4550_DEVID1_VALUE       0x4E414354u //!< This value reflect the string: "TCAN"
-#define TCAN4550_DEVID2_VALUE       0x30353534u //!< This value reflect the string: "4550"
-#define TCAN4551_DEVID1_VALUE       0x4E414354u //!< This value reflect the string: "TCAN"
-#define TCAN4551_DEVID2_VALUE       0x31353534u //!< This value reflect the string: "4551"
+#define TCAN4550_DEVID1_VALUE       0x4E414354ul //!< This value reflect the string: "TCAN"
+#define TCAN4550_DEVID2_VALUE       0x30353534ul //!< This value reflect the string: "4550"
+#define TCAN4551_DEVID1_VALUE       0x4E414354ul //!< This value reflect the string: "TCAN"
+#define TCAN4551_DEVID2_VALUE       0x31353534ul //!< This value reflect the string: "4551"
 
 #define TCAN455X_DEVID1_Pos         0
 #define TCAN455X_DEVID1_Mask        (0xFFFFFFFFul << TCAN455X_DEVID1_Pos)
@@ -328,13 +329,13 @@ TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_REVISION_Register, 4);
 
 #define TCAN455X_REVISION_REV_ID_MINOR_Pos           0
-#define TCAN455X_REVISION_REV_ID_MINOR_Mask          (0xFFu << TCAN455X_REVISION_REV_ID_MINOR_Pos)
+#define TCAN455X_REVISION_REV_ID_MINOR_Mask          (0xFFul << TCAN455X_REVISION_REV_ID_MINOR_Pos)
 #define TCAN455X_REVISION_REV_ID_MINOR_GET(value)    (((uint32_t)(value) & TCAN455X_REVISION_REV_ID_MINOR_Mask) >> TCAN455X_REVISION_REV_ID_MINOR_Pos) //!< Get Device REV_ID Minor
 #define TCAN455X_REVISION_REV_ID_MAJOR_Pos           8
-#define TCAN455X_REVISION_REV_ID_MAJOR_Mask          (0xFFu << TCAN455X_REVISION_REV_ID_MAJOR_Pos)
+#define TCAN455X_REVISION_REV_ID_MAJOR_Mask          (0xFFul << TCAN455X_REVISION_REV_ID_MAJOR_Pos)
 #define TCAN455X_REVISION_REV_ID_MAJOR_GET(value)    (((uint32_t)(value) & TCAN455X_REVISION_REV_ID_MAJOR_Mask) >> TCAN455X_REVISION_REV_ID_MAJOR_Pos) //!< Get Device REV_ID Major
 #define TCAN455X_REVISION_SPI_2_REVISION_Pos         24
-#define TCAN455X_REVISION_SPI_2_REVISION_Mask        (0xFFu << TCAN455X_REVISION_SPI_2_REVISION_Pos)
+#define TCAN455X_REVISION_SPI_2_REVISION_Mask        (0xFFul << TCAN455X_REVISION_SPI_2_REVISION_Pos)
 #define TCAN455X_REVISION_SPI_2_REVISION_GET(value)  (((uint32_t)(value) & TCAN455X_REVISION_SPI_2_REVISION_Mask) >> TCAN455X_REVISION_SPI_2_REVISION_Pos) //!< Get Revision version of the SPI module
 
 //-----------------------------------------------------------------------------
@@ -373,26 +374,26 @@ typedef union __TCAN455X_PACKED__ TCAN455X_STATUS_Register
 TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_STATUS_Register, 4);
 
-#define TCAN455X_STATUS_INTERRUPT                 (0x1u <<  0) //!< Value of interrupt input level (active high)
-#define TCAN455X_STATUS_SPI_ERROR_INTERRUPT       (0x1u <<  1) //!< Unmasked SPI error set
-#define TCAN455X_STATUS_INTERNAL_ERROR_INTERRUPT  (0x1u <<  2) //!< Unmasked Internal error set
-#define TCAN455X_STATUS_INTERNAL_ACCESS_ACTIVE    (0x1u <<  3) //!< Internal Multiple transfer mode access in progress
-#define TCAN455X_STATUS_READ_FIFO_AVAILABLE       (0x1u <<  4) //!< Read fifo entries is greater than or equal to the read_fifo_threshold
-#define TCAN455X_STATUS_WRITE_FIFO_AVAILABLE      (0x1u <<  5) //!< Write fifo empty entries is greater than or equal to the write_fifo_threshold
+#define TCAN455X_STATUS_INTERRUPT                 (0x1ul <<  0) //!< Value of interrupt input level (active high)
+#define TCAN455X_STATUS_SPI_ERROR_INTERRUPT       (0x1ul <<  1) //!< Unmasked SPI error set
+#define TCAN455X_STATUS_INTERNAL_ERROR_INTERRUPT  (0x1ul <<  2) //!< Unmasked Internal error set
+#define TCAN455X_STATUS_INTERNAL_ACCESS_ACTIVE    (0x1ul <<  3) //!< Internal Multiple transfer mode access in progress
+#define TCAN455X_STATUS_READ_FIFO_AVAILABLE       (0x1ul <<  4) //!< Read fifo entries is greater than or equal to the read_fifo_threshold
+#define TCAN455X_STATUS_WRITE_FIFO_AVAILABLE      (0x1ul <<  5) //!< Write fifo empty entries is greater than or equal to the write_fifo_threshold
 
-#define TCAN455X_STATUS_READ_UNDERFLOW            (0x1u << 16) //!< SPI read sequence ended with less data transferred then requested
-#define TCAN455X_STATUS_READ_OVERFLOW             (0x1u << 17) //!< SPI read sequence had continue requests after the data transfer was completed
-#define TCAN455X_STATUS_WRITE_UNDERFLOW           (0x1u << 18) //!< SPI write sequence ended with less data transferred then requested
-#define TCAN455X_STATUS_WRITE_OVERFLOW            (0x1u << 19) //!< SPI write sequence had continue requests after the data transfer was completed
-#define TCAN455X_STATUS_INVALID_COMMAND           (0x1u << 20) //!< Invalid SPI command received
-#define TCAN455X_STATUS_SPI_END_ERROR             (0x1u << 21) //!< SPI transfer did not end on a byte boundary
+#define TCAN455X_STATUS_READ_UNDERFLOW            (0x1ul << 16) //!< SPI read sequence ended with less data transferred then requested
+#define TCAN455X_STATUS_READ_OVERFLOW             (0x1ul << 17) //!< SPI read sequence had continue requests after the data transfer was completed
+#define TCAN455X_STATUS_WRITE_UNDERFLOW           (0x1ul << 18) //!< SPI write sequence ended with less data transferred then requested
+#define TCAN455X_STATUS_WRITE_OVERFLOW            (0x1ul << 19) //!< SPI write sequence had continue requests after the data transfer was completed
+#define TCAN455X_STATUS_INVALID_COMMAND           (0x1ul << 20) //!< Invalid SPI command received
+#define TCAN455X_STATUS_SPI_END_ERROR             (0x1ul << 21) //!< SPI transfer did not end on a byte boundary
 
-#define TCAN455X_STATUS_WRITE_FIFO_OVERFLOW       (0x1u << 24) //!< Write/command FIFO overflow
-#define TCAN455X_STATUS_READ_FIFO_EMPTY           (0x1u << 25) //!< Read FIFO empty for first read data word to return
-#define TCAN455X_STATUS_READ_FIFO_UNDERFLOW       (0x1u << 26) //!< Read FIFO underflow after 1 or more read data words returned
-#define TCAN455X_STATUS_INTERNAL_ERROR_LOG_WRITE  (0x1u << 27) //!< Entry written to the Internal error log
-#define TCAN455X_STATUS_INTERNAL_WRITE_ERROR      (0x1u << 28) //!< Internal write received an error response
-#define TCAN455X_STATUS_INTERNAL_READ_ERROR       (0x1u << 29) //!< Internal read received an error response
+#define TCAN455X_STATUS_WRITE_FIFO_OVERFLOW       (0x1ul << 24) //!< Write/command FIFO overflow
+#define TCAN455X_STATUS_READ_FIFO_EMPTY           (0x1ul << 25) //!< Read FIFO empty for first read data word to return
+#define TCAN455X_STATUS_READ_FIFO_UNDERFLOW       (0x1ul << 26) //!< Read FIFO underflow after 1 or more read data words returned
+#define TCAN455X_STATUS_INTERNAL_ERROR_LOG_WRITE  (0x1ul << 27) //!< Entry written to the Internal error log
+#define TCAN455X_STATUS_INTERNAL_WRITE_ERROR      (0x1ul << 28) //!< Internal write received an error response
+#define TCAN455X_STATUS_INTERNAL_READ_ERROR       (0x1ul << 29) //!< Internal read received an error response
 
 #define TCAN455X_DEVICE_STATUS_EVENT_CLEARABLE_FLAGS  ( TCAN455X_STATUS_READ_UNDERFLOW           | TCAN455X_STATUS_READ_OVERFLOW            | \
                                                         TCAN455X_STATUS_WRITE_UNDERFLOW          | TCAN455X_STATUS_WRITE_OVERFLOW           | \
@@ -440,7 +441,7 @@ typedef enum
   TCAN455X_DEVICE_STATUS_EVENT_MASK           = TCAN455X_DEVICE_STATUS_EVENT_FLAGS,           //!< Device Status Events flags mask
 } eTCAN455X_DeviceStatusEvents;
 
-typedef eTCAN455X_DeviceStatusEvents setTCAN455X_DeviceStatusEvents; //! Set of TCAN455X Device Status Events (can be OR'ed)
+typedef eTCAN455X_DeviceStatusEvents setTCAN455X_DeviceStatusEvents; //!< Set of TCAN455X Device Status Events (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -472,19 +473,19 @@ typedef union __TCAN455X_PACKED__ TCAN455X_SPI_MASK_Register
 TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_SPI_MASK_Register, 4);
 
-#define TCAN455X_MASK_READ_UNDERFLOW            (0x1u << 16) //!< Set the mask read underflow error bit will be masked
-#define TCAN455X_MASK_READ_OVERFLOW             (0x1u << 17) //!< Set the mask read overflow error bit will be masked
-#define TCAN455X_MASK_WRITE_UNDERFLOW           (0x1u << 18) //!< Set the mask write underflow error bit will be masked
-#define TCAN455X_MASK_WRITE_OVERFLOW            (0x1u << 19) //!< Set the mask write overflow error bit will be masked
-#define TCAN455X_MASK_INVALID_COMMAND           (0x1u << 20) //!< Set the mask invalid command error bit will be masked
-#define TCAN455X_MASK_SPI_END_ERROR             (0x1u << 21) //!< Set the mask SPI end error bit will be masked
+#define TCAN455X_MASK_READ_UNDERFLOW            (0x1ul << 16) //!< Set the mask read underflow error bit will be masked
+#define TCAN455X_MASK_READ_OVERFLOW             (0x1ul << 17) //!< Set the mask read overflow error bit will be masked
+#define TCAN455X_MASK_WRITE_UNDERFLOW           (0x1ul << 18) //!< Set the mask write underflow error bit will be masked
+#define TCAN455X_MASK_WRITE_OVERFLOW            (0x1ul << 19) //!< Set the mask write overflow error bit will be masked
+#define TCAN455X_MASK_INVALID_COMMAND           (0x1ul << 20) //!< Set the mask invalid command error bit will be masked
+#define TCAN455X_MASK_SPI_END_ERROR             (0x1ul << 21) //!< Set the mask SPI end error bit will be masked
 
-#define TCAN455X_MASK_WRITE_FIFO_OVERFLOW       (0x1u << 24) //!< Set the mask write FIFO overflow error bit will be masked
-#define TCAN455X_MASK_READ_FIFO_EMPTY           (0x1u << 25) //!< Set the mask read FIFO empty error bit will be masked
-#define TCAN455X_MASK_READ_FIFO_UNDERFLOW       (0x1u << 26) //!< Set the mask read FIFO underflow error bit will be masked
-#define TCAN455X_MASK_INTERNAL_ERROR_LOG_WRITE  (0x1u << 27) //!< Set the mask internal error log write bit will be masked
-#define TCAN455X_MASK_INTERNAL_WRITE_ERROR      (0x1u << 28) //!< Set the mask internal write error bit will be masked
-#define TCAN455X_MASK_INTERNAL_READ_ERROR       (0x1u << 29) //!< Set the mask internal read error bit will be masked
+#define TCAN455X_MASK_WRITE_FIFO_OVERFLOW       (0x1ul << 24) //!< Set the mask write FIFO overflow error bit will be masked
+#define TCAN455X_MASK_READ_FIFO_EMPTY           (0x1ul << 25) //!< Set the mask read FIFO empty error bit will be masked
+#define TCAN455X_MASK_READ_FIFO_UNDERFLOW       (0x1ul << 26) //!< Set the mask read FIFO underflow error bit will be masked
+#define TCAN455X_MASK_INTERNAL_ERROR_LOG_WRITE  (0x1ul << 27) //!< Set the mask internal error log write bit will be masked
+#define TCAN455X_MASK_INTERNAL_WRITE_ERROR      (0x1ul << 28) //!< Set the mask internal write error bit will be masked
+#define TCAN455X_MASK_INTERNAL_READ_ERROR       (0x1ul << 29) //!< Set the mask internal read error bit will be masked
 
 //-----------------------------------------------------------------------------
 
@@ -532,19 +533,19 @@ typedef enum
 } eTCAN455X_TestConfig;
 
 #define TCAN455X_MODE_TEST_CONFIG_Pos          0
-#define TCAN455X_MODE_TEST_CONFIG_Mask         (0x1u << TCAN455X_MODE_TEST_CONFIG_Pos)
+#define TCAN455X_MODE_TEST_CONFIG_Mask         (0x1ul << TCAN455X_MODE_TEST_CONFIG_Pos)
 #define TCAN455X_MODE_TEST_CONFIG_SET(value)   (((uint32_t)(value) << TCAN455X_MODE_TEST_CONFIG_Pos) & TCAN455X_MODE_TEST_CONFIG_Mask) //!< Set test configuration
 #define TCAN455X_MODE_TEST_CONFIG_GET(value)   (((uint32_t)(value) & TCAN455X_MODE_TEST_CONFIG_Mask) >> TCAN455X_MODE_TEST_CONFIG_Pos) //!< Get test configuration
 
-#define TCAN455X_MODE_SLEEP_WAKE_ERROR_DISABLE        (0x1u << 1) //!< Sleep Wake Error Disable
-#define TCAN455X_MODE_SLEEP_WAKE_ERROR_ENABLE         (0x0u << 1) //!< Sleep Wake Error Enable
+#define TCAN455X_MODE_SLEEP_WAKE_ERROR_DISABLE        (0x1ul << 1) //!< Sleep Wake Error Disable
+#define TCAN455X_MODE_SLEEP_WAKE_ERROR_ENABLE         (0x0ul << 1) //!< Sleep Wake Error Enable
 #define TCAN455X_MODE_SLEEP_WAKE_ERROR_Mask           TCAN455X_MODE_SLEEP_WAKE_ERROR_DISABLE //!< Sleep Wake Error mask
-#define TCAN455X_MODE_DEVICE_RESETS_TO_DEFAULT        (0x1u << 2) //!< Device resets to default
-#define TCAN455X_MODE_NO_RESET_CURRENT_CONFIGURATION  (0x0u << 2) //!< No Reset to current configuration
-#define TCAN455X_MODE_WATCHDOG_ENABLE                 (0x1u << 3) //!< Watchdog Enable
-#define TCAN455X_MODE_WATCHDOG_DISABLE                (0x0u << 3) //!< Watchdog Disable
+#define TCAN455X_MODE_DEVICE_RESETS_TO_DEFAULT        (0x1ul << 2) //!< Device resets to default
+#define TCAN455X_MODE_NO_RESET_CURRENT_CONFIGURATION  (0x0ul << 2) //!< No Reset to current configuration
+#define TCAN455X_MODE_WATCHDOG_ENABLE                 (0x1ul << 3) //!< Watchdog Enable
+#define TCAN455X_MODE_WATCHDOG_DISABLE                (0x0ul << 3) //!< Watchdog Disable
 #define TCAN455X_MODE_WATCHDOG_Mask                   TCAN455X_MODE_WATCHDOG_ENABLE //!< Watchdog Enable mask
-#define TCAN455X_MODE_RESERVED_BIT5                   (0x1u << 5) //!< When writing to this register, this bit must always be a 1
+#define TCAN455X_MODE_RESERVED_BIT5                   (0x1ul << 5) //!< When writing to this register, this bit must always be a 1
 
 /*! Mode selection enumerator
  * The Mode of Operation changes the mode but will read back the mode the device is currently in.
@@ -560,7 +561,7 @@ typedef enum
 } eTCAN455X_Mode;
 
 #define TCAN455X_MODE_OPERATION_Pos         6
-#define TCAN455X_MODE_OPERATION_Mask        (0x8003u << TCAN455X_MODE_OPERATION_Pos)
+#define TCAN455X_MODE_OPERATION_Mask        (0x8003ul << TCAN455X_MODE_OPERATION_Pos)
 #define TCAN455X_MODE_OPERATION_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_OPERATION_Pos) & TCAN455X_MODE_OPERATION_Mask) //!< Set mode operation
 #define TCAN455X_MODE_OPERATION_GET(value)  (eTCAN455X_Mode)(((uint32_t)(value) & TCAN455X_MODE_OPERATION_Mask) >> TCAN455X_MODE_OPERATION_Pos) //!< Get mode operation
 
@@ -572,12 +573,12 @@ typedef enum
 } eTCAN455X_nWKRQconfig;
 
 #define TCAN455X_MODE_nWKRQ_CONFIG_Pos          8
-#define TCAN455X_MODE_nWKRQ_CONFIG_Mask         (0x1u << TCAN455X_MODE_nWKRQ_CONFIG_Pos)
+#define TCAN455X_MODE_nWKRQ_CONFIG_Mask         (0x1ul << TCAN455X_MODE_nWKRQ_CONFIG_Pos)
 #define TCAN455X_MODE_nWKRQ_CONFIG_SET(value)   (((uint32_t)(value) << TCAN455X_MODE_nWKRQ_CONFIG_Pos) & TCAN455X_MODE_nWKRQ_CONFIG_Mask) //!< Set nWKRQ configuration
 #define TCAN455X_MODE_nWKRQ_CONFIG_GET(value)   (((uint32_t)(value) & TCAN455X_MODE_nWKRQ_CONFIG_Mask) >> TCAN455X_MODE_nWKRQ_CONFIG_Pos) //!< Get nWKRQ configuration
 
-#define TCAN455X_MODE_INH_PIN_DISABLE         (0x1u << 9) //!< INH Pin Disable
-#define TCAN455X_MODE_INH_PIN_ENABLE          (0x0u << 9) //!< INH Pin Enable
+#define TCAN455X_MODE_INH_PIN_DISABLE         (0x1ul << 9) //!< INH Pin Disable
+#define TCAN455X_MODE_INH_PIN_ENABLE          (0x0ul << 9) //!< INH Pin Enable
 #define TCAN455X_MODE_INH_PIN_Mask            TCAN455X_MODE_INH_PIN_DISABLE //!< INH Pin mask
 
 //! GPIO1 GPO configuration enumerator
@@ -590,11 +591,11 @@ typedef enum
 } eTCAN455X_GPO1;
 
 #define TCAN455X_MODE_GPO1_Pos           10
-#define TCAN455X_MODE_GPO1_Mask          (0x3u << TCAN455X_MODE_GPO1_Pos)
+#define TCAN455X_MODE_GPO1_Mask          (0x3ul << TCAN455X_MODE_GPO1_Pos)
 #define TCAN455X_MODE_GPO1_SET(value)    (((uint32_t)(value) << TCAN455X_MODE_GPO1_Pos) & TCAN455X_MODE_GPO1_Mask) //!< Set GPO1 mode
 #define TCAN455X_MODE_GPO1_GET(value)    (eTCAN455X_GPO1)(((uint32_t)(value) & TCAN455X_MODE_GPO1_Mask) >> TCAN455X_MODE_GPO1_Pos) //!< Get GPO1 mode
-#define TCAN455X_MODE_FAIL_SAFE_ENABLE   (0x1u << 13) //!< Fail safe mode enable
-#define TCAN455X_MODE_FAIL_SAFE_DISABLE  (0x0u << 13) //!< Fail safe mode disable
+#define TCAN455X_MODE_FAIL_SAFE_ENABLE   (0x1ul << 13) //!< Fail safe mode enable
+#define TCAN455X_MODE_FAIL_SAFE_DISABLE  (0x0ul << 13) //!< Fail safe mode disable
 #define TCAN455X_MODE_FAIL_SAFE_Mask     TCAN455X_MODE_FAIL_SAFE_ENABLE //!< Fail safe mode mask
 
 //! GPIO1 configuration enumerator
@@ -607,7 +608,7 @@ typedef enum
 } eTCAN455X_GPIO1;
 
 #define TCAN455X_MODE_GPIO1_Pos         14
-#define TCAN455X_MODE_GPIO1_Mask        (0x3u << TCAN455X_MODE_GPIO1_Pos)
+#define TCAN455X_MODE_GPIO1_Mask        (0x3ul << TCAN455X_MODE_GPIO1_Pos)
 #define TCAN455X_MODE_GPIO1_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_GPIO1_Pos) & TCAN455X_MODE_GPIO1_Mask) //!< Set GPIO1 mode
 #define TCAN455X_MODE_GPIO1_GET(value)  (eTCAN455X_GPIO1)(((uint32_t)(value) & TCAN455X_MODE_GPIO1_Mask) >> TCAN455X_MODE_GPIO1_Pos) //!< Get GPIO1 mode
 
@@ -620,11 +621,11 @@ typedef enum
   TCAN455X_WD_ACTION_RESERVED           = 0b11, //!< Reserved
 } eTCAN455X_WDaction;
 
-#define TCAN455X_MODE_WD_ACTION_Pos                16
-#define TCAN455X_MODE_WD_ACTION_Mask               (0x3u << TCAN455X_MODE_WD_ACTION_Pos)
-#define TCAN455X_MODE_WD_ACTION_SET(value)         (((uint32_t)(value) << TCAN455X_MODE_WD_ACTION_Pos) & TCAN455X_MODE_WD_ACTION_Mask) //!< Set Watchdog action
-#define TCAN455X_MODE_WD_ACTION_GET(value)         (eTCAN455X_WDaction)(((uint32_t)(value) & TCAN455X_MODE_WD_ACTION_Mask) >> TCAN455X_MODE_WD_ACTION_Pos) //!< Get Watchdog action
-#define TCAN455X_MODE_RESET_WATCHDOG_TIMER         (0x1u << 18) //!< Reset watchdog timer
+#define TCAN455X_MODE_WD_ACTION_Pos         16
+#define TCAN455X_MODE_WD_ACTION_Mask        (0x3ul << TCAN455X_MODE_WD_ACTION_Pos)
+#define TCAN455X_MODE_WD_ACTION_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_WD_ACTION_Pos) & TCAN455X_MODE_WD_ACTION_Mask) //!< Set Watchdog action
+#define TCAN455X_MODE_WD_ACTION_GET(value)  (eTCAN455X_WDaction)(((uint32_t)(value) & TCAN455X_MODE_WD_ACTION_Mask) >> TCAN455X_MODE_WD_ACTION_Pos) //!< Get Watchdog action
+#define TCAN455X_MODE_RESET_WATCHDOG_TIMER  (0x1ul << 18) //!< Reset watchdog timer
 
 //! nWKRQ voltage reference enumerator
 typedef enum
@@ -633,13 +634,13 @@ typedef enum
   TCAN455X_nWKRQ_INTERNAL_VOLTAGE_RAIL = 1, //!< nWKRQ Pin GPO buffer internal voltage rail
 } eTCAN455X_nWKRQvoltRef;
 
-#define TCAN455X_MODE_nWKRQ_VOLTAGE_Pos          19
-#define TCAN455X_MODE_nWKRQ_VOLTAGE_Mask         (0x1u << TCAN455X_MODE_nWKRQ_VOLTAGE_Pos)
-#define TCAN455X_MODE_nWKRQ_VOLTAGE_SET(value)   (((uint32_t)(value) << TCAN455X_MODE_nWKRQ_VOLTAGE_Pos) & TCAN455X_MODE_nWKRQ_VOLTAGE_Mask) //!< Set nWKRQ voltage reference
-#define TCAN455X_MODE_nWKRQ_VOLTAGE_GET(value)   (((uint32_t)(value) & TCAN455X_MODE_nWKRQ_VOLTAGE_Mask) >> TCAN455X_MODE_nWKRQ_VOLTAGE_Pos) //!< Get nWKRQ voltage reference
+#define TCAN455X_MODE_nWKRQ_VOLTAGE_Pos         19
+#define TCAN455X_MODE_nWKRQ_VOLTAGE_Mask        (0x1ul << TCAN455X_MODE_nWKRQ_VOLTAGE_Pos)
+#define TCAN455X_MODE_nWKRQ_VOLTAGE_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_nWKRQ_VOLTAGE_Pos) & TCAN455X_MODE_nWKRQ_VOLTAGE_Mask) //!< Set nWKRQ voltage reference
+#define TCAN455X_MODE_nWKRQ_VOLTAGE_GET(value)  (((uint32_t)(value) & TCAN455X_MODE_nWKRQ_VOLTAGE_Mask) >> TCAN455X_MODE_nWKRQ_VOLTAGE_Pos) //!< Get nWKRQ voltage reference
 
-#define TCAN455X_MODE_TEST_MODE_ENABLE             (0x1u << 21) //!< Test mode enable
-#define TCAN455X_MODE_TEST_MODE_DISABLE            (0x0u << 21) //!< Test mode disable
+#define TCAN455X_MODE_TEST_MODE_ENABLE          (0x1ul << 21) //!< Test mode enable
+#define TCAN455X_MODE_TEST_MODE_DISABLE         (0x0ul << 21) //!< Test mode disable
 
 //! GPO2 configuration enumerator
 typedef enum
@@ -651,7 +652,7 @@ typedef enum
 } eTCAN455X_GPO2;
 
 #define TCAN455X_MODE_GPO2_Pos          22
-#define TCAN455X_MODE_GPO2_Mask         (0x3u << TCAN455X_MODE_GPO2_Pos)
+#define TCAN455X_MODE_GPO2_Mask         (0x3ul << TCAN455X_MODE_GPO2_Pos)
 #define TCAN455X_MODE_GPO2_SET(value)   (((uint32_t)(value) << TCAN455X_MODE_GPO2_Pos) & TCAN455X_MODE_GPO2_Mask) //!< Set GPO2 mode
 #define TCAN455X_MODE_GPO2_GET(value)   (eTCAN455X_GPO2)(((uint32_t)(value) & TCAN455X_MODE_GPO2_Mask) >> TCAN455X_MODE_GPO2_Pos) //!< Get GPO2 mode
 
@@ -662,10 +663,10 @@ typedef enum
   TCAN455X_CLKIN_FREQ_40MHz = 1, //!< CLKIN/Crystal Frequency Reference is 40MHz
 } eTCAN455X_CLKinFreq;
 
-#define TCAN455X_MODE_CLKIN_FREQ_Pos          27
-#define TCAN455X_MODE_CLKIN_FREQ_Mask         (0x1u << TCAN455X_MODE_CLKIN_FREQ_Pos)
-#define TCAN455X_MODE_CLKIN_FREQ_SET(value)   (((uint32_t)(value) << TCAN455X_MODE_CLKIN_FREQ_Pos) & TCAN455X_MODE_CLKIN_FREQ_Mask) //!< Set CLKIN/Crystal Frequency Reference
-#define TCAN455X_MODE_CLKIN_FREQ_GET(value)   (((uint32_t)(value) & TCAN455X_MODE_CLKIN_FREQ_Mask) >> TCAN455X_MODE_CLKIN_FREQ_Pos) //!< Get CLKIN/Crystal Frequency Reference
+#define TCAN455X_MODE_CLKIN_FREQ_Pos         27
+#define TCAN455X_MODE_CLKIN_FREQ_Mask        (0x1ul << TCAN455X_MODE_CLKIN_FREQ_Pos)
+#define TCAN455X_MODE_CLKIN_FREQ_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_CLKIN_FREQ_Pos) & TCAN455X_MODE_CLKIN_FREQ_Mask) //!< Set CLKIN/Crystal Frequency Reference
+#define TCAN455X_MODE_CLKIN_FREQ_GET(value)  (((uint32_t)(value) & TCAN455X_MODE_CLKIN_FREQ_Mask) >> TCAN455X_MODE_CLKIN_FREQ_Pos) //!< Get CLKIN/Crystal Frequency Reference
 
 //! Watchdog timer configuration enumerator
 typedef enum
@@ -677,7 +678,7 @@ typedef enum
 } eTCAN455X_WDtimer;
 
 #define TCAN455X_MODE_WD_TIMER_Pos         28
-#define TCAN455X_MODE_WD_TIMER_Mask        (0x3u << TCAN455X_MODE_WD_TIMER_Pos)
+#define TCAN455X_MODE_WD_TIMER_Mask        (0x3ul << TCAN455X_MODE_WD_TIMER_Pos)
 #define TCAN455X_MODE_WD_TIMER_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_WD_TIMER_Pos) & TCAN455X_MODE_WD_TIMER_Mask) //!< Set Watchdog timer
 #define TCAN455X_MODE_WD_TIMER_GET(value)  (eTCAN455X_WDtimer)(((uint32_t)(value) & TCAN455X_MODE_WD_TIMER_Mask) >> TCAN455X_MODE_WD_TIMER_Pos) //!< Get Watchdog timer
 
@@ -691,7 +692,7 @@ typedef enum
 } eTCAN455X_WAKEpinConf;
 
 #define TCAN455X_MODE_WAKE_PIN_Pos         30
-#define TCAN455X_MODE_WAKE_PIN_Mask        (0x3u << TCAN455X_MODE_WAKE_PIN_Pos)
+#define TCAN455X_MODE_WAKE_PIN_Mask        (0x3ul << TCAN455X_MODE_WAKE_PIN_Pos)
 #define TCAN455X_MODE_WAKE_PIN_SET(value)  (((uint32_t)(value) << TCAN455X_MODE_WAKE_PIN_Pos) & TCAN455X_MODE_WAKE_PIN_Mask) //!< Set Wake pin configuration
 #define TCAN455X_MODE_WAKE_PIN_GET(value)  (eTCAN455X_WAKEpinConf)(((uint32_t)(value) & TCAN455X_MODE_WAKE_PIN_Mask) >> TCAN455X_MODE_WAKE_PIN_Pos) //!< Get Wake pin configuration
 
@@ -726,7 +727,7 @@ TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_TS_PRESCALER_Register, 4);
 
 #define TCAN455X_TIMESTAMP_PRESCALER_Pos         0
-#define TCAN455X_TIMESTAMP_PRESCALER_Mask        (0xFFu << TCAN455X_TIMESTAMP_PRESCALER_Pos)
+#define TCAN455X_TIMESTAMP_PRESCALER_Mask        (0xFFul << TCAN455X_TIMESTAMP_PRESCALER_Pos)
 #define TCAN455X_TIMESTAMP_PRESCALER_SET(value)  (((uint32_t)(value) << TCAN455X_TIMESTAMP_PRESCALER_Pos) & TCAN455X_TIMESTAMP_PRESCALER_Mask) //!< Set Timestamp Prescaler
 #define TCAN455X_TIMESTAMP_PRESCALER_GET(value)  (((uint32_t)(value) & TCAN455X_TIMESTAMP_PRESCALER_Mask) >> TCAN455X_TIMESTAMP_PRESCALER_Pos) //!< Get Timestamp Prescaler
 
@@ -748,11 +749,11 @@ TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_TEST_SCRATCH_PAD_Register, 4);
 
 #define TCAN455X_TEST_Pos                0
-#define TCAN455X_TEST_Mask               (0xFFFFu << TCAN455X_TEST_Pos)
+#define TCAN455X_TEST_Mask               (0xFFFFul << TCAN455X_TEST_Pos)
 #define TCAN455X_TEST_SET(value)         (((uint32_t)(value) << TCAN455X_TEST_Pos) & TCAN455X_TEST_Mask) //!< Set Scratch Pad
 #define TCAN455X_TEST_GET(value)         (((uint32_t)(value) & TCAN455X_TEST_Mask) >> TCAN455X_TEST_Pos) //!< Get Scratch Pad
 #define TCAN455X_SCRATCH_PAD_Pos         16
-#define TCAN455X_SCRATCH_PAD_Mask        (0xFFFFu << TCAN455X_SCRATCH_PAD_Pos)
+#define TCAN455X_SCRATCH_PAD_Mask        (0xFFFFul << TCAN455X_SCRATCH_PAD_Pos)
 #define TCAN455X_SCRATCH_PAD_SET(value)  (((uint32_t)(value) << TCAN455X_SCRATCH_PAD_Pos) & TCAN455X_SCRATCH_PAD_Mask) //!< Set Test register
 #define TCAN455X_SCRATCH_PAD_GET(value)  (((uint32_t)(value) & TCAN455X_SCRATCH_PAD_Mask) >> TCAN455X_SCRATCH_PAD_Pos) //!< Get Test register
 
@@ -777,11 +778,11 @@ typedef union __TCAN455X_PACKED__ TCAN455X_ECC_TEST_Register
 TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_ECC_TEST_Register, 4);
 
-#define TCAN455X_ECC_TEST_SINGLE_BIT_ERROR_DETECTED  (0x1u << 11) //!< Single Bit ECC error detected
-#define TCAN455X_ECC_TEST_FORCE_SINGLE_BIT_ERROR     (0x1u << 12) //!< Force a single bit ECC error
+#define TCAN455X_ECC_TEST_SINGLE_BIT_ERROR_DETECTED  (0x1ul << 11) //!< Single Bit ECC error detected
+#define TCAN455X_ECC_TEST_FORCE_SINGLE_BIT_ERROR     (0x1ul << 12) //!< Force a single bit ECC error
 #define TCAN455X_ECC_ERR_FORCE_BIT_SEL_MAX_VALUE     38
 #define TCAN455X_ECC_ERR_FORCE_BIT_SEL_Pos           16
-#define TCAN455X_ECC_ERR_FORCE_BIT_SEL_Mask          (0x3Fu << TCAN455X_ECC_ERR_FORCE_BIT_SEL_Pos)
+#define TCAN455X_ECC_ERR_FORCE_BIT_SEL_Mask          (0x3Ful << TCAN455X_ECC_ERR_FORCE_BIT_SEL_Pos)
 #define TCAN455X_ECC_ERR_FORCE_BIT_SEL_SET(value)    (((uint32_t)(value) << TCAN455X_ECC_ERR_FORCE_BIT_SEL_Pos) & TCAN455X_ECC_ERR_FORCE_BIT_SEL_Mask) //!< Set ECC error force bit selection
 #define TCAN455X_ECC_ERR_FORCE_BIT_SEL_GET(value)    (((uint32_t)(value) & TCAN455X_ECC_ERR_FORCE_BIT_SEL_Mask) >> TCAN455X_ECC_ERR_FORCE_BIT_SEL_Pos) //!< Get ECC error force bit selection
 
@@ -840,25 +841,25 @@ typedef union __TCAN455X_PACKED__ TCAN455X_IR_Register
 TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_IR_Register, 4);
 
-#define TCAN455X_IR_VTWD_EN       (0x1u <<  0) //!< Global Voltage, Temp or WDTO Interrupt Enable
-#define TCAN455X_IR_MCAN_INT_EN   (0x1u <<  1) //!< M_CAN global INT Interrupt Enable
-#define TCAN455X_IR_SPIERR_EN     (0x1u <<  3) //!< SPI Error Interrupt Enable
-#define TCAN455X_IR_CANERR_EN     (0x1u <<  5) //!< CAN Error Interrupt Enable
-#define TCAN455X_IR_WKRQ_EN       (0x1u <<  6) //!< Wake Request Interrupt Enable
-#define TCAN455X_IR_GLOBALERR_EN  (0x1u <<  7) //!< Global Error (Any Fault) Interrupt Enable
-#define TCAN455X_IR_CANDOM_EN     (0x1u <<  8) //!< CAN Stuck Dominant Interrupt Enable
-#define TCAN455X_IR_CANSLNT_EN    (0x1u << 10) //!< CAN Silent Interrupt Enable
-#define TCAN455X_IR_WKERR_EN      (0x1u << 13) //!< Wake Error Interrupt Enable
-#define TCAN455X_IR_LWU_EN        (0x1u << 14) //!< Local Wake Up Interrupt Enable
-#define TCAN455X_IR_CANINT_EN     (0x1u << 15) //!< Can Bus Wake Up Interrupt Interrupt Enable
-#define TCAN455X_IR_ECCERR_EN     (0x1u << 16) //!< Uncorrectable ECC error detected Interrupt Enable
-#define TCAN455X_IR_WDTO_EN       (0x1u << 18) //!< Watchdog Time Out Interrupt Enable
-#define TCAN455X_IR_TSD_EN        (0x1u << 19) //!< Thermal Shutdown Interrupt Enable
-#define TCAN455X_IR_PWRON_EN      (0x1u << 20) //!< Power ON Interrupt Enable
-#define TCAN455X_IR_UVIO_EN       (0x1u << 21) //!< Under Voltage VIO Interrupt Enable
-#define TCAN455X_IR_UVSUP_EN      (0x1u << 22) //!< Under Voltage VSUP and UVCC Interrupt Enable
-#define TCAN455X_IR_SMS_EN        (0x1u << 23) //!< Sleep Mode Status Interrupt Enable
-#define TCAN455X_IR_CANBUSNOM_EN  (0x1u << 31) //!< CAN Bus normal Interrupt Enable
+#define TCAN455X_IR_VTWD_EN       (0x1ul <<  0) //!< Global Voltage, Temp or WDTO Interrupt Enable
+#define TCAN455X_IR_MCAN_INT_EN   (0x1ul <<  1) //!< M_CAN global INT Interrupt Enable
+#define TCAN455X_IR_SPIERR_EN     (0x1ul <<  3) //!< SPI Error Interrupt Enable
+#define TCAN455X_IR_CANERR_EN     (0x1ul <<  5) //!< CAN Error Interrupt Enable
+#define TCAN455X_IR_WKRQ_EN       (0x1ul <<  6) //!< Wake Request Interrupt Enable
+#define TCAN455X_IR_GLOBALERR_EN  (0x1ul <<  7) //!< Global Error (Any Fault) Interrupt Enable
+#define TCAN455X_IR_CANDOM_EN     (0x1ul <<  8) //!< CAN Stuck Dominant Interrupt Enable
+#define TCAN455X_IR_CANSLNT_EN    (0x1ul << 10) //!< CAN Silent Interrupt Enable
+#define TCAN455X_IR_WKERR_EN      (0x1ul << 13) //!< Wake Error Interrupt Enable
+#define TCAN455X_IR_LWU_EN        (0x1ul << 14) //!< Local Wake Up Interrupt Enable
+#define TCAN455X_IR_CANINT_EN     (0x1ul << 15) //!< Can Bus Wake Up Interrupt Interrupt Enable
+#define TCAN455X_IR_ECCERR_EN     (0x1ul << 16) //!< Uncorrectable ECC error detected Interrupt Enable
+#define TCAN455X_IR_WDTO_EN       (0x1ul << 18) //!< Watchdog Time Out Interrupt Enable
+#define TCAN455X_IR_TSD_EN        (0x1ul << 19) //!< Thermal Shutdown Interrupt Enable
+#define TCAN455X_IR_PWRON_EN      (0x1ul << 20) //!< Power ON Interrupt Enable
+#define TCAN455X_IR_UVIO_EN       (0x1ul << 21) //!< Under Voltage VIO Interrupt Enable
+#define TCAN455X_IR_UVSUP_EN      (0x1ul << 22) //!< Under Voltage VSUP and UVCC Interrupt Enable
+#define TCAN455X_IR_SMS_EN        (0x1ul << 23) //!< Sleep Mode Status Interrupt Enable
+#define TCAN455X_IR_CANBUSNOM_EN  (0x1ul << 31) //!< CAN Bus normal Interrupt Enable
 
 
 #define TCAN455X_IR_CLEARABLE_EVENTS_FLAGS  ( TCAN455X_IR_CANDOM_EN | TCAN455X_IR_CANSLNT_EN | TCAN455X_IR_WKERR_EN | TCAN455X_IR_LWU_EN | \
@@ -899,7 +900,7 @@ typedef enum
   TCAN455X_INT_EVENTS_STATUS_FLAGS_MASK       = TCAN455X_IR_EVENTS_STATUS_FLAGS,    //!< Events flags mask
 } eTCAN455X_InterruptEvents;
 
-typedef eTCAN455X_InterruptEvents setTCAN455X_InterruptEvents; //! Set of TCAN455X Interrupt Events (can be OR'ed)
+typedef eTCAN455X_InterruptEvents setTCAN455X_InterruptEvents; //!< Set of TCAN455X Interrupt Events (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -937,14 +938,14 @@ typedef union __TCAN455X_PACKED__ TCAN455X_IE_Register
 TCAN455X_UNPACKITEM;
 TCAN455X_CONTROL_ITEM_SIZE(TCAN455X_IE_Register, 4);
 
-#define TCAN455X_IE_CANDOM_EN   (0x1u <<  8) //!< CAN Stuck Dominant Interrupt Enable
-#define TCAN455X_IE_CANSLNT_EN  (0x1u << 10) //!< CAN Silent Interrupt Enable
-#define TCAN455X_IE_LWU_EN      (0x1u << 14) //!< Local Wake Up Interrupt Enable
-#define TCAN455X_IE_CANINT_EN   (0x1u << 15) //!< CAN Bus Wake Up Interrupt Interrupt Enable
-#define TCAN455X_IE_ECCERR_EN   (0x1u << 16) //!< Uncorrectable ECC error detected Interrupt Enable
-#define TCAN455X_IE_TSD_EN      (0x1u << 19) //!< Thermal Shutdown Interrupt Enable
-#define TCAN455X_IE_UVIO_EN     (0x1u << 21) //!< [TCAN4550/TCAN4550-Q1 only] Under Voltage VIO Interrupt Enable
-#define TCAN455X_IE_UVSUP_EN    (0x1u << 22) //!< Under Voltage VSUP and UVCC Interrupt Enable
+#define TCAN455X_IE_CANDOM_EN   (0x1ul <<  8) //!< CAN Stuck Dominant Interrupt Enable
+#define TCAN455X_IE_CANSLNT_EN  (0x1ul << 10) //!< CAN Silent Interrupt Enable
+#define TCAN455X_IE_LWU_EN      (0x1ul << 14) //!< Local Wake Up Interrupt Enable
+#define TCAN455X_IE_CANINT_EN   (0x1ul << 15) //!< CAN Bus Wake Up Interrupt Interrupt Enable
+#define TCAN455X_IE_ECCERR_EN   (0x1ul << 16) //!< Uncorrectable ECC error detected Interrupt Enable
+#define TCAN455X_IE_TSD_EN      (0x1ul << 19) //!< Thermal Shutdown Interrupt Enable
+#define TCAN455X_IE_UVIO_EN     (0x1ul << 21) //!< [TCAN4550/TCAN4550-Q1 only] Under Voltage VIO Interrupt Enable
+#define TCAN455X_IE_UVSUP_EN    (0x1ul << 22) //!< Under Voltage VSUP and UVCC Interrupt Enable
 
 //-----------------------------------------------------------------------------
 
@@ -976,12 +977,12 @@ typedef enum
 } eTCAN455X_PowerStates;
 
 #define TCAN455X_DEV_PS_Pos         0
-#define TCAN455X_DEV_PS_Mask        (0x3u << TCAN455X_DEV_PS_Pos)
+#define TCAN455X_DEV_PS_Mask        (0x3ul << TCAN455X_DEV_PS_Pos)
 #define TCAN455X_DEV_PS_SET(value)  (((uint32_t)(value) << TCAN455X_DEV_PS_Pos) & TCAN455X_DEV_PS_Mask)                        //!< Set Device Power State
 #define TCAN455X_DEV_PS_GET(value)  (eTCAN455X_PowerStates)(((uint32_t)(value) & TCAN455X_DEV_PS_Mask) >> TCAN455X_DEV_PS_Pos) //!< Get Device Power State
 
 #define TCAN455X_DEV_ID_Pos         2
-#define TCAN455X_DEV_ID_Mask        (0x1u << TCAN455X_DEV_ID_Pos)
+#define TCAN455X_DEV_ID_Mask        (0x1ul << TCAN455X_DEV_ID_Pos)
 #define TCAN455X_DEV_ID_SET(value)  (((uint8_t)(value) << TCAN455X_DEV_ID_Pos) & TCAN455X_DEV_ID_Mask) //!< Set Device ID
 #define TCAN455X_DEV_ID_GET(value)  (eTCAN455X_Devices)(((uint8_t)(value) & TCAN455X_DEV_ID_Mask) >> TCAN455X_DEV_ID_Pos) //!< Get Device ID
 

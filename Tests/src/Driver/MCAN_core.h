@@ -1,13 +1,13 @@
 /*!*****************************************************************************
  * @file    MCAN_core.h
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.0
- * @date    08/05/2021
+ * @version 1.0.1
+ * @date    22/03/2025
  * @brief   Bosch MCAN core API
  ******************************************************************************/
 /* @page License
  *
- * Copyright (c) 2020-2023 Fabien MAILLY
+ * Copyright (c) 2020-2025 Fabien MAILLY
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,11 @@
  * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
+ *****************************************************************************/
+
+/* Revision history:
+ * 1.0.1    Put 'ul' suffix instead of 'u' suffix on Masks values to remove warnings on 16-bits systems
+ * 1.0.0    Release version
  *****************************************************************************/
 #ifndef MCAN_CORE_H_INC
 #define MCAN_CORE_H_INC
@@ -93,8 +98,8 @@ extern "C" {
 
 //-----------------------------------------------------------------------------
 
-#define MCAN_BASE_ADDRESS_MASK     ( 0xFFFF0000 ) //!< Base address mask for RAM address reconstitution
-#define MCAN_ADDRESS32_ALIGN_MASK  ( 0xFFFFFFFC ) //!< Base 32-bits address with alignment mask for RAM address
+#define MCAN_BASE_ADDRESS_MASK     ( 0xFFFF0000ul ) //!< Base address mask for RAM address reconstitution
+#define MCAN_ADDRESS32_ALIGN_MASK  ( 0xFFFFFFFCul ) //!< Base 32-bits address with alignment mask for RAM address
 
 //-----------------------------------------------------------------------------
 
@@ -106,7 +111,7 @@ typedef enum
   MCAN_DRIVER_INIT_SET_RAM_AT_0 = 0x08, //!< Set all bytes of the RAM to 0x00 (slower at initialization)
 } eMCAN_DriverConfig;
 
-typedef eMCAN_DriverConfig setMCAN_DriverConfig; //! Set of Driver configuration (can be OR'ed)
+typedef eMCAN_DriverConfig setMCAN_DriverConfig; //!< Set of Driver configuration (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -216,11 +221,11 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_StandardFilterObject, 4);
 #define MCAN_CAN_FILTS0_SFID2_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTS0_SFID2_Pos) & MCAN_CAN_FILTS0_SFID2_Mask) //!< Set Standard Filter ID 2
 #define MCAN_CAN_FILTS0_SFID2_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTS0_SFID2_Mask) >> MCAN_CAN_FILTS0_SFID2_Pos) //!< Get Standard Filter ID 2
 #define MCAN_CAN_FILTS0_RXID_Pos          0
-#define MCAN_CAN_FILTS0_RXID_Mask         (0x3Fu << MCAN_CAN_FILTS0_RXID_Pos)
+#define MCAN_CAN_FILTS0_RXID_Mask         (0x3Ful << MCAN_CAN_FILTS0_RXID_Pos)
 #define MCAN_CAN_FILTS0_RXID_SET(value)   (((uint32_t)(value) << MCAN_CAN_FILTS0_RXID_Pos) & MCAN_CAN_FILTS0_RXID_Mask) //!< Set index of the dedicated Rx Buffer element to which a matching message is stored
 #define MCAN_CAN_FILTS0_RXID_GET(value)   (((uint32_t)(value) & MCAN_CAN_FILTS0_RXID_Mask) >> MCAN_CAN_FILTS0_RXID_Pos) //!< Get index of the dedicated Rx Buffer element to which a matching message is stored
 #define MCAN_CAN_FILTS0_DBMSG_Pos         9
-#define MCAN_CAN_FILTS0_DBMSG_Mask        (0x3u << MCAN_CAN_FILTS0_DBMSG_Pos)
+#define MCAN_CAN_FILTS0_DBMSG_Mask        (0x3ul << MCAN_CAN_FILTS0_DBMSG_Pos)
 #define MCAN_CAN_FILTS0_DBMSG_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTS0_DBMSG_Pos) & MCAN_CAN_FILTS0_DBMSG_Mask) //!< Set Filter Debug Message
 #define MCAN_CAN_FILTS0_DBMSG_GET(value)  (eMCAN_FilterDebugMessage)(((uint32_t)(value) & MCAN_CAN_FILTS0_DBMSG_Mask) >> MCAN_CAN_FILTS0_DBMSG_Pos) //!< Get Filter Debug Message
 #define MCAN_CAN_FILTS0_SFID1_Pos         16
@@ -228,11 +233,11 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_StandardFilterObject, 4);
 #define MCAN_CAN_FILTS0_SFID1_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTS0_SFID1_Pos) & MCAN_CAN_FILTS0_SFID1_Mask) //!< Set Standard Filter ID 1
 #define MCAN_CAN_FILTS0_SFID1_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTS0_SFID1_Mask) >> MCAN_CAN_FILTS0_SFID1_Pos) //!< Get Standard Filter ID 1
 #define MCAN_CAN_FILTS0_SFEC_Pos          27
-#define MCAN_CAN_FILTS0_SFEC_Mask         (0x7u << MCAN_CAN_FILTS0_SFEC_Pos)
+#define MCAN_CAN_FILTS0_SFEC_Mask         (0x7ul << MCAN_CAN_FILTS0_SFEC_Pos)
 #define MCAN_CAN_FILTS0_SFEC_SET(value)   (((uint32_t)(value) << MCAN_CAN_FILTS0_SFEC_Pos) & MCAN_CAN_FILTS0_SFEC_Mask) //!< Set Standard Filter Element Configuration
 #define MCAN_CAN_FILTS0_SFEC_GET(value)   (eMCAN_FilterElementConfig)(((uint32_t)(value) & MCAN_CAN_FILTS0_SFEC_Mask) >> MCAN_CAN_FILTS0_SFEC_Pos) //!< Get Standard Filter Element Configuration
 #define MCAN_CAN_FILTS0_SFT_Pos           30
-#define MCAN_CAN_FILTS0_SFT_Mask          (0x3u << MCAN_CAN_FILTS0_SFT_Pos)
+#define MCAN_CAN_FILTS0_SFT_Mask          (0x3ul << MCAN_CAN_FILTS0_SFT_Pos)
 #define MCAN_CAN_FILTS0_SFT_SET(value)    (((uint32_t)(value) << MCAN_CAN_FILTS0_SFT_Pos) & MCAN_CAN_FILTS0_SFT_Mask) //!< Set Standard Filter Type
 #define MCAN_CAN_FILTS0_SFT_GET(value)    (eMCAN_FilterType)(((uint32_t)(value) & MCAN_CAN_FILTS0_SFT_Mask) >> MCAN_CAN_FILTS0_SFT_Pos) //!< Get Standard Filter Type
 
@@ -242,7 +247,7 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_StandardFilterObject, 4);
 
 //-----------------------------------------------------------------------------
 
-#define MCAN_CAN_FILTER_EID_AND_SID_MASK  ( 0x1FFFFFFFu )
+#define MCAN_CAN_FILTER_EID_AND_SID_MASK  ( 0x1FFFFFFFul )
 
 
 //! Extended Message ID Filter Element Identifier 1 (F0)
@@ -265,7 +270,7 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_ExtendedFilterIdentifier1, 4);
 #define MCAN_CAN_FILTF0_EFID1_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTF0_EFID1_Pos) & MCAN_CAN_FILTF0_EFID1_Mask) //!< Set Extended Filter ID 1
 #define MCAN_CAN_FILTF0_EFID1_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTF0_EFID1_Mask) >> MCAN_CAN_FILTF0_EFID1_Pos) //!< Get Extended Filter ID 1
 #define MCAN_CAN_FILTF0_EFEC_Pos          29
-#define MCAN_CAN_FILTF0_EFEC_Mask         (0x7u << MCAN_CAN_FILTF0_EFEC_Pos)
+#define MCAN_CAN_FILTF0_EFEC_Mask         (0x7ul << MCAN_CAN_FILTF0_EFEC_Pos)
 #define MCAN_CAN_FILTF0_EFEC_SET(value)   (((uint32_t)(value) << MCAN_CAN_FILTF0_EFEC_Pos) & MCAN_CAN_FILTF0_EFEC_Mask) //!< Set Extended Filter Element Configuration
 #define MCAN_CAN_FILTF0_EFEC_GET(value)   (eMCAN_FilterElementConfig)(((uint32_t)(value) & MCAN_CAN_FILTF0_EFEC_Mask) >> MCAN_CAN_FILTF0_EFEC_Pos) //!< Get Extended Filter Element Configuration
 
@@ -301,15 +306,15 @@ MCAN_CONTROL_ITEM_SIZE(MCAN_ExtendedFilterIdentifier2, 4);
 #define MCAN_CAN_FILTF1_EFID2_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTF1_EFID2_Pos) & MCAN_CAN_FILTF1_EFID2_Mask) //!< Set Extended Filter ID 2
 #define MCAN_CAN_FILTF1_EFID2_GET(value)  (((uint32_t)(value) & MCAN_CAN_FILTF1_EFID2_Mask) >> MCAN_CAN_FILTF1_EFID2_Pos) //!< Get Extended Filter ID 2
 #define MCAN_CAN_FILTF1_RXID_Pos          0
-#define MCAN_CAN_FILTF1_RXID_Mask         (0x3Fu << MCAN_CAN_FILTF1_RXID_Pos)
+#define MCAN_CAN_FILTF1_RXID_Mask         (0x3Ful << MCAN_CAN_FILTF1_RXID_Pos)
 #define MCAN_CAN_FILTF1_RXID_SET(value)   (((uint32_t)(value) << MCAN_CAN_FILTF1_RXID_Pos) & MCAN_CAN_FILTF1_RXID_Mask) //!< Set index of the dedicated Rx Buffer element to which a matching message is stored
 #define MCAN_CAN_FILTF1_RXID_GET(value)   (((uint32_t)(value) & MCAN_CAN_FILTF1_RXID_Mask) >> MCAN_CAN_FILTF1_RXID_Pos) //!< Get index of the dedicated Rx Buffer element to which a matching message is stored
 #define MCAN_CAN_FILTF1_DBMSG_Pos         9
-#define MCAN_CAN_FILTF1_DBMSG_Mask        (0x3u << MCAN_CAN_FILTF1_DBMSG_Pos)
+#define MCAN_CAN_FILTF1_DBMSG_Mask        (0x3ul << MCAN_CAN_FILTF1_DBMSG_Pos)
 #define MCAN_CAN_FILTF1_DBMSG_SET(value)  (((uint32_t)(value) << MCAN_CAN_FILTF1_DBMSG_Pos) & MCAN_CAN_FILTF1_DBMSG_Mask) //!< Set Filter Debug Message
 #define MCAN_CAN_FILTF1_DBMSG_GET(value)  (eMCAN_FilterDebugMessage)(((uint32_t)(value) & MCAN_CAN_FILTF1_DBMSG_Mask) >> MCAN_CAN_FILTF1_DBMSG_Pos) //!< Get Filter Debug Message
 #define MCAN_CAN_FILTF1_EFT_Pos           30
-#define MCAN_CAN_FILTF1_EFT_Mask          (0x3u << MCAN_CAN_FILTF1_EFT_Pos)
+#define MCAN_CAN_FILTF1_EFT_Mask          (0x3ul << MCAN_CAN_FILTF1_EFT_Pos)
 #define MCAN_CAN_FILTF1_EFT_SET(value)    (((uint32_t)(value) << MCAN_CAN_FILTF1_EFT_Pos) & MCAN_CAN_FILTF1_EFT_Mask) //!< Set Extended Filter Type
 #define MCAN_CAN_FILTF1_EFT_GET(value)    (eMCAN_FilterType)(((uint32_t)(value) & MCAN_CAN_FILTF1_EFT_Mask) >> MCAN_CAN_FILTF1_EFT_Pos) //!< Get Extended Filter Type
 
@@ -395,20 +400,20 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_TxMessageIdentifier, 4);
 
 #define MCAN_CAN_MSGT0_ID_Pos            0
-#define MCAN_CAN_MSGT0_ID_Mask           (0x1FFFFFFFu << MCAN_CAN_MSGT0_ID_Pos)
+#define MCAN_CAN_MSGT0_ID_Mask           (0x1FFFFFFFul << MCAN_CAN_MSGT0_ID_Pos)
 #define MCAN_CAN_MSGT0_ID_SET(value)     (((uint32_t)(value) << MCAN_CAN_MSGT0_ID_Pos) & MCAN_CAN_MSGT0_ID_Mask) //!< Message Identifier filter
 
 #define MCAN_CAN_MSGT0_EID_Pos           0
-#define MCAN_CAN_MSGT0_EID_Mask          (0x3FFFFu << MCAN_CAN_MSGT0_EID_Pos)
+#define MCAN_CAN_MSGT0_EID_Mask          (0x3FFFFul << MCAN_CAN_MSGT0_EID_Pos)
 #define MCAN_CAN_MSGT0_EID_SET(value)    (((uint32_t)(value) << MCAN_CAN_MSGT0_EID_Pos) & MCAN_CAN_MSGT0_EID_Mask) //!< Extended Identifier filter
 #define MCAN_CAN_MSGT0_SID_Pos           18
-#define MCAN_CAN_MSGT0_SID_Mask          (0x7FFu << MCAN_CAN_MSGT0_SID_Pos)
+#define MCAN_CAN_MSGT0_SID_Mask          (0x7FFul << MCAN_CAN_MSGT0_SID_Pos)
 #define MCAN_CAN_MSGT0_SID_SET(value)    (((uint32_t)(value) << MCAN_CAN_MSGT0_SID_Pos) & MCAN_CAN_MSGT0_SID_Mask) //!< Standard Identifier filter
-#define MCAN_CAN_MSGT0_REMOTE_FRAME      (0x1u << 29) //!< Transmit remote frame
-#define MCAN_CAN_MSGT0_DATA_FRAME        (0x0u << 29) //!< Transmit data frame
-#define MCAN_CAN_MSGT0_EXTENDED_ID       (0x1u << 30) //!< 29-bit extended identifier
-#define MCAN_CAN_MSGT0_STANDARD_ID       (0x0u << 30) //!< 11-bit standard identifier
-#define MCAN_CAN_MSGT0_ERROR_STATUS_IND  (0x1u << 31) //!< Error Status Indicator
+#define MCAN_CAN_MSGT0_REMOTE_FRAME      (0x1ul << 29) //!< Transmit remote frame
+#define MCAN_CAN_MSGT0_DATA_FRAME        (0x0ul << 29) //!< Transmit data frame
+#define MCAN_CAN_MSGT0_EXTENDED_ID       (0x1ul << 30) //!< 29-bit extended identifier
+#define MCAN_CAN_MSGT0_STANDARD_ID       (0x0ul << 30) //!< 11-bit standard identifier
+#define MCAN_CAN_MSGT0_ERROR_STATUS_IND  (0x1ul << 31) //!< Error Status Indicator
 
 //-----------------------------------------------------------------------------
 
@@ -434,21 +439,21 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_TxMessageControl, 4);
 
 #define MCAN_CAN_MSGT1_MMh_Pos                8
-#define MCAN_CAN_MSGT1_MMh_Mask               (0xFFu << MCAN_CAN_MSGT1_MMh_Pos)
+#define MCAN_CAN_MSGT1_MMh_Mask               (0xFFul << MCAN_CAN_MSGT1_MMh_Pos)
 #define MCAN_CAN_MSGT1_MMh_SET(value)         (((uint32_t)(value) << MCAN_CAN_MSGT1_MMh_Pos) & MCAN_CAN_MSGT1_MMh_Mask) //!< Message Marker. High byte of Wide Message Marker, written by CPU during Tx Buffer configuration. Copied into Tx Event FIFO element for identification of Tx message status. Available only when CCCR.WMM = '1' or when CCCR.UTSU = '1'
 #define MCAN_CAN_MSGT1_DLC_Pos                16
-#define MCAN_CAN_MSGT1_DLC_Mask               (0xFu << MCAN_CAN_MSGT1_DLC_Pos)
+#define MCAN_CAN_MSGT1_DLC_Mask               (0xFul << MCAN_CAN_MSGT1_DLC_Pos)
 #define MCAN_CAN_MSGT1_DLC_SET(value)         (((uint32_t)(value) << MCAN_CAN_MSGT1_DLC_Pos) & MCAN_CAN_MSGT1_DLC_Mask) //!< Data Length Code
-#define MCAN_CAN_MSGT1_BITRATE_SWITCH         (0x1u << 20) //!< CAN FD frames transmitted with bit rate switching
-#define MCAN_CAN_MSGT1_NO_BITRATE_SWITCH      (0x0u << 20) //!< CAN FD frames transmitted without bit rate switching
-#define MCAN_CAN_MSGT1_FD_FORMAT              (0x1u << 21) //!< Frame transmitted in CAN FD format
-#define MCAN_CAN_MSGT1_CLASSIC_CAN_FORMAT     (0x0u << 21) //!< Frame transmitted in Classic CAN format
-#define MCAN_CAN_MSGT1_USE_TIMESTAMP_CAPTURE  (0x1u << 22) //!< Timestamp capture enable for TSU
-#define MCAN_CAN_MSGT1_NO_TIMESTAMP_CAPTURE   (0x0u << 22) //!< Timestamp capture disable for TSU
-#define MCAN_CAN_MSGT1_STORE_TX_EVENT         (0x1u << 23) //!< Store Tx events
-#define MCAN_CAN_MSGT1_NO_STORE_TX_EVENT      (0x0u << 23) //!< Do not store Tx events
+#define MCAN_CAN_MSGT1_BITRATE_SWITCH         (0x1ul << 20) //!< CAN FD frames transmitted with bit rate switching
+#define MCAN_CAN_MSGT1_NO_BITRATE_SWITCH      (0x0ul << 20) //!< CAN FD frames transmitted without bit rate switching
+#define MCAN_CAN_MSGT1_FD_FORMAT              (0x1ul << 21) //!< Frame transmitted in CAN FD format
+#define MCAN_CAN_MSGT1_CLASSIC_CAN_FORMAT     (0x0ul << 21) //!< Frame transmitted in Classic CAN format
+#define MCAN_CAN_MSGT1_USE_TIMESTAMP_CAPTURE  (0x1ul << 22) //!< Timestamp capture enable for TSU
+#define MCAN_CAN_MSGT1_NO_TIMESTAMP_CAPTURE   (0x0ul << 22) //!< Timestamp capture disable for TSU
+#define MCAN_CAN_MSGT1_STORE_TX_EVENT         (0x1ul << 23) //!< Store Tx events
+#define MCAN_CAN_MSGT1_NO_STORE_TX_EVENT      (0x0ul << 23) //!< Do not store Tx events
 #define MCAN_CAN_MSGT1_MMl_Pos                24
-#define MCAN_CAN_MSGT1_MMl_Mask               (0xFFu << MCAN_CAN_MSGT1_MMl_Pos)
+#define MCAN_CAN_MSGT1_MMl_Mask               (0xFFul << MCAN_CAN_MSGT1_MMl_Pos)
 #define MCAN_CAN_MSGT1_MMl_SET(value)         (((uint32_t)(value) << MCAN_CAN_MSGT1_MMl_Pos) & MCAN_CAN_MSGT1_MMl_Mask) //!< Message Marker. Copied into Tx Event FIFO element for identification of Tx message status
 #define MCAN_CAN_MSGT1_MM_SET(value)          ( MCAN_CAN_MSGT1_MMh_SET((value) >> 8) | MCAN_CAN_MSGT1_MMl_SET(value) ) //!< Complete Message Marker
 
@@ -497,20 +502,20 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_TxEventIdentifier, 4);
 
 #define MCAN_CAN_MSGE0_ID_Pos            0
-#define MCAN_CAN_MSGE0_ID_Mask           (0x1FFFFFFFu << MCAN_CAN_MSGE0_ID_Pos)
+#define MCAN_CAN_MSGE0_ID_Mask           (0x1FFFFFFFul << MCAN_CAN_MSGE0_ID_Pos)
 #define MCAN_CAN_MSGE0_ID_GET(value)     (((uint32_t)(value) & MCAN_CAN_MSGE0_ID_Mask) >> MCAN_CAN_MSGE0_ID_Pos) //!< Message Identifier filter
 
 #define MCAN_CAN_MSGE0_SID_Pos           18
-#define MCAN_CAN_MSGE0_SID_Mask          (0x7FFu << MCAN_CAN_MSGE0_SID_Pos)
+#define MCAN_CAN_MSGE0_SID_Mask          (0x7FFul << MCAN_CAN_MSGE0_SID_Pos)
 #define MCAN_CAN_MSGE0_SID_GET(value)    (((uint32_t)(value) & MCAN_CAN_MSGE0_SID_Mask) >> MCAN_CAN_MSGE0_SID_Pos) //!< Standard Identifier filter
 #define MCAN_CAN_MSGE0_EID_Pos           0
-#define MCAN_CAN_MSGE0_EID_Mask          (0x3FFFFu << MCAN_CAN_MSGE0_EID_Pos)
+#define MCAN_CAN_MSGE0_EID_Mask          (0x3FFFFul << MCAN_CAN_MSGE0_EID_Pos)
 #define MCAN_CAN_MSGE0_EID_GET(value)    (((uint32_t)(value) & MCAN_CAN_MSGE0_EID_Mask) >> MCAN_CAN_MSGE0_EID_Pos) //!< Extended Identifier filter
-#define MCAN_CAN_MSGE0_REMOTE_FRAME      (0x1u << 29) //!< Transmit remote frame
-#define MCAN_CAN_MSGE0_DATA_FRAME        (0x0u << 29) //!< Transmit data frame
-#define MCAN_CAN_MSGE0_EXTENDED_ID       (0x1u << 30) //!< 29-bit extended identifier
-#define MCAN_CAN_MSGE0_STANDARD_ID       (0x0u << 30) //!< 11-bit standard identifier
-#define MCAN_CAN_MSGE0_ERROR_STATUS_IND  (0x1u << 31) //!< Error Status Indicator
+#define MCAN_CAN_MSGE0_REMOTE_FRAME      (0x1ul << 29) //!< Transmit remote frame
+#define MCAN_CAN_MSGE0_DATA_FRAME        (0x0ul << 29) //!< Transmit data frame
+#define MCAN_CAN_MSGE0_EXTENDED_ID       (0x1ul << 30) //!< 29-bit extended identifier
+#define MCAN_CAN_MSGE0_STANDARD_ID       (0x0ul << 30) //!< 11-bit standard identifier
+#define MCAN_CAN_MSGE0_ERROR_STATUS_IND  (0x1ul << 31) //!< Error Status Indicator
 
 //-----------------------------------------------------------------------------
 
@@ -537,15 +542,15 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_TxEventControlA, 4);
 
 #define MCAN_CAN_MSGE1A_TXTS_Pos            0
-#define MCAN_CAN_MSGE1A_TXTS_Mask           (0xFFFFu << MCAN_CAN_MSGE1A_TXTS_Pos)
+#define MCAN_CAN_MSGE1A_TXTS_Mask           (0xFFFFul << MCAN_CAN_MSGE1A_TXTS_Pos)
 #define MCAN_CAN_MSGE1A_TXTS_GET(value)     (((uint32_t)(value) & MCAN_CAN_MSGE1A_TXTS_Mask) >> MCAN_CAN_MSGE1A_TXTS_Pos) //!< Tx Timestamp
 #define MCAN_CAN_MSGE1A_DLC_Pos             16
-#define MCAN_CAN_MSGE1A_DLC_Mask            (0xFu << MCAN_CAN_MSGE1A_DLC_Pos)
+#define MCAN_CAN_MSGE1A_DLC_Mask            (0xFul << MCAN_CAN_MSGE1A_DLC_Pos)
 #define MCAN_CAN_MSGE1A_DLC_GET(value)      (((uint32_t)(value) & MCAN_CAN_MSGE1A_DLC_Mask) >> MCAN_CAN_MSGE1A_DLC_Pos) //!< Data Length Code
-#define MCAN_CAN_MSGE1A_BITRATE_SWITCH      (0x1u << 20) //!< CAN FD frames transmitted with bit rate switching
-#define MCAN_CAN_MSGE1A_NO_BITRATE_SWITCH   (0x0u << 20) //!< CAN FD frames transmitted without bit rate switching
-#define MCAN_CAN_MSGE1A_FD_FORMAT           (0x1u << 21) //!< Frame transmitted in CAN FD format
-#define MCAN_CAN_MSGE1A_CLASSIC_CAN_FORMAT  (0x0u << 21) //!< Frame transmitted in Classic CAN format
+#define MCAN_CAN_MSGE1A_BITRATE_SWITCH      (0x1ul << 20) //!< CAN FD frames transmitted with bit rate switching
+#define MCAN_CAN_MSGE1A_NO_BITRATE_SWITCH   (0x0ul << 20) //!< CAN FD frames transmitted without bit rate switching
+#define MCAN_CAN_MSGE1A_FD_FORMAT           (0x1ul << 21) //!< Frame transmitted in CAN FD format
+#define MCAN_CAN_MSGE1A_CLASSIC_CAN_FORMAT  (0x0ul << 21) //!< Frame transmitted in Classic CAN format
 
 //! Event Type enumerator
 typedef enum
@@ -557,10 +562,10 @@ typedef enum
 } eMCAN_EventType;
 
 #define MCAN_CAN_MSGE1A_ET_Pos              22
-#define MCAN_CAN_MSGE1A_ET_Mask             (0x3u << MCAN_CAN_MSGE1A_ET_Pos)
+#define MCAN_CAN_MSGE1A_ET_Mask             (0x3ul << MCAN_CAN_MSGE1A_ET_Pos)
 #define MCAN_CAN_MSGE1A_ET_GET(value)       (eMCAN_EventType)(((uint32_t)(value) & MCAN_CAN_MSGE1A_ET_Mask) >> MCAN_CAN_MSGE1A_ET_Pos) //!< Event Type
 #define MCAN_CAN_MSGE1A_MM_Pos              24
-#define MCAN_CAN_MSGE1A_MM_Mask             (0xFFu << MCAN_CAN_MSGE1A_MM_Pos)
+#define MCAN_CAN_MSGE1A_MM_Mask             (0xFFul << MCAN_CAN_MSGE1A_MM_Pos)
 #define MCAN_CAN_MSGE1A_MM_GET(value)       (((uint32_t)(value) & MCAN_CAN_MSGE1A_MM_Mask) >> MCAN_CAN_MSGE1A_MM_Pos) //!< Message Marker. Written by processor during Tx Buffer configuration. Copied into Tx Event FIFO element for identification of Tx message status
 
 //-----------------------------------------------------------------------------
@@ -592,25 +597,25 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_TxEventControlB, 4);
 
 #define MCAN_CAN_MSGE1B_TXTSP_Pos              0
-#define MCAN_CAN_MSGE1B_TXTSP_Mask             (0xFu << MCAN_CAN_MSGE1B_TXTSP_Pos)
+#define MCAN_CAN_MSGE1B_TXTSP_Mask             (0xFul << MCAN_CAN_MSGE1B_TXTSP_Pos)
 #define MCAN_CAN_MSGE1B_TXTSP_GET(value)       (((uint32_t)(value) & MCAN_CAN_MSGE1B_TXTSP_Mask) >> MCAN_CAN_MSGE1B_TXTSP_Pos) //!< Tx Timestamp Pointer
-#define MCAN_CAN_MSGE1B_TIMESTAMP_CAPTURED     (0x1u << 4) //!< Timestamp captured and stored in TSU Timestamp register referenced by E1B.TXTSP
-#define MCAN_CAN_MSGE1B_NO_TIMESTAMP_CAPTURED  (0x0u << 4) //!< No timestamp captured
+#define MCAN_CAN_MSGE1B_TIMESTAMP_CAPTURED     (0x1ul << 4) //!< Timestamp captured and stored in TSU Timestamp register referenced by E1B.TXTSP
+#define MCAN_CAN_MSGE1B_NO_TIMESTAMP_CAPTURED  (0x0ul << 4) //!< No timestamp captured
 #define MCAN_CAN_MSGE1B_MMh_Pos                8
-#define MCAN_CAN_MSGE1B_MMh_Mask               (0xFFu << MCAN_CAN_MSGE1B_MMh_Pos)
+#define MCAN_CAN_MSGE1B_MMh_Mask               (0xFFul << MCAN_CAN_MSGE1B_MMh_Pos)
 #define MCAN_CAN_MSGE1B_MMh_GET(value)         (((uint32_t)(value) & MCAN_CAN_MSGE1B_MMh_Mask) >> MCAN_CAN_MSGE1B_MMh_Pos) //!< Message Marker. High byte of Wide Message Marker, written by CPU during Tx Buffer configuration. Copied into Tx Event FIFO element for identification of Tx message status
 #define MCAN_CAN_MSGE1B_DLC_Pos                16
-#define MCAN_CAN_MSGE1B_DLC_Mask               (0xFu << MCAN_CAN_MSGE1B_DLC_Pos)
+#define MCAN_CAN_MSGE1B_DLC_Mask               (0xFul << MCAN_CAN_MSGE1B_DLC_Pos)
 #define MCAN_CAN_MSGE1B_DLC_GET(value)         (((uint32_t)(value) & MCAN_CAN_MSGE1B_DLC_Mask) >> MCAN_CAN_MSGE1B_DLC_Pos) //!< Data Length Code
-#define MCAN_CAN_MSGE1B_BITRATE_SWITCH         (0x1u << 20) //!< CAN FD frames transmitted with bit rate switching
-#define MCAN_CAN_MSGE1B_NO_BITRATE_SWITCH      (0x0u << 20) //!< CAN FD frames transmitted without bit rate switching
-#define MCAN_CAN_MSGE1B_FD_FORMAT              (0x1u << 21) //!< Frame transmitted in CAN FD format
-#define MCAN_CAN_MSGE1B_CLASSIC_CAN_FORMAT     (0x0u << 21) //!< Frame transmitted in Classic CAN format
+#define MCAN_CAN_MSGE1B_BITRATE_SWITCH         (0x1ul << 20) //!< CAN FD frames transmitted with bit rate switching
+#define MCAN_CAN_MSGE1B_NO_BITRATE_SWITCH      (0x0ul << 20) //!< CAN FD frames transmitted without bit rate switching
+#define MCAN_CAN_MSGE1B_FD_FORMAT              (0x1ul << 21) //!< Frame transmitted in CAN FD format
+#define MCAN_CAN_MSGE1B_CLASSIC_CAN_FORMAT     (0x0ul << 21) //!< Frame transmitted in Classic CAN format
 #define MCAN_CAN_MSGE1B_ET_Pos                 22
-#define MCAN_CAN_MSGE1B_ET_Mask                (0x3u << MCAN_CAN_MSGE1B_ET_Pos)
+#define MCAN_CAN_MSGE1B_ET_Mask                (0x3ul << MCAN_CAN_MSGE1B_ET_Pos)
 #define MCAN_CAN_MSGE1B_ET_GET(value)          (eMCAN_EventType)(((uint32_t)(value) & MCAN_CAN_MSGE1B_ET_Mask) >> MCAN_CAN_MSGE1B_ET_Pos) //!< Event Type
 #define MCAN_CAN_MSGE1B_MMl_Pos                24
-#define MCAN_CAN_MSGE1B_MMl_Mask               (0xFFu << MCAN_CAN_MSGE1B_MMl_Pos)
+#define MCAN_CAN_MSGE1B_MMl_Mask               (0xFFul << MCAN_CAN_MSGE1B_MMl_Pos)
 #define MCAN_CAN_MSGE1B_MMl_GET(value)         (((uint32_t)(value) & MCAN_CAN_MSGE1B_MMl_Mask) >> MCAN_CAN_MSGE1B_MMl_Pos) //!< Message Marker. Written by processor during Tx Buffer configuration. Copied into Tx Event FIFO element for identification of Tx message status
 #define MCAN_CAN_MSGE1B_MM_GET(value)          ( (MCAN_CAN_MSGE1B_MMh_GET(value) << 8) | MCAN_CAN_MSGE1B_MMl_GET(value) ) //!< Complete Message Marker. Written by processor during Tx Buffer configuration
 
@@ -662,20 +667,20 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_RxMessageIdentifier, 4);
 
 #define MCAN_CAN_MSGR0_ID_Pos            0
-#define MCAN_CAN_MSGR0_ID_Mask           (0x1FFFFFFFu << MCAN_CAN_MSGR0_ID_Pos)
+#define MCAN_CAN_MSGR0_ID_Mask           (0x1FFFFFFFul << MCAN_CAN_MSGR0_ID_Pos)
 #define MCAN_CAN_MSGR0_ID_GET(value)     (((uint32_t)(value) & MCAN_CAN_MSGR0_ID_Mask) >> MCAN_CAN_MSGR0_ID_Pos) //!< Message Identifier filter
 
 #define MCAN_CAN_MSGR0_SID_Pos           18
-#define MCAN_CAN_MSGR0_SID_Mask          (0x7FFu << MCAN_CAN_MSGR0_SID_Pos)
+#define MCAN_CAN_MSGR0_SID_Mask          (0x7FFul << MCAN_CAN_MSGR0_SID_Pos)
 #define MCAN_CAN_MSGR0_SID_GET(value)    (((uint32_t)(value) & MCAN_CAN_MSGR0_SID_Mask) >> MCAN_CAN_MSGR0_SID_Pos) //!< Standard Identifier filter
 #define MCAN_CAN_MSGR0_EID_Pos           0
-#define MCAN_CAN_MSGR0_EID_Mask          (0x3FFFFu << MCAN_CAN_MSGR0_EID_Pos)
+#define MCAN_CAN_MSGR0_EID_Mask          (0x3FFFFul << MCAN_CAN_MSGR0_EID_Pos)
 #define MCAN_CAN_MSGR0_EID_GET(value)    (((uint32_t)(value) & MCAN_CAN_MSGR0_EID_Mask) >> MCAN_CAN_MSGR0_EID_Pos) //!< Extended Identifier filter
-#define MCAN_CAN_MSGR0_REMOTE_FRAME      (0x1u << 29) //!< Transmit remote frame
-#define MCAN_CAN_MSGR0_DATA_FRAME        (0x0u << 29) //!< Transmit data frame
-#define MCAN_CAN_MSGR0_EXTENDED_ID       (0x1u << 30) //!< 29-bit extended identifier
-#define MCAN_CAN_MSGR0_STANDARD_ID       (0x0u << 30) //!< 11-bit standard identifier
-#define MCAN_CAN_MSGR0_ERROR_STATUS_IND  (0x1u << 31) //!< Error Status Indicator
+#define MCAN_CAN_MSGR0_REMOTE_FRAME      (0x1ul << 29) //!< Transmit remote frame
+#define MCAN_CAN_MSGR0_DATA_FRAME        (0x0ul << 29) //!< Transmit data frame
+#define MCAN_CAN_MSGR0_EXTENDED_ID       (0x1ul << 30) //!< 29-bit extended identifier
+#define MCAN_CAN_MSGR0_STANDARD_ID       (0x0ul << 30) //!< 11-bit standard identifier
+#define MCAN_CAN_MSGR0_ERROR_STATUS_IND  (0x1ul << 31) //!< Error Status Indicator
 
 //-----------------------------------------------------------------------------
 
@@ -703,19 +708,19 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_RxMessageControlA, 4);
 
 #define MCAN_CAN_MSGR1A_RXTS_Pos            0
-#define MCAN_CAN_MSGR1A_RXTS_Mask           (0xFFFFu << MCAN_CAN_MSGR1A_RXTS_Pos)
+#define MCAN_CAN_MSGR1A_RXTS_Mask           (0xFFFFul << MCAN_CAN_MSGR1A_RXTS_Pos)
 #define MCAN_CAN_MSGR1A_RXTS_GET(value)     (((uint32_t)(value) & MCAN_CAN_MSGR1A_RXTS_Mask) >> MCAN_CAN_MSGR1A_RXTS_Pos) //!< Rx Timestamp
 #define MCAN_CAN_MSGR1A_DLC_Pos             16
-#define MCAN_CAN_MSGR1A_DLC_Mask            (0xFu << MCAN_CAN_MSGR1A_DLC_Pos)
+#define MCAN_CAN_MSGR1A_DLC_Mask            (0xFul << MCAN_CAN_MSGR1A_DLC_Pos)
 #define MCAN_CAN_MSGR1A_DLC_GET(value)      (((uint32_t)(value) & MCAN_CAN_MSGR1A_DLC_Mask) >> MCAN_CAN_MSGR1A_DLC_Pos) //!< Data Length Code
-#define MCAN_CAN_MSGR1A_BITRATE_SWITCH      (0x1u << 20) //!< CAN FD frames transmitted with bit rate switching
-#define MCAN_CAN_MSGR1A_NO_BITRATE_SWITCH   (0x0u << 20) //!< CAN FD frames transmitted without bit rate switching
-#define MCAN_CAN_MSGR1A_FD_FORMAT           (0x1u << 21) //!< Frame transmitted in CAN FD format
-#define MCAN_CAN_MSGR1A_CLASSIC_CAN_FORMAT  (0x0u << 21) //!< Frame transmitted in Classic CAN format
+#define MCAN_CAN_MSGR1A_BITRATE_SWITCH      (0x1ul << 20) //!< CAN FD frames transmitted with bit rate switching
+#define MCAN_CAN_MSGR1A_NO_BITRATE_SWITCH   (0x0ul << 20) //!< CAN FD frames transmitted without bit rate switching
+#define MCAN_CAN_MSGR1A_FD_FORMAT           (0x1ul << 21) //!< Frame transmitted in CAN FD format
+#define MCAN_CAN_MSGR1A_CLASSIC_CAN_FORMAT  (0x0ul << 21) //!< Frame transmitted in Classic CAN format
 #define MCAN_CAN_MSGR1A_FIDX_Pos            24
-#define MCAN_CAN_MSGR1A_FIDX_Mask           (0x7Fu << MCAN_CAN_MSGR1A_FIDX_Pos)
+#define MCAN_CAN_MSGR1A_FIDX_Mask           (0x7Ful << MCAN_CAN_MSGR1A_FIDX_Pos)
 #define MCAN_CAN_MSGR1A_FIDX_GET(value)     (((uint32_t)(value) & MCAN_CAN_MSGR1A_FIDX_Mask) >> MCAN_CAN_MSGR1A_FIDX_Pos) //!< Filter Index
-#define MCAN_CAN_MSGR1A_NON_MATCHING_FRAME  (0x1u << 31) //!< Received frame did not match any Rx filter element
+#define MCAN_CAN_MSGR1A_NON_MATCHING_FRAME  (0x1ul << 31) //!< Received frame did not match any Rx filter element
 
 //-----------------------------------------------------------------------------
 
@@ -745,21 +750,21 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CAN_RxMessageControlB, 4);
 
 #define MCAN_CAN_MSGR1B_RXTSP_Pos              0
-#define MCAN_CAN_MSGR1B_RXTSP_Mask             (0xFu << MCAN_CAN_MSGR1B_RXTSP_Pos)
+#define MCAN_CAN_MSGR1B_RXTSP_Mask             (0xFul << MCAN_CAN_MSGR1B_RXTSP_Pos)
 #define MCAN_CAN_MSGR1B_RXTSP_GET(value)       (((uint32_t)(value) & MCAN_CAN_MSGR1B_RXTSP_Mask) >> MCAN_CAN_MSGR1B_RXTSP_Pos) //!< Rx Timestamp Pointer
-#define MCAN_CAN_MSGR1B_TIMESTAMP_CAPTURED     (0x1u << 4) //!< Timestamp captured and stored in TSU Timestamp register referenced by R1B.RXTSP
-#define MCAN_CAN_MSGR1B_NO_TIMESTAMP_CAPTURED  (0x0u << 4) //!< No timestamp captured
+#define MCAN_CAN_MSGR1B_TIMESTAMP_CAPTURED     (0x1ul << 4) //!< Timestamp captured and stored in TSU Timestamp register referenced by R1B.RXTSP
+#define MCAN_CAN_MSGR1B_NO_TIMESTAMP_CAPTURED  (0x0ul << 4) //!< No timestamp captured
 #define MCAN_CAN_MSGR1B_DLC_Pos                16
-#define MCAN_CAN_MSGR1B_DLC_Mask               (0xFu << MCAN_CAN_MSGR1B_DLC_Pos)
+#define MCAN_CAN_MSGR1B_DLC_Mask               (0xFul << MCAN_CAN_MSGR1B_DLC_Pos)
 #define MCAN_CAN_MSGR1B_DLC_GET(value)         (((uint32_t)(value) & MCAN_CAN_MSGR1B_DLC_Mask) >> MCAN_CAN_MSGR1B_DLC_Pos) //!< Data Length Code
-#define MCAN_CAN_MSGR1B_BITRATE_SWITCH         (0x1u << 20) //!< CAN FD frames transmitted with bit rate switching
-#define MCAN_CAN_MSGR1B_NO_BITRATE_SWITCH      (0x0u << 20) //!< CAN FD frames transmitted without bit rate switching
-#define MCAN_CAN_MSGR1B_FD_FORMAT              (0x1u << 21) //!< Frame transmitted in CAN FD format
-#define MCAN_CAN_MSGR1B_CLASSIC_CAN_FORMAT     (0x0u << 21) //!< Frame transmitted in Classic CAN format
+#define MCAN_CAN_MSGR1B_BITRATE_SWITCH         (0x1ul << 20) //!< CAN FD frames transmitted with bit rate switching
+#define MCAN_CAN_MSGR1B_NO_BITRATE_SWITCH      (0x0ul << 20) //!< CAN FD frames transmitted without bit rate switching
+#define MCAN_CAN_MSGR1B_FD_FORMAT              (0x1ul << 21) //!< Frame transmitted in CAN FD format
+#define MCAN_CAN_MSGR1B_CLASSIC_CAN_FORMAT     (0x0ul << 21) //!< Frame transmitted in Classic CAN format
 #define MCAN_CAN_MSGR1B_FIDX_Pos               24
-#define MCAN_CAN_MSGR1B_FIDX_Mask              (0x7Fu << MCAN_CAN_MSGR1B_FIDX_Pos)
+#define MCAN_CAN_MSGR1B_FIDX_Mask              (0x7Ful << MCAN_CAN_MSGR1B_FIDX_Pos)
 #define MCAN_CAN_MSGR1B_FIDX_GET(value)        (((uint32_t)(value) & MCAN_CAN_MSGR1B_FIDX_Mask) >> MCAN_CAN_MSGR1B_FIDX_Pos) //!< Filter Index
-#define MCAN_CAN_MSGR1B_NON_MATCHING_FRAME     (0x1u << 21) //!< Received frame did not match any Rx filter element
+#define MCAN_CAN_MSGR1B_NON_MATCHING_FRAME     (0x1ul << 21) //!< Received frame did not match any Rx filter element
 
 //-----------------------------------------------------------------------------
 
@@ -815,9 +820,9 @@ typedef enum
   MCAN_CACHE_COUNT, // KEEP LAST!
 } eMCAN_CacheIndex;
 
-#define MCAN_USE_CACHE_FLAG         0x8000u
+#define MCAN_USE_CACHE_FLAG         0x8000ul
 #define MCAN_CACHE_IDX_Pos          11
-#define MCAN_CACHE_IDX_Mask         (0xFu << MCAN_CACHE_IDX_Pos)
+#define MCAN_CACHE_IDX_Mask         (0xFul << MCAN_CACHE_IDX_Pos)
 #define MCAN_CACHE_IDX_SET(value)   (((uint32_t)(value) << MCAN_CACHE_IDX_Pos) & MCAN_CACHE_IDX_Mask) //!< Set cache index information to register address
 #define MCAN_CACHE_IDX_GET(value)   (((uint32_t)(value) & MCAN_CACHE_IDX_Mask) >> MCAN_CACHE_IDX_Pos) //!< Get cache index information from register address
 #define MCAN_CACHE_USE(idx)         (eMCAN_Registers)(MCAN_CACHE_IDX_SET(idx) | MCAN_USE_CACHE_FLAG) | //!< This modify the MCAN register address to force include cache for external devices
@@ -917,22 +922,22 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CREL_Register, 4);
 
 #define MCAN_CREL_DAY_Pos             0
-#define MCAN_CREL_DAY_Mask            (0xFFu << MCAN_CREL_DAY_Pos)
+#define MCAN_CREL_DAY_Mask            (0xFFul << MCAN_CREL_DAY_Pos)
 #define MCAN_CREL_DAY_GET(value)      MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_DAY_Mask) >> MCAN_CREL_DAY_Pos) //!< Get Timestamp Day
 #define MCAN_CREL_MON_Pos             8
-#define MCAN_CREL_MON_Mask            (0xFFu << MCAN_CREL_MON_Pos)
+#define MCAN_CREL_MON_Mask            (0xFFul << MCAN_CREL_MON_Pos)
 #define MCAN_CREL_MON_GET(value)      MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_MON_Mask) >> MCAN_CREL_MON_Pos) //!< Get Timestamp Month
 #define MCAN_CREL_YEAR_Pos            16
-#define MCAN_CREL_YEAR_Mask           (0xFu << MCAN_CREL_YEAR_Pos)
+#define MCAN_CREL_YEAR_Mask           (0xFul << MCAN_CREL_YEAR_Pos)
 #define MCAN_CREL_YEAR_GET(value)     MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_YEAR_Mask) >> MCAN_CREL_YEAR_Pos) //!< Get Timestamp Year
 #define MCAN_CREL_SUBSTEP_Pos         20
-#define MCAN_CREL_SUBSTEP_Mask        (0xFu << MCAN_CREL_SUBSTEP_Pos)
+#define MCAN_CREL_SUBSTEP_Mask        (0xFul << MCAN_CREL_SUBSTEP_Pos)
 #define MCAN_CREL_SUBSTEP_GET(value)  MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_SUBSTEP_Mask) >> MCAN_CREL_SUBSTEP_Pos) //!< Get Sub-step of Core Release
 #define MCAN_CREL_STEP_Pos            24
-#define MCAN_CREL_STEP_Mask           (0xFu << MCAN_CREL_STEP_Pos)
+#define MCAN_CREL_STEP_Mask           (0xFul << MCAN_CREL_STEP_Pos)
 #define MCAN_CREL_STEP_GET(value)     MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_STEP_Mask) >> MCAN_CREL_STEP_Pos) //!< Get Step of Core Release
 #define MCAN_CREL_REL_Pos             28
-#define MCAN_CREL_REL_Mask            (0xFu << MCAN_CREL_REL_Pos)
+#define MCAN_CREL_REL_Mask            (0xFul << MCAN_CREL_REL_Pos)
 #define MCAN_CREL_REL_GET(value)      MCAN_DCB8_TO_DECIMAL(((uint32_t)(value) & MCAN_CREL_REL_Mask) >> MCAN_CREL_REL_Pos) //!< Get Core Release
 
 //-----------------------------------------------------------------------------
@@ -995,23 +1000,23 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_DBTP_Register, 4);
 
 #define MCAN_DBTP_DSJW_Pos           0
-#define MCAN_DBTP_DSJW_Mask          (0x7u << MCAN_DBTP_DSJW_Pos)
+#define MCAN_DBTP_DSJW_Mask          (0x7ul << MCAN_DBTP_DSJW_Pos)
 #define MCAN_DBTP_DSJW_SET(value)    (((uint32_t)(value) << MCAN_DBTP_DSJW_Pos) & MCAN_DBTP_DSJW_Mask) //!< Set Data (Re) Synchronization Jump Width
 #define MCAN_DBTP_DSJW_GET(value)    (((uint32_t)(value) & MCAN_DBTP_DSJW_Mask) >> MCAN_DBTP_DSJW_Pos) //!< Get Data (Re) Synchronization Jump Width
 #define MCAN_DBTP_DTSEG2_Pos         4
-#define MCAN_DBTP_DTSEG2_Mask        (0xFu << MCAN_DBTP_DTSEG2_Pos)
+#define MCAN_DBTP_DTSEG2_Mask        (0xFul << MCAN_DBTP_DTSEG2_Pos)
 #define MCAN_DBTP_DTSEG2_SET(value)  (((uint32_t)(value) << MCAN_DBTP_DTSEG2_Pos) & MCAN_DBTP_DTSEG2_Mask) //!< Set Data Time Segment After Sample Point
 #define MCAN_DBTP_DTSEG2_GET(value)  (((uint32_t)(value) & MCAN_DBTP_DTSEG2_Mask) >> MCAN_DBTP_DTSEG2_Pos) //!< Get Data Time Segment After Sample Point
 #define MCAN_DBTP_DTSEG1_Pos         8
-#define MCAN_DBTP_DTSEG1_Mask        (0x1Fu << MCAN_DBTP_DTSEG1_Pos)
+#define MCAN_DBTP_DTSEG1_Mask        (0x1Ful << MCAN_DBTP_DTSEG1_Pos)
 #define MCAN_DBTP_DTSEG1_SET(value)  (((uint32_t)(value) << MCAN_DBTP_DTSEG1_Pos) & MCAN_DBTP_DTSEG1_Mask) //!< Set Data Time Segment Before Sample Point
 #define MCAN_DBTP_DTSEG1_GET(value)  (((uint32_t)(value) & MCAN_DBTP_DTSEG1_Mask) >> MCAN_DBTP_DTSEG1_Pos) //!< Get Data Time Segment Before Sample Point
 #define MCAN_DBTP_DBRP_Pos           16
-#define MCAN_DBTP_DBRP_Mask          (0x1Fu << MCAN_DBTP_DBRP_Pos)
+#define MCAN_DBTP_DBRP_Mask          (0x1Ful << MCAN_DBTP_DBRP_Pos)
 #define MCAN_DBTP_DBRP_SET(value)    (((uint32_t)(value) << MCAN_DBTP_DBRP_Pos) & MCAN_DBTP_DBRP_Mask) //!< Set Data Bit Rate Prescaler
 #define MCAN_DBTP_DBRP_GET(value)    (((uint32_t)(value) & MCAN_DBTP_DBRP_Mask) >> MCAN_DBTP_DBRP_Pos) //!< Get Data Bit Rate Prescaler
-#define MCAN_DBTP_TDC_EN             (0x1u << 23) //!< Transmitter Delay Compensation Enabled
-#define MCAN_DBTP_TDC_DIS            (0x0u << 23) //!< Transmitter Delay Compensation Disabled
+#define MCAN_DBTP_TDC_EN             (0x1ul << 23) //!< Transmitter Delay Compensation Enabled
+#define MCAN_DBTP_TDC_DIS            (0x0ul << 23) //!< Transmitter Delay Compensation Disabled
 
 //-----------------------------------------------------------------------------
 
@@ -1042,8 +1047,8 @@ typedef union __MCAN_PACKED__ MCAN_TEST_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TEST_Register, 4);
 
-#define MCAN_TEST_LOOPBACK_MODE_EN   (0x1u << 4) //!< Loop Back mode is Enabled
-#define MCAN_TEST_LOOPBACK_MODE_DIS  (0x0u << 4) //!< Loop Back mode is Disabled
+#define MCAN_TEST_LOOPBACK_MODE_EN   (0x1ul << 4) //!< Loop Back mode is Enabled
+#define MCAN_TEST_LOOPBACK_MODE_DIS  (0x0ul << 4) //!< Loop Back mode is Disabled
 
 //! Control of Transmit Pin enumerator
 typedef enum
@@ -1054,10 +1059,10 @@ typedef enum
   MCAN_TX_RECESSIVE               = 0b11, //!< Recessive ('1') level at pin CANTX
 } eMCAN_TestTxPin;
 
-#define MCAN_TEST_TX_Pos             5
-#define MCAN_TEST_TX_Mask            (0x3u << MCAN_TEST_TX_Pos)
-#define MCAN_TEST_TX_SET(value)      (((uint32_t)(value) << MCAN_TEST_TX_Pos) & MCAN_TEST_TX_Mask) //!< Set Control of Transmit Pin
-#define MCAN_TEST_TX_GET(value)      (((uint32_t)(value) & MCAN_TEST_TX_Mask) >> MCAN_TEST_TX_Pos) //!< Get Control of Transmit Pin
+#define MCAN_TEST_TX_Pos         5
+#define MCAN_TEST_TX_Mask        (0x3ul << MCAN_TEST_TX_Pos)
+#define MCAN_TEST_TX_SET(value)  (((uint32_t)(value) << MCAN_TEST_TX_Pos) & MCAN_TEST_TX_Mask) //!< Set Control of Transmit Pin
+#define MCAN_TEST_TX_GET(value)  (((uint32_t)(value) & MCAN_TEST_TX_Mask) >> MCAN_TEST_TX_Pos) //!< Get Control of Transmit Pin
 
 //! Receive Pin status enumerator
 typedef enum
@@ -1067,20 +1072,20 @@ typedef enum
 } eMCAN_TestRxPin;
 
 #define MCAN_TEST_RX_Pos             7
-#define MCAN_TEST_RX_Mask            (0x1u << MCAN_TEST_RX_Pos)
+#define MCAN_TEST_RX_Mask            (0x1ul << MCAN_TEST_RX_Pos)
 #define MCAN_TEST_RX_GET(value)      (((uint32_t)(value) & MCAN_TEST_RX_Mask) >> MCAN_TEST_RX_Pos) //!< Get Receive Pin status
-#define MCAN_TEST_RX_RECESSIVE       (0x1u << 7) //!< The CAN bus is recessive (CANRX = '1')
-#define MCAN_TEST_RX_DOMINANT        (0x0u << 7) //!< The CAN bus is dominant (CANRX = '0')
+#define MCAN_TEST_RX_RECESSIVE       (0x1ul << 7) //!< The CAN bus is recessive (CANRX = '1')
+#define MCAN_TEST_RX_DOMINANT        (0x0ul << 7) //!< The CAN bus is dominant (CANRX = '0')
 #define MCAN_TEST_TXBNP_Pos          8
-#define MCAN_TEST_TXBNP_Mask         (0x1Fu << MCAN_TEST_TXBNP_Pos)
+#define MCAN_TEST_TXBNP_Mask         (0x1Ful << MCAN_TEST_TXBNP_Pos)
 #define MCAN_TEST_TXBNP_GET(value)   (((uint32_t)(value) & MCAN_TEST_TXBNP_Mask) >> MCAN_TEST_TXBNP_Pos) //!< Get Tx Buffer Number Prepared
-#define MCAN_TEST_PREPARE_VALID      (0x1u << 13) //!< Value of TXBNP valid
-#define MCAN_TEST_PREPARE_NOT_VALID  (0x0u << 13) //!< Value of TXBNP not valid
+#define MCAN_TEST_PREPARE_VALID      (0x1ul << 13) //!< Value of TXBNP valid
+#define MCAN_TEST_PREPARE_NOT_VALID  (0x0ul << 13) //!< Value of TXBNP not valid
 #define MCAN_TEST_TXBNS_Pos          16
-#define MCAN_TEST_TXBNS_Mask         (0x1Fu << MCAN_TEST_TXBNS_Pos)
+#define MCAN_TEST_TXBNS_Mask         (0x1Ful << MCAN_TEST_TXBNS_Pos)
 #define MCAN_TEST_TXBNS_GET(value)   (((uint32_t)(value) & MCAN_TEST_TXBNS_Mask) >> MCAN_TEST_TXBNS_Pos) //!< Get Tx Buffer Number Started
-#define MCAN_TEST_STARTED_VALID      (0x1u << 21) //!< Value of TXBNS valid
-#define MCAN_TEST_STARTED_NOT_VALID  (0x0u << 21) //!< Value of TXBNS not valid
+#define MCAN_TEST_STARTED_VALID      (0x1ul << 21) //!< Value of TXBNS valid
+#define MCAN_TEST_STARTED_NOT_VALID  (0x0ul << 21) //!< Value of TXBNS not valid
 
 //-----------------------------------------------------------------------------
 
@@ -1105,11 +1110,11 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RWD_Register, 4);
 
 #define MCAN_RWD_WATCHDOG_CONFIG_Pos         0
-#define MCAN_RWD_WATCHDOG_CONFIG_Mask        (0xFFu << MCAN_RWD_WATCHDOG_CONFIG_Pos)
+#define MCAN_RWD_WATCHDOG_CONFIG_Mask        (0xFFul << MCAN_RWD_WATCHDOG_CONFIG_Pos)
 #define MCAN_RWD_WATCHDOG_CONFIG_SET(value)  (((uint32_t)(value) << MCAN_RWD_WATCHDOG_CONFIG_Pos) & MCAN_RWD_WATCHDOG_CONFIG_Mask) //!< Set Watchdog Configuration
 #define MCAN_RWD_WATCHDOG_CONFIG_GET(value)  (((uint32_t)(value) & MCAN_RWD_WATCHDOG_CONFIG_Mask) >> MCAN_RWD_WATCHDOG_CONFIG_Pos) //!< Get Watchdog Configuration
 #define MCAN_RWD_WATCHDOG_VALUE_Pos          8
-#define MCAN_RWD_WATCHDOG_VALUE_Mask         (0xFFu << MCAN_RWD_WATCHDOG_VALUE_Pos)
+#define MCAN_RWD_WATCHDOG_VALUE_Mask         (0xFFul << MCAN_RWD_WATCHDOG_VALUE_Pos)
 #define MCAN_RWD_WATCHDOG_VALUE_GET(value)   (((uint32_t)(value) & MCAN_RWD_WATCHDOG_VALUE_Mask) >> MCAN_RWD_WATCHDOG_VALUE_Pos) //!< Get Watchdog Value
 
 //-----------------------------------------------------------------------------
@@ -1144,39 +1149,39 @@ typedef union __MCAN_PACKED__ MCAN_CCCR_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_CCCR_Register, 4);
 
-#define MCAN_CCCR_INIT_STARTED                  (0x1u <<  0) //!< Initialization is started
-#define MCAN_CCCR_NORMAL_OPERATION              (0x0u <<  0) //!< Normal operation
-#define MCAN_CCCR_CONF_WRITE_PROTECT_DIS        (0x1u <<  1) //!< The processor has write access to the protected configuration registers (while MCAN_CCCR.INIT = '1')
-#define MCAN_CCCR_CONF_WRITE_PROTECT_EN         (0x0u <<  1) //!< The processor has no write access to the protected configuration registers
-#define MCAN_CCCR_RESTRICTED_OPERATION          (0x1u <<  2) //!< Restricted Operation mode active
-#define MCAN_CCCR_NORMAL_CAN_OPERATION          (0x0u <<  2) //!< Normal CAN operation
-#define MCAN_CCCR_CLOCK_STOP_ACK                (0x1u <<  3) //!< Clock Stop Acknowledge
-#define MCAN_CCCR_NO_CLOCK_STOP_ACK             (0x0u <<  3) //!< No clock stop acknowledged
-#define MCAN_CCCR_CLOCK_STOP_REQ                (0x1u <<  4) //!< Clock Stop Request
-#define MCAN_CCCR_NO_CLOCK_STOP_REQ             (0x0u <<  4) //!< No clock stop is requested
-#define MCAN_CCCR_BUS_MONITOR_EN                (0x1u <<  5) //!< Bus Monitoring mode is enabled
-#define MCAN_CCCR_BUS_MONITOR_DIS               (0x0u <<  5) //!< Bus Monitoring mode is disabled
-#define MCAN_CCCR_AUTOMATIC_RETRANSMISSION_DIS  (0x1u <<  6) //!< Automatic retransmission disabled
-#define MCAN_CCCR_AUTOMATIC_RETRANSMISSION_EN   (0x0u <<  6) //!< Automatic retransmission of messages not transmitted successfully enabled
-#define MCAN_CCCR_TEST_MODE_EN                  (0x1u <<  7) //!< Test mode, write access to MCAN_TEST register enabled
-#define MCAN_CCCR_TEST_MODE_DIS                 (0x0u <<  7) //!< Normal operation, MCAN_TEST register holds reset values
-#define MCAN_CCCR_CAN_FD_MODE_EN                (0x1u <<  8) //!< CAN FD operation enabled
-#define MCAN_CCCR_CAN_FD_MODE_DIS               (0x0u <<  8) //!< CAN FD operation disabled
-#define MCAN_CCCR_BITRATE_SWITCHING_EN          (0x1u <<  9) //!< Bit rate switching for transmissions enabled
-#define MCAN_CCCR_BITRATE_SWITCHING_DIS         (0x0u <<  9) //!< Bit rate switching for transmissions disabled
-#define MCAN_CCCR_EXTERNAL_TIMESTAMP_TSU        (0x1u << 10) //!< External time stamping by TSU
-#define MCAN_CCCR_INTERNAL_TIMESTAMP            (0x0u << 10) //!< Internal time stamping
-#define MCAN_CCCR_16BIT_MESSAGE_MARKER_USED     (0x1u << 11) //!< 16-bit Message Marker used, replacing 16-bit timestamps in Tx Event FIFO
-#define MCAN_CCCR_8BIT_MESSAGE_MARKER_USED      (0x0u << 11) //!< 8-bit Message Marker used
-#define MCAN_CCCR_PROTOCOL_EXCEPTION_DIS        (0x1u << 12) //!< Protocol exception handling disabled
-#define MCAN_CCCR_PROTOCOL_EXCEPTION_EN         (0x0u << 12) //!< Protocol exception handling enabled
-#define MCAN_CCCR_EDGE_FILTERING_EN             (0x1u << 13) //!< Edge filtering is enabled. Two consecutive dominant tq required to detect an edge for hard synchronization
-#define MCAN_CCCR_EDGE_FILTERING_DIS            (0x0u << 13) //!< Edge filtering is disabled
-#define MCAN_CCCR_TRANSMIT_PAUSE_EN             (0x1u << 14) //!< Transmit pause enabled
-#define MCAN_CCCR_TRANSMIT_PAUSE_DIS            (0x0u << 14) //!< Transmit pause disabled
-#define MCAN_CCCR_NONISO_OPERATION_EN           (0x1u << 15) //!< CAN FD frame format according to Bosch CAN FD Specification V1.0
-#define MCAN_CCCR_NONISO_OPERATION_DIS          (0x0u << 15) //!< CAN FD frame format according to ISO11898-1 (default)
-#define MCAN_CCCR_Mask                          (0x0000FFFFu) //!< CCCR register mask
+#define MCAN_CCCR_INIT_STARTED                  (0x1ul <<  0) //!< Initialization is started
+#define MCAN_CCCR_NORMAL_OPERATION              (0x0ul <<  0) //!< Normal operation
+#define MCAN_CCCR_CONF_WRITE_PROTECT_DIS        (0x1ul <<  1) //!< The processor has write access to the protected configuration registers (while MCAN_CCCR.INIT = '1')
+#define MCAN_CCCR_CONF_WRITE_PROTECT_EN         (0x0ul <<  1) //!< The processor has no write access to the protected configuration registers
+#define MCAN_CCCR_RESTRICTED_OPERATION          (0x1ul <<  2) //!< Restricted Operation mode active
+#define MCAN_CCCR_NORMAL_CAN_OPERATION          (0x0ul <<  2) //!< Normal CAN operation
+#define MCAN_CCCR_CLOCK_STOP_ACK                (0x1ul <<  3) //!< Clock Stop Acknowledge
+#define MCAN_CCCR_NO_CLOCK_STOP_ACK             (0x0ul <<  3) //!< No clock stop acknowledged
+#define MCAN_CCCR_CLOCK_STOP_REQ                (0x1ul <<  4) //!< Clock Stop Request
+#define MCAN_CCCR_NO_CLOCK_STOP_REQ             (0x0ul <<  4) //!< No clock stop is requested
+#define MCAN_CCCR_BUS_MONITOR_EN                (0x1ul <<  5) //!< Bus Monitoring mode is enabled
+#define MCAN_CCCR_BUS_MONITOR_DIS               (0x0ul <<  5) //!< Bus Monitoring mode is disabled
+#define MCAN_CCCR_AUTOMATIC_RETRANSMISSION_DIS  (0x1ul <<  6) //!< Automatic retransmission disabled
+#define MCAN_CCCR_AUTOMATIC_RETRANSMISSION_EN   (0x0ul <<  6) //!< Automatic retransmission of messages not transmitted successfully enabled
+#define MCAN_CCCR_TEST_MODE_EN                  (0x1ul <<  7) //!< Test mode, write access to MCAN_TEST register enabled
+#define MCAN_CCCR_TEST_MODE_DIS                 (0x0ul <<  7) //!< Normal operation, MCAN_TEST register holds reset values
+#define MCAN_CCCR_CAN_FD_MODE_EN                (0x1ul <<  8) //!< CAN FD operation enabled
+#define MCAN_CCCR_CAN_FD_MODE_DIS               (0x0ul <<  8) //!< CAN FD operation disabled
+#define MCAN_CCCR_BITRATE_SWITCHING_EN          (0x1ul <<  9) //!< Bit rate switching for transmissions enabled
+#define MCAN_CCCR_BITRATE_SWITCHING_DIS         (0x0ul <<  9) //!< Bit rate switching for transmissions disabled
+#define MCAN_CCCR_EXTERNAL_TIMESTAMP_TSU        (0x1ul << 10) //!< External time stamping by TSU
+#define MCAN_CCCR_INTERNAL_TIMESTAMP            (0x0ul << 10) //!< Internal time stamping
+#define MCAN_CCCR_16BIT_MESSAGE_MARKER_USED     (0x1ul << 11) //!< 16-bit Message Marker used, replacing 16-bit timestamps in Tx Event FIFO
+#define MCAN_CCCR_8BIT_MESSAGE_MARKER_USED      (0x0ul << 11) //!< 8-bit Message Marker used
+#define MCAN_CCCR_PROTOCOL_EXCEPTION_DIS        (0x1ul << 12) //!< Protocol exception handling disabled
+#define MCAN_CCCR_PROTOCOL_EXCEPTION_EN         (0x0ul << 12) //!< Protocol exception handling enabled
+#define MCAN_CCCR_EDGE_FILTERING_EN             (0x1ul << 13) //!< Edge filtering is enabled. Two consecutive dominant tq required to detect an edge for hard synchronization
+#define MCAN_CCCR_EDGE_FILTERING_DIS            (0x0ul << 13) //!< Edge filtering is disabled
+#define MCAN_CCCR_TRANSMIT_PAUSE_EN             (0x1ul << 14) //!< Transmit pause enabled
+#define MCAN_CCCR_TRANSMIT_PAUSE_DIS            (0x0ul << 14) //!< Transmit pause disabled
+#define MCAN_CCCR_NONISO_OPERATION_EN           (0x1ul << 15) //!< CAN FD frame format according to Bosch CAN FD Specification V1.0
+#define MCAN_CCCR_NONISO_OPERATION_DIS          (0x0ul << 15) //!< CAN FD frame format according to ISO11898-1 (default)
+#define MCAN_CCCR_Mask                          (0x0000FFFFul) //!< CCCR register mask
 
 //! CAN Controller Operation Modes
 typedef enum
@@ -1222,19 +1227,19 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_NBTP_Register, 4);
 
 #define MCAN_NBTP_NTSEG2_Pos         0
-#define MCAN_NBTP_NTSEG2_Mask        (0x7Fu << MCAN_NBTP_NTSEG2_Pos)
+#define MCAN_NBTP_NTSEG2_Mask        (0x7Ful << MCAN_NBTP_NTSEG2_Pos)
 #define MCAN_NBTP_NTSEG2_SET(value)  (((uint32_t)(value) << MCAN_NBTP_NTSEG2_Pos) & MCAN_NBTP_NTSEG2_Mask) //!< Set Nominal Time Segment After Sample Point
 #define MCAN_NBTP_NTSEG2_GET(value)  (((uint32_t)(value) & MCAN_NBTP_NTSEG2_Mask) >> MCAN_NBTP_NTSEG2_Pos) //!< Get Nominal Time Segment After Sample Point
 #define MCAN_NBTP_NTSEG1_Pos         8
-#define MCAN_NBTP_NTSEG1_Mask        (0xFFu << MCAN_NBTP_NTSEG1_Pos)
+#define MCAN_NBTP_NTSEG1_Mask        (0xFFul << MCAN_NBTP_NTSEG1_Pos)
 #define MCAN_NBTP_NTSEG1_SET(value)  (((uint32_t)(value) << MCAN_NBTP_NTSEG1_Pos) & MCAN_NBTP_NTSEG1_Mask) //!< Set Nominal Time Segment Before Sample Point
 #define MCAN_NBTP_NTSEG1_GET(value)  (((uint32_t)(value) & MCAN_NBTP_NTSEG1_Mask) >> MCAN_NBTP_NTSEG1_Pos) //!< Get Nominal Time Segment Before Sample Point
 #define MCAN_NBTP_NBRP_Pos           16
-#define MCAN_NBTP_NBRP_Mask          (0x1FFu << MCAN_NBTP_NBRP_Pos)
+#define MCAN_NBTP_NBRP_Mask          (0x1FFul << MCAN_NBTP_NBRP_Pos)
 #define MCAN_NBTP_NBRP_SET(value)    (((uint32_t)(value) << MCAN_NBTP_NBRP_Pos) & MCAN_NBTP_NBRP_Mask) //!< Set Nominal Bit Rate Prescaler
 #define MCAN_NBTP_NBRP_GET(value)    (((uint32_t)(value) & MCAN_NBTP_NBRP_Mask) >> MCAN_NBTP_NBRP_Pos) //!< Get Nominal Bit Rate Prescaler
 #define MCAN_NBTP_NSJW_Pos           25
-#define MCAN_NBTP_NSJW_Mask          (0x7Fu << MCAN_NBTP_NSJW_Pos)
+#define MCAN_NBTP_NSJW_Mask          (0x7Ful << MCAN_NBTP_NSJW_Pos)
 #define MCAN_NBTP_NSJW_SET(value)    (((uint32_t)(value) << MCAN_NBTP_NSJW_Pos) & MCAN_NBTP_NSJW_Mask) //!< Set Nominal (Re) Synchronization Jump Width
 #define MCAN_NBTP_NSJW_GET(value)    (((uint32_t)(value) & MCAN_NBTP_NSJW_Mask) >> MCAN_NBTP_NSJW_Pos) //!< Get Nominal (Re) Synchronization Jump Width
 
@@ -1267,14 +1272,14 @@ typedef enum
 } eMCAN_TimeStampSelect;
 
 #define MCAN_TSCC_TIMESTAMP_SELECT_Pos         0
-#define MCAN_TSCC_TIMESTAMP_SELECT_Mask        (0x3u << MCAN_TSCC_TIMESTAMP_SELECT_Pos)
+#define MCAN_TSCC_TIMESTAMP_SELECT_Mask        (0x3ul << MCAN_TSCC_TIMESTAMP_SELECT_Pos)
 #define MCAN_TSCC_TIMESTAMP_SELECT_SET(value)  (((uint32_t)(value) << MCAN_TSCC_TIMESTAMP_SELECT_Pos) & MCAN_TSCC_TIMESTAMP_SELECT_Mask) //!< Set Timestamp Select
 #define MCAN_TSCC_TIMESTAMP_SELECT_GET(value)  (((uint32_t)(value) & MCAN_TSCC_TIMESTAMP_SELECT_Mask) >> MCAN_TSCC_TIMESTAMP_SELECT_Pos) //!< Get Timestamp Select
 
 #define MCAN_TSCC_TCP_MINVALUE    ( 0u )
 #define MCAN_TSCC_TCP_Pos         16
 #define MCAN_TSCC_TCP_Bits        4
-#define MCAN_TSCC_TCP_MAXVALUE    ((1u << MCAN_TSCC_TCP_Bits) - 1u)
+#define MCAN_TSCC_TCP_MAXVALUE    ((1ul << MCAN_TSCC_TCP_Bits) - 1ul)
 #define MCAN_TSCC_TCP_Mask        (MCAN_TSCC_TCP_MAXVALUE << MCAN_TSCC_TCP_Pos)
 #define MCAN_TSCC_TCP_SET(value)  (((uint32_t)(value) << MCAN_TSCC_TCP_Pos) & MCAN_TSCC_TCP_Mask) //!< Set Configures the timestamp and timeout counters time unit in multiples of CAN bit times
 #define MCAN_TSCC_TCP_GET(value)  (((uint32_t)(value) & MCAN_TSCC_TCP_Mask) >> MCAN_TSCC_TCP_Pos) //!< Get Configures the timestamp and timeout counters time unit in multiples of CAN bit times
@@ -1301,7 +1306,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TSCV_Register, 4);
 
 #define MCAN_TSCV_TIMESTAMP_Pos         0
-#define MCAN_TSCV_TIMESTAMP_Mask        (0xFFFFu << MCAN_TSCV_TIMESTAMP_Pos)
+#define MCAN_TSCV_TIMESTAMP_Mask        (0xFFFFul << MCAN_TSCV_TIMESTAMP_Pos)
 #define MCAN_TSCV_TIMESTAMP_SET(value)  (((uint32_t)(value) << MCAN_TSCV_TIMESTAMP_Pos) & MCAN_TSCV_TIMESTAMP_Mask) //!< Set Timestamp Counter
 #define MCAN_TSCV_TIMESTAMP_GET(value)  (((uint32_t)(value) & MCAN_TSCV_TIMESTAMP_Mask) >> MCAN_TSCV_TIMESTAMP_Pos) //!< Get Timestamp Counter
 
@@ -1330,8 +1335,8 @@ typedef union __MCAN_PACKED__ MCAN_TOCC_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TOCC_Register, 4);
 
-#define MCAN_TOCC_TIMEOUT_COUNTER_EN   (0x1u << 0) //!< Timeout Counter enabled
-#define MCAN_TOCC_TIMEOUT_COUNTER_DIS  (0x0u << 0) //!< Timeout Counter disabled
+#define MCAN_TOCC_TIMEOUT_COUNTER_EN   (0x1ul << 0) //!< Timeout Counter enabled
+#define MCAN_TOCC_TIMEOUT_COUNTER_DIS  (0x0ul << 0) //!< Timeout Counter disabled
 
 //! Timeout Select enumerator
 typedef enum
@@ -1343,11 +1348,11 @@ typedef enum
 } eMCAN_TimeoutSelect;
 
 #define MCAN_TOCC_TIMEOUT_SELECT_Pos         1
-#define MCAN_TOCC_TIMEOUT_SELECT_Mask        (0x3u << MCAN_TOCC_TIMEOUT_SELECT_Pos)
+#define MCAN_TOCC_TIMEOUT_SELECT_Mask        (0x3ul << MCAN_TOCC_TIMEOUT_SELECT_Pos)
 #define MCAN_TOCC_TIMEOUT_SELECT_SET(value)  (((uint32_t)(value) << MCAN_TOCC_TIMEOUT_SELECT_Pos) & MCAN_TOCC_TIMEOUT_SELECT_Mask) //!< Set Timeout Select
 #define MCAN_TOCC_TIMEOUT_SELECT_GET(value)  (((uint32_t)(value) & MCAN_TOCC_TIMEOUT_SELECT_Mask) >> MCAN_TOCC_TIMEOUT_SELECT_Pos) //!< Get Timeout Select
 #define MCAN_TOCC_TIMEOUT_PERIOD_Pos         16
-#define MCAN_TOCC_TIMEOUT_PERIOD_Mask        (0xFFFFu << MCAN_TOCC_TIMEOUT_PERIOD_Pos)
+#define MCAN_TOCC_TIMEOUT_PERIOD_Mask        (0xFFFFul << MCAN_TOCC_TIMEOUT_PERIOD_Pos)
 #define MCAN_TOCC_TIMEOUT_PERIOD_SET(value)  (((uint32_t)(value) << MCAN_TOCC_TIMEOUT_PERIOD_Pos) & MCAN_TOCC_TIMEOUT_PERIOD_Mask) //!< Set Timeout Period
 #define MCAN_TOCC_TIMEOUT_PERIOD_GET(value)  (((uint32_t)(value) & MCAN_TOCC_TIMEOUT_PERIOD_Mask) >> MCAN_TOCC_TIMEOUT_PERIOD_Pos) //!< Get Timeout Period
 
@@ -1372,7 +1377,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TOCV_Register, 4);
 
 #define MCAN_TOCV_TIMEOUT_COUNTER_Pos         0
-#define MCAN_TOCV_TIMEOUT_COUNTER_Mask        (0xFFFFu << MCAN_TOCV_TIMEOUT_COUNTER_Pos)
+#define MCAN_TOCV_TIMEOUT_COUNTER_Mask        (0xFFFFul << MCAN_TOCV_TIMEOUT_COUNTER_Pos)
 #define MCAN_TOCV_TIMEOUT_COUNTER_SET(value)  (((uint32_t)(value) << MCAN_TOCV_TIMEOUT_COUNTER_Pos) & MCAN_TOCV_TIMEOUT_COUNTER_Mask) //!< Set Timeout Counter
 #define MCAN_TOCV_TIMEOUT_COUNTER_GET(value)  (((uint32_t)(value) & MCAN_TOCV_TIMEOUT_COUNTER_Mask) >> MCAN_TOCV_TIMEOUT_COUNTER_Pos) //!< Get Timeout Counter
 
@@ -1397,15 +1402,15 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_ECR_Register, 4);
 
 #define MCAN_ECR_TRANSMIT_ERROR_COUNTER_Pos         0
-#define MCAN_ECR_TRANSMIT_ERROR_COUNTER_Mask        (0xFFu << MCAN_ECR_TRANSMIT_ERROR_COUNTER_Pos)
+#define MCAN_ECR_TRANSMIT_ERROR_COUNTER_Mask        (0xFFul << MCAN_ECR_TRANSMIT_ERROR_COUNTER_Pos)
 #define MCAN_ECR_TRANSMIT_ERROR_COUNTER_GET(value)  (((uint32_t)(value) & MCAN_ECR_TRANSMIT_ERROR_COUNTER_Mask) >> MCAN_ECR_TRANSMIT_ERROR_COUNTER_Pos) //!< Get Transmit Error Counter
 #define MCAN_ECR_RECEIVE_ERROR_COUNTER_Pos          8
-#define MCAN_ECR_RECEIVE_ERROR_COUNTER_Mask         (0x7Fu << MCAN_ECR_RECEIVE_ERROR_COUNTER_Pos)
+#define MCAN_ECR_RECEIVE_ERROR_COUNTER_Mask         (0x7Ful << MCAN_ECR_RECEIVE_ERROR_COUNTER_Pos)
 #define MCAN_ECR_RECEIVE_ERROR_COUNTER_GET(value)   (((uint32_t)(value) & MCAN_ECR_RECEIVE_ERROR_COUNTER_Mask) >> MCAN_ECR_RECEIVE_ERROR_COUNTER_Pos) //!< Get Receive Error Counter
-#define MCAN_ECR_RECEIVE_ERROR_REACH_PASSIVE        (0x1u << 15) //!< The Receive Error Counter has reached the error passive level of 128
-#define MCAN_ECR_RECEIVE_ERROR_BELOW_PASSIVE        (0x0u << 15) //!< The Receive Error Counter is below the error passive level of 128
+#define MCAN_ECR_RECEIVE_ERROR_REACH_PASSIVE        (0x1ul << 15) //!< The Receive Error Counter has reached the error passive level of 128
+#define MCAN_ECR_RECEIVE_ERROR_BELOW_PASSIVE        (0x0ul << 15) //!< The Receive Error Counter is below the error passive level of 128
 #define MCAN_ECR_CAN_ERROR_LOGGING_Pos              16
-#define MCAN_ECR_CAN_ERROR_LOGGING_Mask             (0xFFu << MCAN_ECR_CAN_ERROR_LOGGING_Pos)
+#define MCAN_ECR_CAN_ERROR_LOGGING_Mask             (0xFFul << MCAN_ECR_CAN_ERROR_LOGGING_Pos)
 #define MCAN_ECR_CAN_ERROR_LOGGING_GET(value)       (((uint32_t)(value) & MCAN_ECR_CAN_ERROR_LOGGING_Mask) >> MCAN_ECR_CAN_ERROR_LOGGING_Pos) //!< Get CAN Error Logging
 
 //-----------------------------------------------------------------------------
@@ -1450,7 +1455,7 @@ typedef enum
 } eMCAN_LastErrorCode;
 
 #define MCAN_PSR_LAST_ERROR_CODE_Pos         0
-#define MCAN_PSR_LAST_ERROR_CODE_Mask        (0x7u << MCAN_PSR_LAST_ERROR_CODE_Pos)
+#define MCAN_PSR_LAST_ERROR_CODE_Mask        (0x7ul << MCAN_PSR_LAST_ERROR_CODE_Pos)
 #define MCAN_PSR_LAST_ERROR_CODE_GET(value)  (((uint32_t)(value) & MCAN_PSR_LAST_ERROR_CODE_Mask) >> MCAN_PSR_LAST_ERROR_CODE_Pos) //!< Get Last Error Code
 
 //! Activity enumerator
@@ -1463,27 +1468,27 @@ typedef enum
 } eMCAN_Activity;
 
 #define MCAN_PSR_ACTIVITY_Pos                           3
-#define MCAN_PSR_ACTIVITY_Mask                          (0x3u << MCAN_PSR_ACTIVITY_Pos)
+#define MCAN_PSR_ACTIVITY_Mask                          (0x3ul << MCAN_PSR_ACTIVITY_Pos)
 #define MCAN_PSR_ACTIVITY_GET(value)                    (((uint32_t)(value) & MCAN_PSR_ACTIVITY_Mask) >> MCAN_PSR_ACTIVITY_Pos) //!< Get Activity
-#define MCAN_PSR_IS_IN_ERROR_PASSIVE_STATE              (0x1u << 5) //!< The MCAN is in the Error_Passive state
-#define MCAN_PSR_IS_IN_ERROR_ACTIVE_STATE               (0x0u << 5) //!< The MCAN is in the Error_Active state
-#define MCAN_PSR_REACH_ERROR_WARNING_LIMIT              (0x1u << 6) //!< At least one of error counter has reached the Error_Warning limit of 96
-#define MCAN_PSR_BELOW_ERROR_WARNING_LIMIT              (0x0u << 6) //!< Both error counters are below the Error_Warning limit of 96
-#define MCAN_PSR_BUS_OFF_STATE                          (0x1u << 7) //!< The MCAN is in Bus_Off state
-#define MCAN_PSR_NOT_IN_BUS_OFF_STATE                   (0x0u << 7) //!< The MCAN is not Bus_Off
+#define MCAN_PSR_IS_IN_ERROR_PASSIVE_STATE              (0x1ul << 5) //!< The MCAN is in the Error_Passive state
+#define MCAN_PSR_IS_IN_ERROR_ACTIVE_STATE               (0x0ul << 5) //!< The MCAN is in the Error_Active state
+#define MCAN_PSR_REACH_ERROR_WARNING_LIMIT              (0x1ul << 6) //!< At least one of error counter has reached the Error_Warning limit of 96
+#define MCAN_PSR_BELOW_ERROR_WARNING_LIMIT              (0x0ul << 6) //!< Both error counters are below the Error_Warning limit of 96
+#define MCAN_PSR_BUS_OFF_STATE                          (0x1ul << 7) //!< The MCAN is in Bus_Off state
+#define MCAN_PSR_NOT_IN_BUS_OFF_STATE                   (0x0ul << 7) //!< The MCAN is not Bus_Off
 #define MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Pos         8
-#define MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Mask        (0x7u << MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Pos)
+#define MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Mask        (0x7ul << MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Pos)
 #define MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_GET(value)  (((uint32_t)(value) & MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Mask) >> MCAN_PSR_DATA_PHASE_LAST_ERROR_CODE_Pos) //!< Get Data Phase Last Error Code
-#define MCAN_PSR_LAST_MESSAGE_HAD_ESI_FLAG              (0x1u << 11) //!< Last received CAN FD message had its ESI flag set
-#define MCAN_PSR_LAST_MESSAGE_DID_NOT_HAD_ESI_FLAG      (0x0u << 11) //!< Last received CAN FD message did not have its ESI flag set
-#define MCAN_PSR_LAST_MESSAGE_HAD_BRS_FLAG              (0x1u << 12) //!< Last received CAN FD message had its BRS flag set
-#define MCAN_PSR_LAST_MESSAGE_DID_NOT_HAD_BRS_FLAG      (0x0u << 12) //!< Last received CAN FD message did not have its BRS flag set
-#define MCAN_PSR_RECEIVE_CANFD_MESSAGE                  (0x1u << 13) //!< Message in CAN FD format with FDF flag set has been received
-#define MCAN_PSR_DID_NOT_RECEIVE_CANFD_MESSAGE          (0x0u << 13) //!< Since this bit was reset by the CPU, no CAN FD message has been received
-#define MCAN_PSR_PROTOCOL_EXCEPTION_EVENT_OCCURED       (0x1u << 14) //!< Protocol exception event occurred
-#define MCAN_PSR_NO_PROTOCOL_EXCEPTION_EVENT            (0x0u << 14) //!< No protocol exception event occurred since last read access
+#define MCAN_PSR_LAST_MESSAGE_HAD_ESI_FLAG              (0x1ul << 11) //!< Last received CAN FD message had its ESI flag set
+#define MCAN_PSR_LAST_MESSAGE_DID_NOT_HAD_ESI_FLAG      (0x0ul << 11) //!< Last received CAN FD message did not have its ESI flag set
+#define MCAN_PSR_LAST_MESSAGE_HAD_BRS_FLAG              (0x1ul << 12) //!< Last received CAN FD message had its BRS flag set
+#define MCAN_PSR_LAST_MESSAGE_DID_NOT_HAD_BRS_FLAG      (0x0ul << 12) //!< Last received CAN FD message did not have its BRS flag set
+#define MCAN_PSR_RECEIVE_CANFD_MESSAGE                  (0x1ul << 13) //!< Message in CAN FD format with FDF flag set has been received
+#define MCAN_PSR_DID_NOT_RECEIVE_CANFD_MESSAGE          (0x0ul << 13) //!< Since this bit was reset by the CPU, no CAN FD message has been received
+#define MCAN_PSR_PROTOCOL_EXCEPTION_EVENT_OCCURED       (0x1ul << 14) //!< Protocol exception event occurred
+#define MCAN_PSR_NO_PROTOCOL_EXCEPTION_EVENT            (0x0ul << 14) //!< No protocol exception event occurred since last read access
 #define MCAN_PSR_TDCV_Pos                               16
-#define MCAN_PSR_TDCV_Mask                              (0x7Fu << MCAN_PSR_TDCV_Pos)
+#define MCAN_PSR_TDCV_Mask                              (0x7Ful << MCAN_PSR_TDCV_Pos)
 #define MCAN_PSR_TDCV_GET(value)                        (((uint32_t)(value) & MCAN_PSR_TDCV_Mask) >> MCAN_PSR_TDCV_Pos) //!< Get Transmitter Delay Compensation Value
 
 //-----------------------------------------------------------------------------
@@ -1506,11 +1511,11 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TDCR_Register, 4);
 
 #define MCAN_TDCF_Pos         0
-#define MCAN_TDCF_Mask        (0x7Fu << MCAN_TDCF_Pos)
+#define MCAN_TDCF_Mask        (0x7Ful << MCAN_TDCF_Pos)
 #define MCAN_TDCF_SET(value)  (((uint32_t)(value) << MCAN_TDCF_Pos) & MCAN_TDCF_Mask) //!< Set Transmitter Delay Compensation Filter
 #define MCAN_TDCF_GET(value)  (((uint32_t)(value) & MCAN_TDCF_Mask) >> MCAN_TDCF_Pos) //!< Get Transmitter Delay Compensation Filter
 #define MCAN_TDCO_Pos         8
-#define MCAN_TDCO_Mask        (0x7Fu << MCAN_TDCO_Pos)
+#define MCAN_TDCO_Mask        (0x7Ful << MCAN_TDCO_Pos)
 #define MCAN_TDCO_SET(value)  (((uint32_t)(value) << MCAN_TDCO_Pos) & MCAN_TDCO_Mask) //!< Set Transmitter Delay Compensation Offset
 #define MCAN_TDCO_GET(value)  (((uint32_t)(value) & MCAN_TDCO_Mask) >> MCAN_TDCO_Pos) //!< Get Transmitter Delay Compensation Offset
 
@@ -1564,36 +1569,36 @@ typedef union __MCAN_PACKED__ MCAN_IR_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_IR_Register, 4);
 
-#define MCAN_IR_RF0N  (0x1u <<  0) //!< Receive FIFO 0 New Message
-#define MCAN_IR_RF0W  (0x1u <<  1) //!< Receive FIFO 0 Watermark Reached
-#define MCAN_IR_RF0F  (0x1u <<  2) //!< Receive FIFO 0 Full
-#define MCAN_IR_RF0L  (0x1u <<  3) //!< Receive FIFO 0 Message Lost
-#define MCAN_IR_RF1N  (0x1u <<  4) //!< Receive FIFO 1 New Message
-#define MCAN_IR_RF1W  (0x1u <<  5) //!< Receive FIFO 1 Watermark Reached
-#define MCAN_IR_RF1F  (0x1u <<  6) //!< Receive FIFO 1 Full
-#define MCAN_IR_RF1L  (0x1u <<  7) //!< Receive FIFO 1 Message Lost
-#define MCAN_IR_HPM   (0x1u <<  8) //!< High Priority Message
-#define MCAN_IR_TC    (0x1u <<  9) //!< Transmission Completed
-#define MCAN_IR_TCF   (0x1u << 10) //!< Transmission Cancellation Finished
-#define MCAN_IR_TFE   (0x1u << 11) //!< Tx FIFO Empty
-#define MCAN_IR_TEFN  (0x1u << 12) //!< Tx Event FIFO New Entry
-#define MCAN_IR_TEFW  (0x1u << 13) //!< Tx Event FIFO Watermark Reached
-#define MCAN_IR_TEFF  (0x1u << 14) //!< Tx Event FIFO Full
-#define MCAN_IR_TEFL  (0x1u << 15) //!< Tx Event FIFO Element Lost
-#define MCAN_IR_TSW   (0x1u << 16) //!< Timestamp Wraparound
-#define MCAN_IR_MRAF  (0x1u << 17) //!< Message RAM Access Failure
-#define MCAN_IR_TOO   (0x1u << 18) //!< Timeout Occurred
-#define MCAN_IR_DRX   (0x1u << 19) //!< Message stored to Dedicated Receive Buffer
-#define MCAN_IR_BEC   (0x1u << 20) //!< Bit Error Corrected
-#define MCAN_IR_BEU   (0x1u << 21) //!< Bit Error Uncorrected
-#define MCAN_IR_ELO   (0x1u << 22) //!< Error Logging Overflow
-#define MCAN_IR_EP    (0x1u << 23) //!< Error Passive
-#define MCAN_IR_EW    (0x1u << 24) //!< Warning Status
-#define MCAN_IR_BO    (0x1u << 25) //!< Bus_Off Status
-#define MCAN_IR_WDI   (0x1u << 26) //!< Watchdog Interrupt
-#define MCAN_IR_PEA   (0x1u << 27) //!< Protocol Error in Arbitration Phase
-#define MCAN_IR_PED   (0x1u << 28) //!< Protocol Error in Data Phase
-#define MCAN_IR_ARA   (0x1u << 29) //!< Access to Reserved Address
+#define MCAN_IR_RF0N  (0x1ul <<  0) //!< Receive FIFO 0 New Message
+#define MCAN_IR_RF0W  (0x1ul <<  1) //!< Receive FIFO 0 Watermark Reached
+#define MCAN_IR_RF0F  (0x1ul <<  2) //!< Receive FIFO 0 Full
+#define MCAN_IR_RF0L  (0x1ul <<  3) //!< Receive FIFO 0 Message Lost
+#define MCAN_IR_RF1N  (0x1ul <<  4) //!< Receive FIFO 1 New Message
+#define MCAN_IR_RF1W  (0x1ul <<  5) //!< Receive FIFO 1 Watermark Reached
+#define MCAN_IR_RF1F  (0x1ul <<  6) //!< Receive FIFO 1 Full
+#define MCAN_IR_RF1L  (0x1ul <<  7) //!< Receive FIFO 1 Message Lost
+#define MCAN_IR_HPM   (0x1ul <<  8) //!< High Priority Message
+#define MCAN_IR_TC    (0x1ul <<  9) //!< Transmission Completed
+#define MCAN_IR_TCF   (0x1ul << 10) //!< Transmission Cancellation Finished
+#define MCAN_IR_TFE   (0x1ul << 11) //!< Tx FIFO Empty
+#define MCAN_IR_TEFN  (0x1ul << 12) //!< Tx Event FIFO New Entry
+#define MCAN_IR_TEFW  (0x1ul << 13) //!< Tx Event FIFO Watermark Reached
+#define MCAN_IR_TEFF  (0x1ul << 14) //!< Tx Event FIFO Full
+#define MCAN_IR_TEFL  (0x1ul << 15) //!< Tx Event FIFO Element Lost
+#define MCAN_IR_TSW   (0x1ul << 16) //!< Timestamp Wraparound
+#define MCAN_IR_MRAF  (0x1ul << 17) //!< Message RAM Access Failure
+#define MCAN_IR_TOO   (0x1ul << 18) //!< Timeout Occurred
+#define MCAN_IR_DRX   (0x1ul << 19) //!< Message stored to Dedicated Receive Buffer
+#define MCAN_IR_BEC   (0x1ul << 20) //!< Bit Error Corrected
+#define MCAN_IR_BEU   (0x1ul << 21) //!< Bit Error Uncorrected
+#define MCAN_IR_ELO   (0x1ul << 22) //!< Error Logging Overflow
+#define MCAN_IR_EP    (0x1ul << 23) //!< Error Passive
+#define MCAN_IR_EW    (0x1ul << 24) //!< Warning Status
+#define MCAN_IR_BO    (0x1ul << 25) //!< Bus_Off Status
+#define MCAN_IR_WDI   (0x1ul << 26) //!< Watchdog Interrupt
+#define MCAN_IR_PEA   (0x1ul << 27) //!< Protocol Error in Arbitration Phase
+#define MCAN_IR_PED   (0x1ul << 28) //!< Protocol Error in Data Phase
+#define MCAN_IR_ARA   (0x1ul << 29) //!< Access to Reserved Address
 
 #define MCAN_IR_EVENTS_STATUS_FLAGS  ( MCAN_IR_RF0N | MCAN_IR_RF0W | MCAN_IR_RF0F | MCAN_IR_RF0L | \
                                        MCAN_IR_RF1N | MCAN_IR_RF1W | MCAN_IR_RF1F | MCAN_IR_RF1L | \
@@ -1649,7 +1654,7 @@ typedef enum
   MCAN_INT_FIFO_BUFFER_TEF_FLAGS_MASK    = MCAN_IR_FIFO_BUFF_TEF_FLAGS, //!< FIFO/Buffer/TEF flag mask
 } eMCAN_InterruptEvents;
 
-typedef eMCAN_InterruptEvents setMCAN_InterruptEvents; //! Set of Interrupt Events (can be OR'ed)
+typedef eMCAN_InterruptEvents setMCAN_InterruptEvents; //!< Set of Interrupt Events (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -1697,36 +1702,36 @@ typedef union __MCAN_PACKED__ MCAN_IE_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_IE_Register, 4);
 
-#define MCAN_IE_RF0N_EN  (0x1u <<  0) //!< Receive FIFO 0 New Message Interrupt Enable
-#define MCAN_IE_RF0W_EN  (0x1u <<  1) //!< Receive FIFO 0 Watermark Reached Interrupt Enable
-#define MCAN_IE_RF0F_EN  (0x1u <<  2) //!< Receive FIFO 0 Full Interrupt Enable
-#define MCAN_IE_RF0L_EN  (0x1u <<  3) //!< Receive FIFO 0 Message Lost Interrupt Enable
-#define MCAN_IE_RF1N_EN  (0x1u <<  4) //!< Receive FIFO 1 New Message Interrupt Enable
-#define MCAN_IE_RF1W_EN  (0x1u <<  5) //!< Receive FIFO 1 Watermark Reached Interrupt Enable
-#define MCAN_IE_RF1F_EN  (0x1u <<  6) //!< Receive FIFO 1 Full Interrupt Enable
-#define MCAN_IE_RF1L_EN  (0x1u <<  7) //!< Receive FIFO 1 Message Lost Interrupt Enable
-#define MCAN_IE_HPM_EN   (0x1u <<  8) //!< High Priority Message Interrupt Enable
-#define MCAN_IE_TC_EN    (0x1u <<  9) //!< Transmission Completed Interrupt Enable
-#define MCAN_IE_TCF_EN   (0x1u << 10) //!< Transmission Cancellation Finished Interrupt Enable
-#define MCAN_IE_TFE_EN   (0x1u << 11) //!< Tx FIFO Empty Interrupt Enable
-#define MCAN_IE_TEFN_EN  (0x1u << 12) //!< Tx Event FIFO New Entry Interrupt Enable
-#define MCAN_IE_TEFW_EN  (0x1u << 13) //!< Tx Event FIFO Watermark Reached Interrupt Enable
-#define MCAN_IE_TEFF_EN  (0x1u << 14) //!< Tx Event FIFO Full Interrupt Enable
-#define MCAN_IE_TEFL_EN  (0x1u << 15) //!< Tx Event FIFO Element Lost Interrupt Enable
-#define MCAN_IE_TSW_EN   (0x1u << 16) //!< Timestamp Wraparound Interrupt Enable
-#define MCAN_IE_MRAF_EN  (0x1u << 17) //!< Message RAM Access Failure Interrupt Enable
-#define MCAN_IE_TOO_EN   (0x1u << 18) //!< Timeout Occurred Interrupt Enable
-#define MCAN_IE_DRX_EN   (0x1u << 19) //!< Message stored to Dedicated Receive Buffer Interrupt Enable
-#define MCAN_IE_BEC_EN   (0x1u << 20) //!< Bit Error Corrected Interrupt Enable
-#define MCAN_IE_BEU_EN   (0x1u << 21) //!< Bit Error Uncorrected Interrupt Enable
-#define MCAN_IE_ELO_EN   (0x1u << 22) //!< Error Logging Overflow Interrupt Enable
-#define MCAN_IE_EP_EN    (0x1u << 23) //!< Error Passive Interrupt Enable
-#define MCAN_IE_EW_EN    (0x1u << 24) //!< Warning Status Interrupt Enable
-#define MCAN_IE_BO_EN    (0x1u << 25) //!< Bus_Off Status Interrupt Enable
-#define MCAN_IE_WDI_EN   (0x1u << 26) //!< Watchdog Interrupt Interrupt Enable
-#define MCAN_IE_PEA_EN   (0x1u << 27) //!< Protocol Error in Arbitration Phase Interrupt Enable
-#define MCAN_IE_PED_EN   (0x1u << 28) //!< Protocol Error in Data Phase Interrupt Enable
-#define MCAN_IE_ARA_EN   (0x1u << 29) //!< Access to Reserved Address Interrupt Enable
+#define MCAN_IE_RF0N_EN  (0x1ul <<  0) //!< Receive FIFO 0 New Message Interrupt Enable
+#define MCAN_IE_RF0W_EN  (0x1ul <<  1) //!< Receive FIFO 0 Watermark Reached Interrupt Enable
+#define MCAN_IE_RF0F_EN  (0x1ul <<  2) //!< Receive FIFO 0 Full Interrupt Enable
+#define MCAN_IE_RF0L_EN  (0x1ul <<  3) //!< Receive FIFO 0 Message Lost Interrupt Enable
+#define MCAN_IE_RF1N_EN  (0x1ul <<  4) //!< Receive FIFO 1 New Message Interrupt Enable
+#define MCAN_IE_RF1W_EN  (0x1ul <<  5) //!< Receive FIFO 1 Watermark Reached Interrupt Enable
+#define MCAN_IE_RF1F_EN  (0x1ul <<  6) //!< Receive FIFO 1 Full Interrupt Enable
+#define MCAN_IE_RF1L_EN  (0x1ul <<  7) //!< Receive FIFO 1 Message Lost Interrupt Enable
+#define MCAN_IE_HPM_EN   (0x1ul <<  8) //!< High Priority Message Interrupt Enable
+#define MCAN_IE_TC_EN    (0x1ul <<  9) //!< Transmission Completed Interrupt Enable
+#define MCAN_IE_TCF_EN   (0x1ul << 10) //!< Transmission Cancellation Finished Interrupt Enable
+#define MCAN_IE_TFE_EN   (0x1ul << 11) //!< Tx FIFO Empty Interrupt Enable
+#define MCAN_IE_TEFN_EN  (0x1ul << 12) //!< Tx Event FIFO New Entry Interrupt Enable
+#define MCAN_IE_TEFW_EN  (0x1ul << 13) //!< Tx Event FIFO Watermark Reached Interrupt Enable
+#define MCAN_IE_TEFF_EN  (0x1ul << 14) //!< Tx Event FIFO Full Interrupt Enable
+#define MCAN_IE_TEFL_EN  (0x1ul << 15) //!< Tx Event FIFO Element Lost Interrupt Enable
+#define MCAN_IE_TSW_EN   (0x1ul << 16) //!< Timestamp Wraparound Interrupt Enable
+#define MCAN_IE_MRAF_EN  (0x1ul << 17) //!< Message RAM Access Failure Interrupt Enable
+#define MCAN_IE_TOO_EN   (0x1ul << 18) //!< Timeout Occurred Interrupt Enable
+#define MCAN_IE_DRX_EN   (0x1ul << 19) //!< Message stored to Dedicated Receive Buffer Interrupt Enable
+#define MCAN_IE_BEC_EN   (0x1ul << 20) //!< Bit Error Corrected Interrupt Enable
+#define MCAN_IE_BEU_EN   (0x1ul << 21) //!< Bit Error Uncorrected Interrupt Enable
+#define MCAN_IE_ELO_EN   (0x1ul << 22) //!< Error Logging Overflow Interrupt Enable
+#define MCAN_IE_EP_EN    (0x1ul << 23) //!< Error Passive Interrupt Enable
+#define MCAN_IE_EW_EN    (0x1ul << 24) //!< Warning Status Interrupt Enable
+#define MCAN_IE_BO_EN    (0x1ul << 25) //!< Bus_Off Status Interrupt Enable
+#define MCAN_IE_WDI_EN   (0x1ul << 26) //!< Watchdog Interrupt Interrupt Enable
+#define MCAN_IE_PEA_EN   (0x1ul << 27) //!< Protocol Error in Arbitration Phase Interrupt Enable
+#define MCAN_IE_PED_EN   (0x1ul << 28) //!< Protocol Error in Data Phase Interrupt Enable
+#define MCAN_IE_ARA_EN   (0x1ul << 29) //!< Access to Reserved Address Interrupt Enable
 
 //-----------------------------------------------------------------------------
 
@@ -1776,66 +1781,66 @@ typedef union __MCAN_PACKED__ MCAN_ILS_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_ILS_Register, 4);
 
-#define MCAN_ILS_RF0N_INT0  (0x0u <<  0) //! Receive FIFO 0 New Message Interrupt Line on INT0
-#define MCAN_ILS_RF0N_INT1  (0x1u <<  0) //! Receive FIFO 0 New Message Interrupt Line on INT1
-#define MCAN_ILS_RF0W_INT0  (0x0u <<  1) //! Receive FIFO 0 Watermark Reached Interrupt Line on INT0
-#define MCAN_ILS_RF0W_INT1  (0x1u <<  1) //! Receive FIFO 0 Watermark Reached Interrupt Line on INT1
-#define MCAN_ILS_RF0F_INT0  (0x0u <<  2) //! Receive FIFO 0 Full Interrupt Line on INT0
-#define MCAN_ILS_RF0F_INT1  (0x1u <<  2) //! Receive FIFO 0 Full Interrupt Line on INT1
-#define MCAN_ILS_RF0L_INT0  (0x0u <<  3) //! Receive FIFO 0 Message Lost Interrupt Line on INT0
-#define MCAN_ILS_RF0L_INT1  (0x1u <<  3) //! Receive FIFO 0 Message Lost Interrupt Line on INT1
-#define MCAN_ILS_RF1N_INT0  (0x0u <<  4) //! Receive FIFO 1 New Message Interrupt Line on INT0
-#define MCAN_ILS_RF1N_INT1  (0x1u <<  4) //! Receive FIFO 1 New Message Interrupt Line on INT1
-#define MCAN_ILS_RF1W_INT0  (0x0u <<  5) //! Receive FIFO 1 Watermark Reached Interrupt Line on INT0
-#define MCAN_ILS_RF1W_INT1  (0x1u <<  5) //! Receive FIFO 1 Watermark Reached Interrupt Line on INT1
-#define MCAN_ILS_RF1F_INT0  (0x0u <<  6) //! Receive FIFO 1 Full Interrupt Line on INT0
-#define MCAN_ILS_RF1F_INT1  (0x1u <<  6) //! Receive FIFO 1 Full Interrupt Line on INT1
-#define MCAN_ILS_RF1L_INT0  (0x0u <<  7) //! Receive FIFO 1 Message Lost Interrupt Line on INT0
-#define MCAN_ILS_RF1L_INT1  (0x1u <<  7) //! Receive FIFO 1 Message Lost Interrupt Line on INT1
-#define MCAN_ILS_HPM_INT0   (0x0u <<  8) //! High Priority Message Interrupt Line on INT0
-#define MCAN_ILS_HPM_INT1   (0x1u <<  8) //! High Priority Message Interrupt Line on INT1
-#define MCAN_ILS_TC_INT0    (0x0u <<  9) //! Transmission Completed Interrupt Line on INT0
-#define MCAN_ILS_TC_INT1    (0x1u <<  9) //! Transmission Completed Interrupt Line on INT1
-#define MCAN_ILS_TCF_INT0   (0x0u << 10) //! Transmission Cancellation Finished Interrupt Line on INT0
-#define MCAN_ILS_TCF_INT1   (0x1u << 10) //! Transmission Cancellation Finished Interrupt Line on INT1
-#define MCAN_ILS_TFE_INT0   (0x0u << 11) //! Tx FIFO Empty Interrupt Line on INT0
-#define MCAN_ILS_TFE_INT1   (0x1u << 11) //! Tx FIFO Empty Interrupt Line on INT1
-#define MCAN_ILS_TEFN_INT0  (0x0u << 12) //! Tx Event FIFO New Entry Interrupt Line on INT0
-#define MCAN_ILS_TEFN_INT1  (0x1u << 12) //! Tx Event FIFO New Entry Interrupt Line on INT1
-#define MCAN_ILS_TEFW_INT0  (0x0u << 13) //! Tx Event FIFO Watermark Reached Interrupt Line on INT0
-#define MCAN_ILS_TEFW_INT1  (0x1u << 13) //! Tx Event FIFO Watermark Reached Interrupt Line on INT1
-#define MCAN_ILS_TEFF_INT0  (0x0u << 14) //! Tx Event FIFO Full Interrupt Line on INT0
-#define MCAN_ILS_TEFF_INT1  (0x1u << 14) //! Tx Event FIFO Full Interrupt Line on INT1
-#define MCAN_ILS_TEFL_INT0  (0x0u << 15) //! Tx Event FIFO Element Lost Interrupt Line on INT0
-#define MCAN_ILS_TEFL_INT1  (0x1u << 15) //! Tx Event FIFO Element Lost Interrupt Line on INT1
-#define MCAN_ILS_TSW_INT0   (0x0u << 16) //! Timestamp Wraparound Interrupt Line on INT0
-#define MCAN_ILS_TSW_INT1   (0x1u << 16) //! Timestamp Wraparound Interrupt Line on INT1
-#define MCAN_ILS_MRAF_INT0  (0x0u << 17) //! Message RAM Access Failure Interrupt Line on INT0
-#define MCAN_ILS_MRAF_INT1  (0x1u << 17) //! Message RAM Access Failure Interrupt Line on INT1
-#define MCAN_ILS_TOO_INT0   (0x0u << 18) //! Timeout Occurred Interrupt Line on INT0
-#define MCAN_ILS_TOO_INT1   (0x1u << 18) //! Timeout Occurred Interrupt Line on INT1
-#define MCAN_ILS_DRX_INT0   (0x0u << 19) //! Message stored to Dedicated Receive Buffer Interrupt Line on INT0
-#define MCAN_ILS_DRX_INT1   (0x1u << 19) //! Message stored to Dedicated Receive Buffer Interrupt Line on INT1
-#define MCAN_ILS_BEC_INT0   (0x0u << 20) //! Bit Error Corrected Interrupt Line on INT0
-#define MCAN_ILS_BEC_INT1   (0x1u << 20) //! Bit Error Corrected Interrupt Line on INT1
-#define MCAN_ILS_BEU_INT0   (0x0u << 21) //! Bit Error Uncorrected Interrupt Line on INT0
-#define MCAN_ILS_BEU_INT1   (0x1u << 21) //! Bit Error Uncorrected Interrupt Line on INT1
-#define MCAN_ILS_ELO_INT0   (0x0u << 22) //! Error Logging Overflow Interrupt Line on INT0
-#define MCAN_ILS_ELO_INT1   (0x1u << 22) //! Error Logging Overflow Interrupt Line on INT1
-#define MCAN_ILS_EP_INT0    (0x0u << 23) //! Error Passive Interrupt Line on INT0
-#define MCAN_ILS_EP_INT1    (0x1u << 23) //! Error Passive Interrupt Line on INT1
-#define MCAN_ILS_EW_INT0    (0x0u << 24) //! Warning Status Interrupt Line on INT0
-#define MCAN_ILS_EW_INT1    (0x1u << 24) //! Warning Status Interrupt Line on INT1
-#define MCAN_ILS_BO_INT0    (0x0u << 25) //! Bus_Off Status Interrupt Line on INT0
-#define MCAN_ILS_BO_INT1    (0x1u << 25) //! Bus_Off Status Interrupt Line on INT1
-#define MCAN_ILS_WDI_INT0   (0x0u << 26) //! Watchdog Interrupt Interrupt Line on INT0
-#define MCAN_ILS_WDI_INT1   (0x1u << 26) //! Watchdog Interrupt Interrupt Line on INT1
-#define MCAN_ILS_PEA_INT0   (0x0u << 27) //! Protocol Error in Arbitration Phase Interrupt Line on INT0
-#define MCAN_ILS_PEA_INT1   (0x1u << 27) //! Protocol Error in Arbitration Phase Interrupt Line on INT1
-#define MCAN_ILS_PED_INT0   (0x0u << 28) //! Protocol Error in Data Phase Interrupt Line on INT0
-#define MCAN_ILS_PED_INT1   (0x1u << 28) //! Protocol Error in Data Phase Interrupt Line on INT1
-#define MCAN_ILS_ARA_INT0   (0x0u << 29) //! Access to Reserved Address Interrupt Line on INT0
-#define MCAN_ILS_ARA_INT1   (0x1u << 29) //! Access to Reserved Address Interrupt Line on INT1
+#define MCAN_ILS_RF0N_INT0  (0x0ul <<  0) //!< Receive FIFO 0 New Message Interrupt Line on INT0
+#define MCAN_ILS_RF0N_INT1  (0x1ul <<  0) //!< Receive FIFO 0 New Message Interrupt Line on INT1
+#define MCAN_ILS_RF0W_INT0  (0x0ul <<  1) //!< Receive FIFO 0 Watermark Reached Interrupt Line on INT0
+#define MCAN_ILS_RF0W_INT1  (0x1ul <<  1) //!< Receive FIFO 0 Watermark Reached Interrupt Line on INT1
+#define MCAN_ILS_RF0F_INT0  (0x0ul <<  2) //!< Receive FIFO 0 Full Interrupt Line on INT0
+#define MCAN_ILS_RF0F_INT1  (0x1ul <<  2) //!< Receive FIFO 0 Full Interrupt Line on INT1
+#define MCAN_ILS_RF0L_INT0  (0x0ul <<  3) //!< Receive FIFO 0 Message Lost Interrupt Line on INT0
+#define MCAN_ILS_RF0L_INT1  (0x1ul <<  3) //!< Receive FIFO 0 Message Lost Interrupt Line on INT1
+#define MCAN_ILS_RF1N_INT0  (0x0ul <<  4) //!< Receive FIFO 1 New Message Interrupt Line on INT0
+#define MCAN_ILS_RF1N_INT1  (0x1ul <<  4) //!< Receive FIFO 1 New Message Interrupt Line on INT1
+#define MCAN_ILS_RF1W_INT0  (0x0ul <<  5) //!< Receive FIFO 1 Watermark Reached Interrupt Line on INT0
+#define MCAN_ILS_RF1W_INT1  (0x1ul <<  5) //!< Receive FIFO 1 Watermark Reached Interrupt Line on INT1
+#define MCAN_ILS_RF1F_INT0  (0x0ul <<  6) //!< Receive FIFO 1 Full Interrupt Line on INT0
+#define MCAN_ILS_RF1F_INT1  (0x1ul <<  6) //!< Receive FIFO 1 Full Interrupt Line on INT1
+#define MCAN_ILS_RF1L_INT0  (0x0ul <<  7) //!< Receive FIFO 1 Message Lost Interrupt Line on INT0
+#define MCAN_ILS_RF1L_INT1  (0x1ul <<  7) //!< Receive FIFO 1 Message Lost Interrupt Line on INT1
+#define MCAN_ILS_HPM_INT0   (0x0ul <<  8) //!< High Priority Message Interrupt Line on INT0
+#define MCAN_ILS_HPM_INT1   (0x1ul <<  8) //!< High Priority Message Interrupt Line on INT1
+#define MCAN_ILS_TC_INT0    (0x0ul <<  9) //!< Transmission Completed Interrupt Line on INT0
+#define MCAN_ILS_TC_INT1    (0x1ul <<  9) //!< Transmission Completed Interrupt Line on INT1
+#define MCAN_ILS_TCF_INT0   (0x0ul << 10) //!< Transmission Cancellation Finished Interrupt Line on INT0
+#define MCAN_ILS_TCF_INT1   (0x1ul << 10) //!< Transmission Cancellation Finished Interrupt Line on INT1
+#define MCAN_ILS_TFE_INT0   (0x0ul << 11) //!< Tx FIFO Empty Interrupt Line on INT0
+#define MCAN_ILS_TFE_INT1   (0x1ul << 11) //!< Tx FIFO Empty Interrupt Line on INT1
+#define MCAN_ILS_TEFN_INT0  (0x0ul << 12) //!< Tx Event FIFO New Entry Interrupt Line on INT0
+#define MCAN_ILS_TEFN_INT1  (0x1ul << 12) //!< Tx Event FIFO New Entry Interrupt Line on INT1
+#define MCAN_ILS_TEFW_INT0  (0x0ul << 13) //!< Tx Event FIFO Watermark Reached Interrupt Line on INT0
+#define MCAN_ILS_TEFW_INT1  (0x1ul << 13) //!< Tx Event FIFO Watermark Reached Interrupt Line on INT1
+#define MCAN_ILS_TEFF_INT0  (0x0ul << 14) //!< Tx Event FIFO Full Interrupt Line on INT0
+#define MCAN_ILS_TEFF_INT1  (0x1ul << 14) //!< Tx Event FIFO Full Interrupt Line on INT1
+#define MCAN_ILS_TEFL_INT0  (0x0ul << 15) //!< Tx Event FIFO Element Lost Interrupt Line on INT0
+#define MCAN_ILS_TEFL_INT1  (0x1ul << 15) //!< Tx Event FIFO Element Lost Interrupt Line on INT1
+#define MCAN_ILS_TSW_INT0   (0x0ul << 16) //!< Timestamp Wraparound Interrupt Line on INT0
+#define MCAN_ILS_TSW_INT1   (0x1ul << 16) //!< Timestamp Wraparound Interrupt Line on INT1
+#define MCAN_ILS_MRAF_INT0  (0x0ul << 17) //!< Message RAM Access Failure Interrupt Line on INT0
+#define MCAN_ILS_MRAF_INT1  (0x1ul << 17) //!< Message RAM Access Failure Interrupt Line on INT1
+#define MCAN_ILS_TOO_INT0   (0x0ul << 18) //!< Timeout Occurred Interrupt Line on INT0
+#define MCAN_ILS_TOO_INT1   (0x1ul << 18) //!< Timeout Occurred Interrupt Line on INT1
+#define MCAN_ILS_DRX_INT0   (0x0ul << 19) //!< Message stored to Dedicated Receive Buffer Interrupt Line on INT0
+#define MCAN_ILS_DRX_INT1   (0x1ul << 19) //!< Message stored to Dedicated Receive Buffer Interrupt Line on INT1
+#define MCAN_ILS_BEC_INT0   (0x0ul << 20) //!< Bit Error Corrected Interrupt Line on INT0
+#define MCAN_ILS_BEC_INT1   (0x1ul << 20) //!< Bit Error Corrected Interrupt Line on INT1
+#define MCAN_ILS_BEU_INT0   (0x0ul << 21) //!< Bit Error Uncorrected Interrupt Line on INT0
+#define MCAN_ILS_BEU_INT1   (0x1ul << 21) //!< Bit Error Uncorrected Interrupt Line on INT1
+#define MCAN_ILS_ELO_INT0   (0x0ul << 22) //!< Error Logging Overflow Interrupt Line on INT0
+#define MCAN_ILS_ELO_INT1   (0x1ul << 22) //!< Error Logging Overflow Interrupt Line on INT1
+#define MCAN_ILS_EP_INT0    (0x0ul << 23) //!< Error Passive Interrupt Line on INT0
+#define MCAN_ILS_EP_INT1    (0x1ul << 23) //!< Error Passive Interrupt Line on INT1
+#define MCAN_ILS_EW_INT0    (0x0ul << 24) //!< Warning Status Interrupt Line on INT0
+#define MCAN_ILS_EW_INT1    (0x1ul << 24) //!< Warning Status Interrupt Line on INT1
+#define MCAN_ILS_BO_INT0    (0x0ul << 25) //!< Bus_Off Status Interrupt Line on INT0
+#define MCAN_ILS_BO_INT1    (0x1ul << 25) //!< Bus_Off Status Interrupt Line on INT1
+#define MCAN_ILS_WDI_INT0   (0x0ul << 26) //!< Watchdog Interrupt Interrupt Line on INT0
+#define MCAN_ILS_WDI_INT1   (0x1ul << 26) //!< Watchdog Interrupt Interrupt Line on INT1
+#define MCAN_ILS_PEA_INT0   (0x0ul << 27) //!< Protocol Error in Arbitration Phase Interrupt Line on INT0
+#define MCAN_ILS_PEA_INT1   (0x1ul << 27) //!< Protocol Error in Arbitration Phase Interrupt Line on INT1
+#define MCAN_ILS_PED_INT0   (0x0ul << 28) //!< Protocol Error in Data Phase Interrupt Line on INT0
+#define MCAN_ILS_PED_INT1   (0x1ul << 28) //!< Protocol Error in Data Phase Interrupt Line on INT1
+#define MCAN_ILS_ARA_INT0   (0x0ul << 29) //!< Access to Reserved Address Interrupt Line on INT0
+#define MCAN_ILS_ARA_INT1   (0x1ul << 29) //!< Access to Reserved Address Interrupt Line on INT1
 
 //! Interrupt Line Select, can be OR'ed.
 typedef enum
@@ -1906,7 +1911,7 @@ typedef enum
   MCAN_INT_ACCESS_RESERVED_ADDRESS_ON_INT1     = MCAN_ILS_ARA_INT1,  //!< Access to Reserved Address event on line INT1
 } eMCAN_IntLineSelect;
 
-typedef eMCAN_IntLineSelect setMCAN_IntLineSelect; //! Set of Interrupt Line Select (can be OR'ed)
+typedef eMCAN_IntLineSelect setMCAN_IntLineSelect; //!< Set of Interrupt Line Select (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -1928,10 +1933,10 @@ typedef union __MCAN_PACKED__ MCAN_ILE_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_ILE_Register, 4);
 
-#define MCAN_ILE_EINT0_EN   (0x1u << 0) //! Interrupt line MCAN_INT0 enabled
-#define MCAN_ILE_EINT0_DIS  (0x0u << 0) //! Interrupt line MCAN_INT0 disabled
-#define MCAN_ILE_EINT1_EN   (0x1u << 1) //! Interrupt line MCAN_INT1 enabled
-#define MCAN_ILE_EINT1_DIS  (0x0u << 1) //! Interrupt line MCAN_INT1 disabled
+#define MCAN_ILE_EINT0_EN   (0x1ul << 0) //!< Interrupt line MCAN_INT0 enabled
+#define MCAN_ILE_EINT0_DIS  (0x0ul << 0) //!< Interrupt line MCAN_INT0 disabled
+#define MCAN_ILE_EINT1_EN   (0x1ul << 1) //!< Interrupt line MCAN_INT1 enabled
+#define MCAN_ILE_EINT1_DIS  (0x0ul << 1) //!< Interrupt line MCAN_INT1 disabled
 
 //-----------------------------------------------------------------------------
 
@@ -1956,10 +1961,10 @@ typedef union __MCAN_PACKED__ MCAN_GFC_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_GFC_Register, 4);
 
-#define MCAN_GFC_REJECT_REMOTE_FRAMES_EXTENDED_ID  (0x1u << 0) //! Reject all remote frames with 29-bit extended IDs
-#define MCAN_GFC_FILTER_REMOTE_FRAMES_EXTENDED_ID  (0x0u << 0) //! Filter remote frames with 29-bit extended IDs
-#define MCAN_GFC_REJECT_REMOTE_FRAMES_STANDARD_ID  (0x1u << 1) //! Reject all remote frames with 11-bit standard IDs
-#define MCAN_GFC_FILTER_REMOTE_FRAMES_STANDARD_ID  (0x0u << 1) //! Filter remote frames with 11-bit standard IDs
+#define MCAN_GFC_REJECT_REMOTE_FRAMES_EXTENDED_ID  (0x1ul << 0) //!< Reject all remote frames with 29-bit extended IDs
+#define MCAN_GFC_FILTER_REMOTE_FRAMES_EXTENDED_ID  (0x0ul << 0) //!< Filter remote frames with 29-bit extended IDs
+#define MCAN_GFC_REJECT_REMOTE_FRAMES_STANDARD_ID  (0x1ul << 1) //!< Reject all remote frames with 11-bit standard IDs
+#define MCAN_GFC_FILTER_REMOTE_FRAMES_STANDARD_ID  (0x0ul << 1) //!< Filter remote frames with 11-bit standard IDs
 
 //! Accept Non-matching Frames enumerator
 typedef enum
@@ -1971,11 +1976,11 @@ typedef enum
 } eMCAN_AcceptNonMatching;
 
 #define MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Pos         2
-#define MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Mask        (0x3u << MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Pos)
+#define MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Mask        (0x3ul << MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Pos)
 #define MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_SET(value)  (((uint32_t)(value) << MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Pos) & MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Mask) //!< Set Accept Non-matching Frames Extended
 #define MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_GET(value)  (((uint32_t)(value) & MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Mask) >> MCAN_GFC_ACCEPT_NON_MATCHING_EXTENDED_Pos) //!< Get Accept Non-matching Frames Extended
 #define MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Pos         4
-#define MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Mask        (0x3u << MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Pos)
+#define MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Mask        (0x3ul << MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Pos)
 #define MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_SET(value)  (((uint32_t)(value) << MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Pos) & MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Mask) //!< Set Accept Non-matching Frames Standard
 #define MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_GET(value)  (((uint32_t)(value) & MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Mask) >> MCAN_GFC_ACCEPT_NON_MATCHING_STANDARD_Pos) //!< Get Accept Non-matching Frames Standard
 
@@ -2002,11 +2007,11 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_SIDFC_Register, 4);
 
 #define MCAN_SIDFC_FILTER_LIST_SA_Pos         0
-#define MCAN_SIDFC_FILTER_LIST_SA_Mask        (0xFFFCu << MCAN_SIDFC_FILTER_LIST_SA_Pos)
+#define MCAN_SIDFC_FILTER_LIST_SA_Mask        (0xFFFCul << MCAN_SIDFC_FILTER_LIST_SA_Pos)
 #define MCAN_SIDFC_FILTER_LIST_SA_SET(value)  (((uint32_t)(value) << MCAN_SIDFC_FILTER_LIST_SA_Pos) & MCAN_SIDFC_FILTER_LIST_SA_Mask) //!< Set Filter List Standard Start Address
 #define MCAN_SIDFC_FILTER_LIST_SA_GET(value)  (((uint32_t)(value) & MCAN_SIDFC_FILTER_LIST_SA_Mask) >> MCAN_SIDFC_FILTER_LIST_SA_Pos) //!< Get Filter List Standard Start Address
 #define MCAN_SIDFC_LIST_SIZE_Pos              16
-#define MCAN_SIDFC_LIST_SIZE_Mask             (0xFFu << MCAN_SIDFC_LIST_SIZE_Pos)
+#define MCAN_SIDFC_LIST_SIZE_Mask             (0xFFul << MCAN_SIDFC_LIST_SIZE_Pos)
 #define MCAN_SIDFC_LIST_SIZE_SET(value)       (((uint32_t)(value) << MCAN_SIDFC_LIST_SIZE_Pos) & MCAN_SIDFC_LIST_SIZE_Mask) //!< Set List Size Standard
 #define MCAN_SIDFC_LIST_SIZE_GET(value)       (((uint32_t)(value) & MCAN_SIDFC_LIST_SIZE_Mask) >> MCAN_SIDFC_LIST_SIZE_Pos) //!< Get List Size Standard
 
@@ -2033,11 +2038,11 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_XIDFC_Register, 4);
 
 #define MCAN_XIDFC_FILTER_LIST_SA_Pos         0
-#define MCAN_XIDFC_FILTER_LIST_SA_Mask        (0xFFFCu << MCAN_XIDFC_FILTER_LIST_SA_Pos)
+#define MCAN_XIDFC_FILTER_LIST_SA_Mask        (0xFFFCul << MCAN_XIDFC_FILTER_LIST_SA_Pos)
 #define MCAN_XIDFC_FILTER_LIST_SA_SET(value)  ((uint32_t)(value) & MCAN_XIDFC_FILTER_LIST_SA_Mask) //!< Set Filter List Extended Start Address
 #define MCAN_XIDFC_FILTER_LIST_SA_GET(value)  ((uint32_t)(value) & MCAN_XIDFC_FILTER_LIST_SA_Mask) //!< Get Filter List Extended Start Address
 #define MCAN_XIDFC_LIST_SIZE_Pos              16
-#define MCAN_XIDFC_LIST_SIZE_Mask             (0xFFu << MCAN_XIDFC_LIST_SIZE_Pos)
+#define MCAN_XIDFC_LIST_SIZE_Mask             (0xFFul << MCAN_XIDFC_LIST_SIZE_Pos)
 #define MCAN_XIDFC_LIST_SIZE_SET(value)       (((uint32_t)(value) << MCAN_XIDFC_LIST_SIZE_Pos) & MCAN_XIDFC_LIST_SIZE_Mask) //!< Set List Size Extended
 #define MCAN_XIDFC_LIST_SIZE_GET(value)       (((uint32_t)(value) & MCAN_XIDFC_LIST_SIZE_Mask) >> MCAN_XIDFC_LIST_SIZE_Pos) //!< Get List Size Extended
 
@@ -2061,7 +2066,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_XIDAM_Register, 4);
 
 #define MCAN_XIDAM_EXTENDED_ID_AND_MASK_Pos         0
-#define MCAN_XIDAM_EXTENDED_ID_AND_MASK_Mask        (0x1FFFFFFFu << MCAN_XIDAM_EXTENDED_ID_AND_MASK_Pos)
+#define MCAN_XIDAM_EXTENDED_ID_AND_MASK_Mask        (0x1FFFFFFFul << MCAN_XIDAM_EXTENDED_ID_AND_MASK_Pos)
 #define MCAN_XIDAM_EXTENDED_ID_AND_MASK_SET(value)  (((uint32_t)(value) << MCAN_XIDAM_EXTENDED_ID_AND_MASK_Pos) & MCAN_XIDAM_EXTENDED_ID_AND_MASK_Mask) //!< Set Extended ID Mask
 #define MCAN_XIDAM_EXTENDED_ID_AND_MASK_GET(value)  (((uint32_t)(value) & MCAN_XIDAM_EXTENDED_ID_AND_MASK_Mask) >> MCAN_XIDAM_EXTENDED_ID_AND_MASK_Pos) //!< Get Extended ID Mask
 
@@ -2088,7 +2093,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_HPMS_Register, 4);
 
 #define MCAN_HPMS_BUFFER_INDEX_Pos         0
-#define MCAN_HPMS_BUFFER_INDEX_Mask        (0x3Fu << MCAN_HPMS_BUFFER_INDEX_Pos)
+#define MCAN_HPMS_BUFFER_INDEX_Mask        (0x3Ful << MCAN_HPMS_BUFFER_INDEX_Pos)
 #define MCAN_HPMS_BUFFER_INDEX_GET(value)  (((uint32_t)(value) & MCAN_HPMS_BUFFER_INDEX_Mask) >> MCAN_HPMS_BUFFER_INDEX_Pos) //!< Get Extended ID Mask
 
 //! Message Storage Indicator enumerator
@@ -2101,13 +2106,13 @@ typedef enum
 } eMCAN_MessageStorageIndicator;
 
 #define MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Pos         6
-#define MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Mask        (0x3u << MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Pos)
+#define MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Mask        (0x3ul << MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Pos)
 #define MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_GET(value)  (((uint32_t)(value) & MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Mask) >> MCAN_HPMS_MESSAGE_STORAGE_INDICATOR_Pos) //!< Get Message Storage Indicator
 #define MCAN_HPMS_FILTER_INDEX_Pos                      8
-#define MCAN_HPMS_FILTER_INDEX_Mask                     (0x7Fu << MCAN_HPMS_FILTER_INDEX_Pos)
+#define MCAN_HPMS_FILTER_INDEX_Mask                     (0x7Ful << MCAN_HPMS_FILTER_INDEX_Pos)
 #define MCAN_HPMS_FILTER_INDEX_GET(value)               (((uint32_t)(value) & MCAN_HPMS_FILTER_INDEX_Mask) >> MCAN_HPMS_FILTER_INDEX_Pos) //!< Get Filter Index
-#define MCAN_HPMS_EXTENDED_FILTER_LIST                  (0x1u << 15) //! Extended filter list
-#define MCAN_HPMS_STANDARD_FILTER_LIST                  (0x0u << 15) //! Standard filter list
+#define MCAN_HPMS_EXTENDED_FILTER_LIST                  (0x1ul << 15) //!< Extended filter list
+#define MCAN_HPMS_STANDARD_FILTER_LIST                  (0x0ul << 15) //!< Standard filter list
 
 //-----------------------------------------------------------------------------
 
@@ -2159,38 +2164,38 @@ typedef union __MCAN_PACKED__ MCAN_NDAT1_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_NDAT1_Register, 4);
 
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_0   (0x1u <<  0) //!< New Data in Receive Buffer 0 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_1   (0x1u <<  1) //!< New Data in Receive Buffer 1 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_2   (0x1u <<  2) //!< New Data in Receive Buffer 2 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_3   (0x1u <<  3) //!< New Data in Receive Buffer 3 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_4   (0x1u <<  4) //!< New Data in Receive Buffer 4 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_5   (0x1u <<  5) //!< New Data in Receive Buffer 5 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_6   (0x1u <<  6) //!< New Data in Receive Buffer 6 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_7   (0x1u <<  7) //!< New Data in Receive Buffer 7 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_8   (0x1u <<  8) //!< New Data in Receive Buffer 8 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_9   (0x1u <<  9) //!< New Data in Receive Buffer 9 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_10  (0x1u << 10) //!< New Data in Receive Buffer 10 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_11  (0x1u << 11) //!< New Data in Receive Buffer 11 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_12  (0x1u << 12) //!< New Data in Receive Buffer 12 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_13  (0x1u << 13) //!< New Data in Receive Buffer 13 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_14  (0x1u << 14) //!< New Data in Receive Buffer 14 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_15  (0x1u << 15) //!< New Data in Receive Buffer 15 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_16  (0x1u << 16) //!< New Data in Receive Buffer 16 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_17  (0x1u << 17) //!< New Data in Receive Buffer 17 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_18  (0x1u << 18) //!< New Data in Receive Buffer 18 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_19  (0x1u << 19) //!< New Data in Receive Buffer 19 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_20  (0x1u << 20) //!< New Data in Receive Buffer 20 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_21  (0x1u << 21) //!< New Data in Receive Buffer 21 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_22  (0x1u << 22) //!< New Data in Receive Buffer 22 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_23  (0x1u << 23) //!< New Data in Receive Buffer 23 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_24  (0x1u << 24) //!< New Data in Receive Buffer 24 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_25  (0x1u << 25) //!< New Data in Receive Buffer 25 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_26  (0x1u << 26) //!< New Data in Receive Buffer 26 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_27  (0x1u << 27) //!< New Data in Receive Buffer 27 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_28  (0x1u << 28) //!< New Data in Receive Buffer 28 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_29  (0x1u << 29) //!< New Data in Receive Buffer 29 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_30  (0x1u << 30) //!< New Data in Receive Buffer 30 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_31  (0x1u << 31) //!< New Data in Receive Buffer 31 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_0   (0x1ul <<  0) //!< New Data in Receive Buffer 0 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_1   (0x1ul <<  1) //!< New Data in Receive Buffer 1 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_2   (0x1ul <<  2) //!< New Data in Receive Buffer 2 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_3   (0x1ul <<  3) //!< New Data in Receive Buffer 3 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_4   (0x1ul <<  4) //!< New Data in Receive Buffer 4 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_5   (0x1ul <<  5) //!< New Data in Receive Buffer 5 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_6   (0x1ul <<  6) //!< New Data in Receive Buffer 6 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_7   (0x1ul <<  7) //!< New Data in Receive Buffer 7 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_8   (0x1ul <<  8) //!< New Data in Receive Buffer 8 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_9   (0x1ul <<  9) //!< New Data in Receive Buffer 9 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_10  (0x1ul << 10) //!< New Data in Receive Buffer 10 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_11  (0x1ul << 11) //!< New Data in Receive Buffer 11 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_12  (0x1ul << 12) //!< New Data in Receive Buffer 12 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_13  (0x1ul << 13) //!< New Data in Receive Buffer 13 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_14  (0x1ul << 14) //!< New Data in Receive Buffer 14 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_15  (0x1ul << 15) //!< New Data in Receive Buffer 15 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_16  (0x1ul << 16) //!< New Data in Receive Buffer 16 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_17  (0x1ul << 17) //!< New Data in Receive Buffer 17 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_18  (0x1ul << 18) //!< New Data in Receive Buffer 18 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_19  (0x1ul << 19) //!< New Data in Receive Buffer 19 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_20  (0x1ul << 20) //!< New Data in Receive Buffer 20 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_21  (0x1ul << 21) //!< New Data in Receive Buffer 21 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_22  (0x1ul << 22) //!< New Data in Receive Buffer 22 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_23  (0x1ul << 23) //!< New Data in Receive Buffer 23 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_24  (0x1ul << 24) //!< New Data in Receive Buffer 24 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_25  (0x1ul << 25) //!< New Data in Receive Buffer 25 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_26  (0x1ul << 26) //!< New Data in Receive Buffer 26 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_27  (0x1ul << 27) //!< New Data in Receive Buffer 27 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_28  (0x1ul << 28) //!< New Data in Receive Buffer 28 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_29  (0x1ul << 29) //!< New Data in Receive Buffer 29 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_30  (0x1ul << 30) //!< New Data in Receive Buffer 30 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_31  (0x1ul << 31) //!< New Data in Receive Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -2242,38 +2247,38 @@ typedef union __MCAN_PACKED__ MCAN_NDAT2_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_NDAT2_Register, 4);
 
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_32  (0x1u <<  0) //!< New Data in Receive Buffer 32 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_33  (0x1u <<  1) //!< New Data in Receive Buffer 33 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_34  (0x1u <<  2) //!< New Data in Receive Buffer 34 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_35  (0x1u <<  3) //!< New Data in Receive Buffer 35 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_36  (0x1u <<  4) //!< New Data in Receive Buffer 36 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_37  (0x1u <<  5) //!< New Data in Receive Buffer 37 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_38  (0x1u <<  6) //!< New Data in Receive Buffer 38 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_39  (0x1u <<  7) //!< New Data in Receive Buffer 39 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_40  (0x1u <<  8) //!< New Data in Receive Buffer 40 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_41  (0x1u <<  9) //!< New Data in Receive Buffer 41 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_42  (0x1u << 10) //!< New Data in Receive Buffer 42 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_43  (0x1u << 11) //!< New Data in Receive Buffer 43 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_44  (0x1u << 12) //!< New Data in Receive Buffer 44 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_45  (0x1u << 13) //!< New Data in Receive Buffer 45 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_46  (0x1u << 14) //!< New Data in Receive Buffer 46 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_47  (0x1u << 15) //!< New Data in Receive Buffer 47 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_48  (0x1u << 16) //!< New Data in Receive Buffer 48 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_49  (0x1u << 17) //!< New Data in Receive Buffer 49 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_50  (0x1u << 18) //!< New Data in Receive Buffer 50 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_51  (0x1u << 19) //!< New Data in Receive Buffer 51 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_52  (0x1u << 20) //!< New Data in Receive Buffer 52 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_53  (0x1u << 21) //!< New Data in Receive Buffer 53 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_54  (0x1u << 22) //!< New Data in Receive Buffer 54 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_55  (0x1u << 23) //!< New Data in Receive Buffer 55 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_56  (0x1u << 24) //!< New Data in Receive Buffer 56 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_57  (0x1u << 25) //!< New Data in Receive Buffer 57 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_58  (0x1u << 26) //!< New Data in Receive Buffer 58 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_59  (0x1u << 27) //!< New Data in Receive Buffer 59 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_60  (0x1u << 28) //!< New Data in Receive Buffer 60 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_61  (0x1u << 29) //!< New Data in Receive Buffer 61 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_62  (0x1u << 30) //!< New Data in Receive Buffer 62 flag
-#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_63  (0x1u << 31) //!< New Data in Receive Buffer 63 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_32  (0x1ul <<  0) //!< New Data in Receive Buffer 32 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_33  (0x1ul <<  1) //!< New Data in Receive Buffer 33 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_34  (0x1ul <<  2) //!< New Data in Receive Buffer 34 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_35  (0x1ul <<  3) //!< New Data in Receive Buffer 35 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_36  (0x1ul <<  4) //!< New Data in Receive Buffer 36 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_37  (0x1ul <<  5) //!< New Data in Receive Buffer 37 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_38  (0x1ul <<  6) //!< New Data in Receive Buffer 38 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_39  (0x1ul <<  7) //!< New Data in Receive Buffer 39 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_40  (0x1ul <<  8) //!< New Data in Receive Buffer 40 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_41  (0x1ul <<  9) //!< New Data in Receive Buffer 41 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_42  (0x1ul << 10) //!< New Data in Receive Buffer 42 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_43  (0x1ul << 11) //!< New Data in Receive Buffer 43 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_44  (0x1ul << 12) //!< New Data in Receive Buffer 44 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_45  (0x1ul << 13) //!< New Data in Receive Buffer 45 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_46  (0x1ul << 14) //!< New Data in Receive Buffer 46 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_47  (0x1ul << 15) //!< New Data in Receive Buffer 47 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_48  (0x1ul << 16) //!< New Data in Receive Buffer 48 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_49  (0x1ul << 17) //!< New Data in Receive Buffer 49 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_50  (0x1ul << 18) //!< New Data in Receive Buffer 50 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_51  (0x1ul << 19) //!< New Data in Receive Buffer 51 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_52  (0x1ul << 20) //!< New Data in Receive Buffer 52 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_53  (0x1ul << 21) //!< New Data in Receive Buffer 53 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_54  (0x1ul << 22) //!< New Data in Receive Buffer 54 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_55  (0x1ul << 23) //!< New Data in Receive Buffer 55 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_56  (0x1ul << 24) //!< New Data in Receive Buffer 56 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_57  (0x1ul << 25) //!< New Data in Receive Buffer 57 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_58  (0x1ul << 26) //!< New Data in Receive Buffer 58 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_59  (0x1ul << 27) //!< New Data in Receive Buffer 59 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_60  (0x1ul << 28) //!< New Data in Receive Buffer 60 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_61  (0x1ul << 29) //!< New Data in Receive Buffer 61 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_62  (0x1ul << 30) //!< New Data in Receive Buffer 62 flag
+#define MCAN_NEW_DATA_IN_RECEIVE_BUFFER_63  (0x1ul << 31) //!< New Data in Receive Buffer 63 flag
 
 //-----------------------------------------------------------------------------
 
@@ -2299,19 +2304,19 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF0C_Register, 4);
 
 #define MCAN_RXF0C_RX_FIFO0_SA_Pos                0
-#define MCAN_RXF0C_RX_FIFO0_SA_Mask               (0xFFFCu << MCAN_RXF0C_RX_FIFO0_SA_Pos)
+#define MCAN_RXF0C_RX_FIFO0_SA_Mask               (0xFFFCul << MCAN_RXF0C_RX_FIFO0_SA_Pos)
 #define MCAN_RXF0C_RX_FIFO0_SA_GET(value)         ((uint32_t)(value) & MCAN_RXF0C_RX_FIFO0_SA_Mask) //!< Get Receive FIFO 0 Start Address
 #define MCAN_RXF0C_RX_FIFO0_SA_SET(value)         ((uint32_t)(value) & MCAN_RXF0C_RX_FIFO0_SA_Mask) //!< Set Receive FIFO 0 Start Address
 #define MCAN_RXF0C_RX_FIFO0_SIZE_Pos              16
-#define MCAN_RXF0C_RX_FIFO0_SIZE_Mask             (0x7Fu << MCAN_RXF0C_RX_FIFO0_SIZE_Pos)
+#define MCAN_RXF0C_RX_FIFO0_SIZE_Mask             (0x7Ful << MCAN_RXF0C_RX_FIFO0_SIZE_Pos)
 #define MCAN_RXF0C_RX_FIFO0_SIZE_GET(value)       (((uint32_t)(value) & MCAN_RXF0C_RX_FIFO0_SIZE_Mask) >> MCAN_RXF0C_RX_FIFO0_SIZE_Pos) //!< Get Receive FIFO 0 Size
 #define MCAN_RXF0C_RX_FIFO0_SIZE_SET(value)       (((uint32_t)(value) << MCAN_RXF0C_RX_FIFO0_SIZE_Pos) & MCAN_RXF0C_RX_FIFO0_SIZE_Mask) //!< Set Receive FIFO 0 Size
 #define MCAN_RXF0C_RX_FIFO0_WATERMARK_Pos         24
-#define MCAN_RXF0C_RX_FIFO0_WATERMARK_Mask        (0x7Fu << MCAN_RXF0C_RX_FIFO0_WATERMARK_Pos)
+#define MCAN_RXF0C_RX_FIFO0_WATERMARK_Mask        (0x7Ful << MCAN_RXF0C_RX_FIFO0_WATERMARK_Pos)
 #define MCAN_RXF0C_RX_FIFO0_WATERMARK_GET(value)  (((uint32_t)(value) & MCAN_RXF0C_RX_FIFO0_WATERMARK_Mask) >> MCAN_RXF0C_RX_FIFO0_WATERMARK_Pos) //!< Get Receive FIFO 0 Watermark
 #define MCAN_RXF0C_RX_FIFO0_WATERMARK_SET(value)  (((uint32_t)(value) << MCAN_RXF0C_RX_FIFO0_WATERMARK_Pos) & MCAN_RXF0C_RX_FIFO0_WATERMARK_Mask) //!< Set Receive FIFO 0 Watermark
-#define MCAN_RXF0C_RX_FIFO0_OVERWRITE_MODE        (0x1u << 31) //!< FIFO 0 in Overwrite mode
-#define MCAN_RXF0C_RX_FIFO0_BLOCKING_MODE         (0x0u << 31) //!< FIFO 0 in Blocking mode
+#define MCAN_RXF0C_RX_FIFO0_OVERWRITE_MODE        (0x1ul << 31) //!< FIFO 0 in Overwrite mode
+#define MCAN_RXF0C_RX_FIFO0_BLOCKING_MODE         (0x0ul << 31) //!< FIFO 0 in Blocking mode
 
 //-----------------------------------------------------------------------------
 
@@ -2338,18 +2343,18 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF0S_Register, 4);
 
 #define MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Pos         0
-#define MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Mask        (0x7Fu << MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Pos)
+#define MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Mask        (0x7Ful << MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Pos)
 #define MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_GET(value)  (((uint32_t)(value) & MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Mask) >> MCAN_RXF0S_RX_FIFO0_FILL_LEVEL_Pos) //!< Get Receive FIFO 0 Fill Level
 #define MCAN_RXF0S_RX_FIFO0_GET_INDEX_Pos          8
-#define MCAN_RXF0S_RX_FIFO0_GET_INDEX_Mask         (0x3Fu << MCAN_RXF0S_RX_FIFO0_GET_INDEX_Pos)
+#define MCAN_RXF0S_RX_FIFO0_GET_INDEX_Mask         (0x3Ful << MCAN_RXF0S_RX_FIFO0_GET_INDEX_Pos)
 #define MCAN_RXF0S_RX_FIFO0_GET_INDEX_GET(value)   (((uint32_t)(value) & MCAN_RXF0S_RX_FIFO0_GET_INDEX_Mask) >> MCAN_RXF0S_RX_FIFO0_GET_INDEX_Pos) //!< Get Receive FIFO 0 Get Index
 #define MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Pos          16
-#define MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Mask         (0x3Fu << MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Pos)
+#define MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Mask         (0x3Ful << MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Pos)
 #define MCAN_RXF0S_RX_FIFO0_PUT_INDEX_GET(value)   (((uint32_t)(value) & MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Mask) >> MCAN_RXF0S_RX_FIFO0_PUT_INDEX_Pos) //!< Get Receive FIFO 0 Put Index
-#define MCAN_RXF0S_RX_FIFO0_FULL                   (0x1u << 24) //!< Receive FIFO 0 full
-#define MCAN_RXF0S_RX_FIFO0_NOT_FULL               (0x0u << 24) //!< Receive FIFO 0 not full
-#define MCAN_RXF0S_RX_FIFO0_MESSAGE_LOST           (0x1u << 25) //!< Receive FIFO 0 message lost, also set after write attempt to Receive FIFO 0 of size zero
-#define MCAN_RXF0S_RX_FIFO0_NO_MESSAGE_LOST        (0x0u << 25) //!< No Receive FIFO 0 message lost
+#define MCAN_RXF0S_RX_FIFO0_FULL                   (0x1ul << 24) //!< Receive FIFO 0 full
+#define MCAN_RXF0S_RX_FIFO0_NOT_FULL               (0x0ul << 24) //!< Receive FIFO 0 not full
+#define MCAN_RXF0S_RX_FIFO0_MESSAGE_LOST           (0x1ul << 25) //!< Receive FIFO 0 message lost, also set after write attempt to Receive FIFO 0 of size zero
+#define MCAN_RXF0S_RX_FIFO0_NO_MESSAGE_LOST        (0x0ul << 25) //!< No Receive FIFO 0 message lost
 
 //-----------------------------------------------------------------------------
 
@@ -2372,7 +2377,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF0A_Register, 4);
 
 #define MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Pos         0
-#define MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Mask        (0x3Fu << MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Pos)
+#define MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Mask        (0x3Ful << MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Pos)
 #define MCAN_RXF0A_RX_FIFO0_ACK_INDEX_GET(value)  (((uint32_t)(value) & MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Mask) >> MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Pos) //!< Get Receive FIFO 0 Acknowledge Index
 #define MCAN_RXF0A_RX_FIFO0_ACK_INDEX_SET(value)  (((uint32_t)(value) << MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Pos) & MCAN_RXF0A_RX_FIFO0_ACK_INDEX_Mask) //!< Set Receive FIFO 0 Acknowledge Index
 
@@ -2397,7 +2402,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXBC_Register, 4);
 
 #define MCAN_RXBC_RX_BUFFER_SA_Pos         0
-#define MCAN_RXBC_RX_BUFFER_SA_Mask        (0xFFFCu << MCAN_RXBC_RX_BUFFER_SA_Pos)
+#define MCAN_RXBC_RX_BUFFER_SA_Mask        (0xFFFCul << MCAN_RXBC_RX_BUFFER_SA_Pos)
 #define MCAN_RXBC_RX_BUFFER_SA_GET(value)  ((uint32_t)(value) & MCAN_RXBC_RX_BUFFER_SA_Mask) //!< Get Receive Buffer Start Address
 #define MCAN_RXBC_RX_BUFFER_SA_SET(value)  ((uint32_t)(value) & MCAN_RXBC_RX_BUFFER_SA_Mask) //!< Set Receive Buffer Start Address
 
@@ -2425,19 +2430,19 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF1C_Register, 4);
 
 #define MCAN_RXF1C_RX_FIFO1_SA_Pos                0
-#define MCAN_RXF1C_RX_FIFO1_SA_Mask               (0xFFFCu << MCAN_RXF1C_RX_FIFO1_SA_Pos)
+#define MCAN_RXF1C_RX_FIFO1_SA_Mask               (0xFFFCul << MCAN_RXF1C_RX_FIFO1_SA_Pos)
 #define MCAN_RXF1C_RX_FIFO1_SA_GET(value)         ((uint32_t)(value) & MCAN_RXF1C_RX_FIFO1_SA_Mask) //!< Get Receive FIFO 1 Start Address
 #define MCAN_RXF1C_RX_FIFO1_SA_SET(value)         ((uint32_t)(value) & MCAN_RXF1C_RX_FIFO1_SA_Mask) //!< Set Receive FIFO 1 Start Address
 #define MCAN_RXF1C_RX_FIFO1_SIZE_Pos              16
-#define MCAN_RXF1C_RX_FIFO1_SIZE_Mask             (0x7Fu << MCAN_RXF1C_RX_FIFO1_SIZE_Pos)
+#define MCAN_RXF1C_RX_FIFO1_SIZE_Mask             (0x7Ful << MCAN_RXF1C_RX_FIFO1_SIZE_Pos)
 #define MCAN_RXF1C_RX_FIFO1_SIZE_GET(value)       (((uint32_t)(value) & MCAN_RXF1C_RX_FIFO1_SIZE_Mask) >> MCAN_RXF1C_RX_FIFO1_SIZE_Pos) //!< Get Receive FIFO 1 Size
 #define MCAN_RXF1C_RX_FIFO1_SIZE_SET(value)       (((uint32_t)(value) << MCAN_RXF1C_RX_FIFO1_SIZE_Pos) & MCAN_RXF1C_RX_FIFO1_SIZE_Mask) //!< Set Receive FIFO 1 Size
 #define MCAN_RXF1C_RX_FIFO1_WATERMARK_Pos         24
-#define MCAN_RXF1C_RX_FIFO1_WATERMARK_Mask        (0x7Fu << MCAN_RXF1C_RX_FIFO1_WATERMARK_Pos)
+#define MCAN_RXF1C_RX_FIFO1_WATERMARK_Mask        (0x7Ful << MCAN_RXF1C_RX_FIFO1_WATERMARK_Pos)
 #define MCAN_RXF1C_RX_FIFO1_WATERMARK_GET(value)  (((uint32_t)(value) & MCAN_RXF1C_RX_FIFO1_WATERMARK_Mask) >> MCAN_RXF1C_RX_FIFO1_WATERMARK_Pos) //!< Get Receive FIFO 1 Watermark
 #define MCAN_RXF1C_RX_FIFO1_WATERMARK_SET(value)  (((uint32_t)(value) << MCAN_RXF1C_RX_FIFO1_WATERMARK_Pos) & MCAN_RXF1C_RX_FIFO1_WATERMARK_Mask) //!< Set Receive FIFO 1 Watermark
-#define MCAN_RXF1C_RX_FIFO1_OVERWRITE_MODE        (0x1u << 31) //!< FIFO 1 in Overwrite mode
-#define MCAN_RXF1C_RX_FIFO1_BLOCKING_MODE         (0x0u << 31) //!< FIFO 1 in Blocking mode
+#define MCAN_RXF1C_RX_FIFO1_OVERWRITE_MODE        (0x1ul << 31) //!< FIFO 1 in Overwrite mode
+#define MCAN_RXF1C_RX_FIFO1_BLOCKING_MODE         (0x0ul << 31) //!< FIFO 1 in Blocking mode
 
 //-----------------------------------------------------------------------------
 
@@ -2465,18 +2470,18 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF1S_Register, 4);
 
 #define MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Pos         0
-#define MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Mask        (0x7Fu << MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Pos)
+#define MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Mask        (0x7Ful << MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Pos)
 #define MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_GET(value)  (((uint32_t)(value) & MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Mask) >> MCAN_RXF1S_RX_FIFO1_FILL_LEVEL_Pos) //!< Get Receive FIFO 1 Fill Level
 #define MCAN_RXF1S_RX_FIFO1_GET_INDEX_Pos          8
-#define MCAN_RXF1S_RX_FIFO1_GET_INDEX_Mask         (0x3Fu << MCAN_RXF1S_RX_FIFO1_GET_INDEX_Pos)
+#define MCAN_RXF1S_RX_FIFO1_GET_INDEX_Mask         (0x3Ful << MCAN_RXF1S_RX_FIFO1_GET_INDEX_Pos)
 #define MCAN_RXF1S_RX_FIFO1_GET_INDEX_GET(value)   (((uint32_t)(value) & MCAN_RXF1S_RX_FIFO1_GET_INDEX_Mask) >> MCAN_RXF1S_RX_FIFO1_GET_INDEX_Pos) //!< Get Receive FIFO 1 Get Index
 #define MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Pos          16
-#define MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Mask         (0x3Fu << MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Pos)
+#define MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Mask         (0x3Ful << MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Pos)
 #define MCAN_RXF1S_RX_FIFO1_PUT_INDEX_GET(value)   (((uint32_t)(value) & MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Mask) >> MCAN_RXF1S_RX_FIFO1_PUT_INDEX_Pos) //!< Get Receive FIFO 1 Put Index
-#define MCAN_RXF1S_RX_FIFO1_FULL                   (0x1u << 24) //!< Receive FIFO 1 full
-#define MCAN_RXF1S_RX_FIFO1_NOT_FULL               (0x0u << 24) //!< Receive FIFO 1 not full
-#define MCAN_RXF1S_RX_FIFO1_MESSAGE_LOST           (0x1u << 25) //!< Receive FIFO 1 message lost, also set after write attempt to Receive FIFO 1 of size zero
-#define MCAN_RXF1S_RX_FIFO1_NO_MESSAGE_LOST        (0x0u << 25) //!< No Receive FIFO 1 message lost
+#define MCAN_RXF1S_RX_FIFO1_FULL                   (0x1ul << 24) //!< Receive FIFO 1 full
+#define MCAN_RXF1S_RX_FIFO1_NOT_FULL               (0x0ul << 24) //!< Receive FIFO 1 not full
+#define MCAN_RXF1S_RX_FIFO1_MESSAGE_LOST           (0x1ul << 25) //!< Receive FIFO 1 message lost, also set after write attempt to Receive FIFO 1 of size zero
+#define MCAN_RXF1S_RX_FIFO1_NO_MESSAGE_LOST        (0x0ul << 25) //!< No Receive FIFO 1 message lost
 
 //! Debug Message Status enumerator
 typedef enum
@@ -2488,7 +2493,7 @@ typedef enum
 } eMCAN_DebugMessageStatus;
 
 #define MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Pos         30
-#define MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Mask        (0x3u << MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Pos)
+#define MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Mask        (0x3ul << MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Pos)
 #define MCAN_RXF1S_DEBUG_MESSAGE_STATUS_GET(value)  (eMCAN_DebugMessageStatus)(((uint32_t)(value) & MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Mask) >> MCAN_RXF1S_DEBUG_MESSAGE_STATUS_Pos) //!< Get Debug Message Status
 
 //-----------------------------------------------------------------------------
@@ -2512,7 +2517,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_RXF1A_Register, 4);
 
 #define MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Pos         0
-#define MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Mask        (0x3Fu << MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Pos)
+#define MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Mask        (0x3Ful << MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Pos)
 #define MCAN_RXF1A_RX_FIFO1_ACK_INDEX_GET(value)  (((uint32_t)(value) & MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Mask) >> MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Pos) //!< Get Receive FIFO 1 Acknowledge Index
 #define MCAN_RXF1A_RX_FIFO1_ACK_INDEX_SET(value)  (((uint32_t)(value) << MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Pos) & MCAN_RXF1A_RX_FIFO1_ACK_INDEX_Mask) //!< Set Receive FIFO 1 Acknowledge Index
 
@@ -2555,15 +2560,15 @@ typedef enum
 } eMCAN_PayloadSize;
 
 #define MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Pos          0
-#define MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Mask         (0x7u << MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Pos)
+#define MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Mask         (0x7ul << MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Pos)
 #define MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_GET(value)   (((uint32_t)(value) & MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Mask) >> MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Pos) //!< Get Receive FIFO 0 Data Field Size
 #define MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_SET(value)   (((uint32_t)(value) << MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Pos) & MCAN_RXESC_RX_FIFO0_DATA_FIELD_SIZE_Mask) //!< Set Receive FIFO 0 Data Field Size
 #define MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Pos          4
-#define MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Mask         (0x7u << MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Pos)
+#define MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Mask         (0x7ul << MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Pos)
 #define MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_GET(value)   (((uint32_t)(value) & MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Mask) >> MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Pos) //!< Get Receive FIFO 1 Data Field Size
 #define MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_SET(value)   (((uint32_t)(value) << MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Pos) & MCAN_RXESC_RX_FIFO1_DATA_FIELD_SIZE_Mask) //!< Set Receive FIFO 1 Data Field Size
 #define MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Pos         8
-#define MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Mask        (0x7u << MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Pos)
+#define MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Mask        (0x7ul << MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Pos)
 #define MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_GET(value)  (((uint32_t)(value) & MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Mask) >> MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Pos) //!< Get Receive Buffer Data Field Size
 #define MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_SET(value)  (((uint32_t)(value) << MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Pos) & MCAN_RXESC_RX_BUFFER_DATA_FIELD_SIZE_Mask) //!< Set Receive Buffer Data Field Size
 
@@ -2599,19 +2604,19 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBC_Register, 4);
 
 #define MCAN_TXBC_TX_BUFFERS_SA_Pos              0
-#define MCAN_TXBC_TX_BUFFERS_SA_Mask             (0xFFFCu << MCAN_TXBC_TX_BUFFERS_SA_Pos)
+#define MCAN_TXBC_TX_BUFFERS_SA_Mask             (0xFFFCul << MCAN_TXBC_TX_BUFFERS_SA_Pos)
 #define MCAN_TXBC_TX_BUFFERS_SA_GET(value)       ((uint32_t)(value) & MCAN_TXBC_TX_BUFFERS_SA_Mask) //!< Get Tx Buffers Start Address
 #define MCAN_TXBC_TX_BUFFERS_SA_SET(value)       ((uint32_t)(value) & MCAN_TXBC_TX_BUFFERS_SA_Mask) //!< Set Tx Buffers Start Address
 #define MCAN_TXBC_TX_BUFFER_SIZE_Pos             16
-#define MCAN_TXBC_TX_BUFFER_SIZE_Mask            (0x3Fu << MCAN_TXBC_TX_BUFFER_SIZE_Pos)
+#define MCAN_TXBC_TX_BUFFER_SIZE_Mask            (0x3Ful << MCAN_TXBC_TX_BUFFER_SIZE_Pos)
 #define MCAN_TXBC_TX_BUFFER_SIZE_GET(value)      (((uint32_t)(value) & MCAN_TXBC_TX_BUFFER_SIZE_Mask) >> MCAN_TXBC_TX_BUFFER_SIZE_Pos) //!< Get Number of Dedicated Transmit Buffers
 #define MCAN_TXBC_TX_BUFFER_SIZE_SET(value)      (((uint32_t)(value) << MCAN_TXBC_TX_BUFFER_SIZE_Pos) & MCAN_TXBC_TX_BUFFER_SIZE_Mask) //!< Set Number of Dedicated Transmit Buffers
 #define MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Pos         24
-#define MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Mask        (0x3Fu << MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Pos)
+#define MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Mask        (0x3Ful << MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Pos)
 #define MCAN_TXBC_TX_FIFO_QUEUE_SIZE_GET(value)  (((uint32_t)(value) & MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Mask) >> MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Pos) //!< Get Transmit FIFO/Queue Size
 #define MCAN_TXBC_TX_FIFO_QUEUE_SIZE_SET(value)  (((uint32_t)(value) << MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Pos) & MCAN_TXBC_TX_FIFO_QUEUE_SIZE_Mask) //!< Set Transmit FIFO/Queue Size
-#define MCAN_TXBC_TX_QUEUE_OPERATION             (0x1u << 30) //!< Tx Queue operation
-#define MCAN_TXBC_TX_FIFO_OPERATION              (0x0u << 30) //!< Tx FIFO operation
+#define MCAN_TXBC_TX_QUEUE_OPERATION             (0x1ul << 30) //!< Tx Queue operation
+#define MCAN_TXBC_TX_FIFO_OPERATION              (0x0ul << 30) //!< Tx FIFO operation
 #define MCAN_TXBC_IS_TX_FIFO_OPERATION(value)    ( ( (value) & MCAN_TXBC_TX_QUEUE_OPERATION) == MCAN_TXBC_TX_FIFO_OPERATION) //!< Is Tx FIFO operation?
 
 //-----------------------------------------------------------------------------
@@ -2641,16 +2646,16 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXFQS_Register, 4);
 
 #define MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Pos         0
-#define MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Mask        (0x3Fu << MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Pos)
+#define MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Mask        (0x3Ful << MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Pos)
 #define MCAN_TXFQS_TX_FIFO_FREE_LEVEL_GET(value)  (((uint32_t)(value) & MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Mask) >> MCAN_TXFQS_TX_FIFO_FREE_LEVEL_Pos) //!< Get Tx FIFO Free Level
 #define MCAN_TXFQS_TX_FIFO_GET_INDEX_Pos          8
-#define MCAN_TXFQS_TX_FIFO_GET_INDEX_Mask         (0x1Fu << MCAN_TXFQS_TX_FIFO_GET_INDEX_Pos)
+#define MCAN_TXFQS_TX_FIFO_GET_INDEX_Mask         (0x1Ful << MCAN_TXFQS_TX_FIFO_GET_INDEX_Pos)
 #define MCAN_TXFQS_TX_FIFO_GET_INDEX(value)       (((uint32_t)(value) & MCAN_TXFQS_TX_FIFO_GET_INDEX_Mask) >> MCAN_TXFQS_TX_FIFO_GET_INDEX_Pos) //!< Get Tx FIFO Get Index
 #define MCAN_TXFQS_TX_FIFO_PUT_INDEX_Pos          16
-#define MCAN_TXFQS_TX_FIFO_PUT_INDEX_Mask         (0x1Fu << MCAN_TXFQS_TX_FIFO_PUT_INDEX_Pos)
+#define MCAN_TXFQS_TX_FIFO_PUT_INDEX_Mask         (0x1Ful << MCAN_TXFQS_TX_FIFO_PUT_INDEX_Pos)
 #define MCAN_TXFQS_TX_FIFO_PUT_INDEX_GET(value)   (((uint32_t)(value) & MCAN_TXFQS_TX_FIFO_PUT_INDEX_Mask) >> MCAN_TXFQS_TX_FIFO_PUT_INDEX_Pos) //!< Get Receive FIFO 1 Put Index
-#define MCAN_TXFQS_TX_FIFO_QUEUE_FULL             (0x1u << 21) //!< Tx FIFO/Queue full
-#define MCAN_TXFQS_TX_FIFO_QUEUE_NOT_FULL         (0x0u << 21) //!< Tx FIFO/Queue not full
+#define MCAN_TXFQS_TX_FIFO_QUEUE_FULL             (0x1ul << 21) //!< Tx FIFO/Queue full
+#define MCAN_TXFQS_TX_FIFO_QUEUE_NOT_FULL         (0x0ul << 21) //!< Tx FIFO/Queue not full
 
 //-----------------------------------------------------------------------------
 
@@ -2674,7 +2679,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXESC_Register, 4);
 
 #define MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Pos         0
-#define MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Mask        (0x7u << MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Pos)
+#define MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Mask        (0x7ul << MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Pos)
 #define MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_GET(value)  (((uint32_t)(value) & MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Mask) >> MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Pos) //!< Get Tx Buffer Data Field Size
 #define MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_SET(value)  (((uint32_t)(value) << MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Pos) & MCAN_TXESC_TX_BUFFER_DATA_FIELD_SIZE_Mask) //!< Set Tx Buffer Data Field Size
 
@@ -2735,38 +2740,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBRP_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBRP_Register, 4);
 
-#define MCAN_TX_REQ_PENDING_BUFFER_0   (0x1u <<  0) //!< Transmission Request Pending for Buffer 0 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_1   (0x1u <<  1) //!< Transmission Request Pending for Buffer 1 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_2   (0x1u <<  2) //!< Transmission Request Pending for Buffer 2 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_3   (0x1u <<  3) //!< Transmission Request Pending for Buffer 3 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_4   (0x1u <<  4) //!< Transmission Request Pending for Buffer 4 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_5   (0x1u <<  5) //!< Transmission Request Pending for Buffer 5 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_6   (0x1u <<  6) //!< Transmission Request Pending for Buffer 6 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_7   (0x1u <<  7) //!< Transmission Request Pending for Buffer 7 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_8   (0x1u <<  8) //!< Transmission Request Pending for Buffer 8 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_9   (0x1u <<  9) //!< Transmission Request Pending for Buffer 9 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_10  (0x1u << 10) //!< Transmission Request Pending for Buffer 10 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_11  (0x1u << 11) //!< Transmission Request Pending for Buffer 11 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_12  (0x1u << 12) //!< Transmission Request Pending for Buffer 12 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_13  (0x1u << 13) //!< Transmission Request Pending for Buffer 13 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_14  (0x1u << 14) //!< Transmission Request Pending for Buffer 14 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_15  (0x1u << 15) //!< Transmission Request Pending for Buffer 15 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_16  (0x1u << 16) //!< Transmission Request Pending for Buffer 16 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_17  (0x1u << 17) //!< Transmission Request Pending for Buffer 17 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_18  (0x1u << 18) //!< Transmission Request Pending for Buffer 18 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_19  (0x1u << 19) //!< Transmission Request Pending for Buffer 19 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_20  (0x1u << 20) //!< Transmission Request Pending for Buffer 20 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_21  (0x1u << 21) //!< Transmission Request Pending for Buffer 21 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_22  (0x1u << 22) //!< Transmission Request Pending for Buffer 22 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_23  (0x1u << 23) //!< Transmission Request Pending for Buffer 23 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_24  (0x1u << 24) //!< Transmission Request Pending for Buffer 24 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_25  (0x1u << 25) //!< Transmission Request Pending for Buffer 25 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_26  (0x1u << 26) //!< Transmission Request Pending for Buffer 26 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_27  (0x1u << 27) //!< Transmission Request Pending for Buffer 27 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_28  (0x1u << 28) //!< Transmission Request Pending for Buffer 28 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_29  (0x1u << 29) //!< Transmission Request Pending for Buffer 29 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_30  (0x1u << 30) //!< Transmission Request Pending for Buffer 30 flag
-#define MCAN_TX_REQ_PENDING_BUFFER_31  (0x1u << 31) //!< Transmission Request Pending for Buffer 31 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_0   (0x1ul <<  0) //!< Transmission Request Pending for Buffer 0 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_1   (0x1ul <<  1) //!< Transmission Request Pending for Buffer 1 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_2   (0x1ul <<  2) //!< Transmission Request Pending for Buffer 2 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_3   (0x1ul <<  3) //!< Transmission Request Pending for Buffer 3 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_4   (0x1ul <<  4) //!< Transmission Request Pending for Buffer 4 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_5   (0x1ul <<  5) //!< Transmission Request Pending for Buffer 5 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_6   (0x1ul <<  6) //!< Transmission Request Pending for Buffer 6 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_7   (0x1ul <<  7) //!< Transmission Request Pending for Buffer 7 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_8   (0x1ul <<  8) //!< Transmission Request Pending for Buffer 8 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_9   (0x1ul <<  9) //!< Transmission Request Pending for Buffer 9 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_10  (0x1ul << 10) //!< Transmission Request Pending for Buffer 10 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_11  (0x1ul << 11) //!< Transmission Request Pending for Buffer 11 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_12  (0x1ul << 12) //!< Transmission Request Pending for Buffer 12 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_13  (0x1ul << 13) //!< Transmission Request Pending for Buffer 13 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_14  (0x1ul << 14) //!< Transmission Request Pending for Buffer 14 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_15  (0x1ul << 15) //!< Transmission Request Pending for Buffer 15 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_16  (0x1ul << 16) //!< Transmission Request Pending for Buffer 16 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_17  (0x1ul << 17) //!< Transmission Request Pending for Buffer 17 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_18  (0x1ul << 18) //!< Transmission Request Pending for Buffer 18 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_19  (0x1ul << 19) //!< Transmission Request Pending for Buffer 19 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_20  (0x1ul << 20) //!< Transmission Request Pending for Buffer 20 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_21  (0x1ul << 21) //!< Transmission Request Pending for Buffer 21 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_22  (0x1ul << 22) //!< Transmission Request Pending for Buffer 22 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_23  (0x1ul << 23) //!< Transmission Request Pending for Buffer 23 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_24  (0x1ul << 24) //!< Transmission Request Pending for Buffer 24 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_25  (0x1ul << 25) //!< Transmission Request Pending for Buffer 25 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_26  (0x1ul << 26) //!< Transmission Request Pending for Buffer 26 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_27  (0x1ul << 27) //!< Transmission Request Pending for Buffer 27 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_28  (0x1ul << 28) //!< Transmission Request Pending for Buffer 28 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_29  (0x1ul << 29) //!< Transmission Request Pending for Buffer 29 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_30  (0x1ul << 30) //!< Transmission Request Pending for Buffer 30 flag
+#define MCAN_TX_REQ_PENDING_BUFFER_31  (0x1ul << 31) //!< Transmission Request Pending for Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -2820,38 +2825,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBAR_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBAR_Register, 4);
 
-#define MCAN_TX_REQ_ADDED_BUFFER_0   (0x1u <<  0) //!< Transmission Request Added for Buffer 0 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_1   (0x1u <<  1) //!< Transmission Request Added for Buffer 1 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_2   (0x1u <<  2) //!< Transmission Request Added for Buffer 2 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_3   (0x1u <<  3) //!< Transmission Request Added for Buffer 3 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_4   (0x1u <<  4) //!< Transmission Request Added for Buffer 4 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_5   (0x1u <<  5) //!< Transmission Request Added for Buffer 5 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_6   (0x1u <<  6) //!< Transmission Request Added for Buffer 6 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_7   (0x1u <<  7) //!< Transmission Request Added for Buffer 7 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_8   (0x1u <<  8) //!< Transmission Request Added for Buffer 8 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_9   (0x1u <<  9) //!< Transmission Request Added for Buffer 9 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_10  (0x1u << 10) //!< Transmission Request Added for Buffer 10 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_11  (0x1u << 11) //!< Transmission Request Added for Buffer 11 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_12  (0x1u << 12) //!< Transmission Request Added for Buffer 12 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_13  (0x1u << 13) //!< Transmission Request Added for Buffer 13 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_14  (0x1u << 14) //!< Transmission Request Added for Buffer 14 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_15  (0x1u << 15) //!< Transmission Request Added for Buffer 15 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_16  (0x1u << 16) //!< Transmission Request Added for Buffer 16 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_17  (0x1u << 17) //!< Transmission Request Added for Buffer 17 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_18  (0x1u << 18) //!< Transmission Request Added for Buffer 18 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_19  (0x1u << 19) //!< Transmission Request Added for Buffer 19 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_20  (0x1u << 20) //!< Transmission Request Added for Buffer 20 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_21  (0x1u << 21) //!< Transmission Request Added for Buffer 21 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_22  (0x1u << 22) //!< Transmission Request Added for Buffer 22 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_23  (0x1u << 23) //!< Transmission Request Added for Buffer 23 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_24  (0x1u << 24) //!< Transmission Request Added for Buffer 24 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_25  (0x1u << 25) //!< Transmission Request Added for Buffer 25 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_26  (0x1u << 26) //!< Transmission Request Added for Buffer 26 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_27  (0x1u << 27) //!< Transmission Request Added for Buffer 27 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_28  (0x1u << 28) //!< Transmission Request Added for Buffer 28 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_29  (0x1u << 29) //!< Transmission Request Added for Buffer 29 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_30  (0x1u << 30) //!< Transmission Request Added for Buffer 30 flag
-#define MCAN_TX_REQ_ADDED_BUFFER_31  (0x1u << 31) //!< Transmission Request Added for Buffer 31 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_0   (0x1ul <<  0) //!< Transmission Request Added for Buffer 0 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_1   (0x1ul <<  1) //!< Transmission Request Added for Buffer 1 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_2   (0x1ul <<  2) //!< Transmission Request Added for Buffer 2 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_3   (0x1ul <<  3) //!< Transmission Request Added for Buffer 3 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_4   (0x1ul <<  4) //!< Transmission Request Added for Buffer 4 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_5   (0x1ul <<  5) //!< Transmission Request Added for Buffer 5 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_6   (0x1ul <<  6) //!< Transmission Request Added for Buffer 6 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_7   (0x1ul <<  7) //!< Transmission Request Added for Buffer 7 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_8   (0x1ul <<  8) //!< Transmission Request Added for Buffer 8 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_9   (0x1ul <<  9) //!< Transmission Request Added for Buffer 9 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_10  (0x1ul << 10) //!< Transmission Request Added for Buffer 10 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_11  (0x1ul << 11) //!< Transmission Request Added for Buffer 11 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_12  (0x1ul << 12) //!< Transmission Request Added for Buffer 12 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_13  (0x1ul << 13) //!< Transmission Request Added for Buffer 13 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_14  (0x1ul << 14) //!< Transmission Request Added for Buffer 14 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_15  (0x1ul << 15) //!< Transmission Request Added for Buffer 15 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_16  (0x1ul << 16) //!< Transmission Request Added for Buffer 16 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_17  (0x1ul << 17) //!< Transmission Request Added for Buffer 17 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_18  (0x1ul << 18) //!< Transmission Request Added for Buffer 18 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_19  (0x1ul << 19) //!< Transmission Request Added for Buffer 19 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_20  (0x1ul << 20) //!< Transmission Request Added for Buffer 20 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_21  (0x1ul << 21) //!< Transmission Request Added for Buffer 21 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_22  (0x1ul << 22) //!< Transmission Request Added for Buffer 22 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_23  (0x1ul << 23) //!< Transmission Request Added for Buffer 23 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_24  (0x1ul << 24) //!< Transmission Request Added for Buffer 24 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_25  (0x1ul << 25) //!< Transmission Request Added for Buffer 25 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_26  (0x1ul << 26) //!< Transmission Request Added for Buffer 26 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_27  (0x1ul << 27) //!< Transmission Request Added for Buffer 27 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_28  (0x1ul << 28) //!< Transmission Request Added for Buffer 28 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_29  (0x1ul << 29) //!< Transmission Request Added for Buffer 29 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_30  (0x1ul << 30) //!< Transmission Request Added for Buffer 30 flag
+#define MCAN_TX_REQ_ADDED_BUFFER_31  (0x1ul << 31) //!< Transmission Request Added for Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -2904,38 +2909,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBCR_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBCR_Register, 4);
 
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_0   (0x1u <<  0) //!< Cancellation Request for Transmit Buffer 0 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_1   (0x1u <<  1) //!< Cancellation Request for Transmit Buffer 1 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_2   (0x1u <<  2) //!< Cancellation Request for Transmit Buffer 2 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_3   (0x1u <<  3) //!< Cancellation Request for Transmit Buffer 3 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_4   (0x1u <<  4) //!< Cancellation Request for Transmit Buffer 4 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_5   (0x1u <<  5) //!< Cancellation Request for Transmit Buffer 5 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_6   (0x1u <<  6) //!< Cancellation Request for Transmit Buffer 6 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_7   (0x1u <<  7) //!< Cancellation Request for Transmit Buffer 7 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_8   (0x1u <<  8) //!< Cancellation Request for Transmit Buffer 8 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_9   (0x1u <<  9) //!< Cancellation Request for Transmit Buffer 9 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_10  (0x1u << 10) //!< Cancellation Request for Transmit Buffer 10 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_11  (0x1u << 11) //!< Cancellation Request for Transmit Buffer 11 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_12  (0x1u << 12) //!< Cancellation Request for Transmit Buffer 12 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_13  (0x1u << 13) //!< Cancellation Request for Transmit Buffer 13 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_14  (0x1u << 14) //!< Cancellation Request for Transmit Buffer 14 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_15  (0x1u << 15) //!< Cancellation Request for Transmit Buffer 15 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_16  (0x1u << 16) //!< Cancellation Request for Transmit Buffer 16 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_17  (0x1u << 17) //!< Cancellation Request for Transmit Buffer 17 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_18  (0x1u << 18) //!< Cancellation Request for Transmit Buffer 18 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_19  (0x1u << 19) //!< Cancellation Request for Transmit Buffer 19 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_20  (0x1u << 20) //!< Cancellation Request for Transmit Buffer 20 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_21  (0x1u << 21) //!< Cancellation Request for Transmit Buffer 21 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_22  (0x1u << 22) //!< Cancellation Request for Transmit Buffer 22 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_23  (0x1u << 23) //!< Cancellation Request for Transmit Buffer 23 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_24  (0x1u << 24) //!< Cancellation Request for Transmit Buffer 24 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_25  (0x1u << 25) //!< Cancellation Request for Transmit Buffer 25 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_26  (0x1u << 26) //!< Cancellation Request for Transmit Buffer 26 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_27  (0x1u << 27) //!< Cancellation Request for Transmit Buffer 27 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_28  (0x1u << 28) //!< Cancellation Request for Transmit Buffer 28 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_29  (0x1u << 29) //!< Cancellation Request for Transmit Buffer 29 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_30  (0x1u << 30) //!< Cancellation Request for Transmit Buffer 30 flag
-#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_31  (0x1u << 31) //!< Cancellation Request for Transmit Buffer 31 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_0   (0x1ul <<  0) //!< Cancellation Request for Transmit Buffer 0 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_1   (0x1ul <<  1) //!< Cancellation Request for Transmit Buffer 1 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_2   (0x1ul <<  2) //!< Cancellation Request for Transmit Buffer 2 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_3   (0x1ul <<  3) //!< Cancellation Request for Transmit Buffer 3 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_4   (0x1ul <<  4) //!< Cancellation Request for Transmit Buffer 4 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_5   (0x1ul <<  5) //!< Cancellation Request for Transmit Buffer 5 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_6   (0x1ul <<  6) //!< Cancellation Request for Transmit Buffer 6 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_7   (0x1ul <<  7) //!< Cancellation Request for Transmit Buffer 7 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_8   (0x1ul <<  8) //!< Cancellation Request for Transmit Buffer 8 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_9   (0x1ul <<  9) //!< Cancellation Request for Transmit Buffer 9 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_10  (0x1ul << 10) //!< Cancellation Request for Transmit Buffer 10 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_11  (0x1ul << 11) //!< Cancellation Request for Transmit Buffer 11 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_12  (0x1ul << 12) //!< Cancellation Request for Transmit Buffer 12 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_13  (0x1ul << 13) //!< Cancellation Request for Transmit Buffer 13 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_14  (0x1ul << 14) //!< Cancellation Request for Transmit Buffer 14 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_15  (0x1ul << 15) //!< Cancellation Request for Transmit Buffer 15 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_16  (0x1ul << 16) //!< Cancellation Request for Transmit Buffer 16 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_17  (0x1ul << 17) //!< Cancellation Request for Transmit Buffer 17 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_18  (0x1ul << 18) //!< Cancellation Request for Transmit Buffer 18 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_19  (0x1ul << 19) //!< Cancellation Request for Transmit Buffer 19 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_20  (0x1ul << 20) //!< Cancellation Request for Transmit Buffer 20 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_21  (0x1ul << 21) //!< Cancellation Request for Transmit Buffer 21 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_22  (0x1ul << 22) //!< Cancellation Request for Transmit Buffer 22 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_23  (0x1ul << 23) //!< Cancellation Request for Transmit Buffer 23 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_24  (0x1ul << 24) //!< Cancellation Request for Transmit Buffer 24 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_25  (0x1ul << 25) //!< Cancellation Request for Transmit Buffer 25 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_26  (0x1ul << 26) //!< Cancellation Request for Transmit Buffer 26 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_27  (0x1ul << 27) //!< Cancellation Request for Transmit Buffer 27 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_28  (0x1ul << 28) //!< Cancellation Request for Transmit Buffer 28 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_29  (0x1ul << 29) //!< Cancellation Request for Transmit Buffer 29 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_30  (0x1ul << 30) //!< Cancellation Request for Transmit Buffer 30 flag
+#define MCAN_CANCEL_REQ_FOR_TX_BUFFER_31  (0x1ul << 31) //!< Cancellation Request for Transmit Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -2987,38 +2992,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBTO_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBTO_Register, 4);
 
-#define MCAN_TX_OCCURED_BUFFER_0   (0x1u <<  0) //!< Transmission Occurred for Buffer 0 flag
-#define MCAN_TX_OCCURED_BUFFER_1   (0x1u <<  1) //!< Transmission Occurred for Buffer 1 flag
-#define MCAN_TX_OCCURED_BUFFER_2   (0x1u <<  2) //!< Transmission Occurred for Buffer 2 flag
-#define MCAN_TX_OCCURED_BUFFER_3   (0x1u <<  3) //!< Transmission Occurred for Buffer 3 flag
-#define MCAN_TX_OCCURED_BUFFER_4   (0x1u <<  4) //!< Transmission Occurred for Buffer 4 flag
-#define MCAN_TX_OCCURED_BUFFER_5   (0x1u <<  5) //!< Transmission Occurred for Buffer 5 flag
-#define MCAN_TX_OCCURED_BUFFER_6   (0x1u <<  6) //!< Transmission Occurred for Buffer 6 flag
-#define MCAN_TX_OCCURED_BUFFER_7   (0x1u <<  7) //!< Transmission Occurred for Buffer 7 flag
-#define MCAN_TX_OCCURED_BUFFER_8   (0x1u <<  8) //!< Transmission Occurred for Buffer 8 flag
-#define MCAN_TX_OCCURED_BUFFER_9   (0x1u <<  9) //!< Transmission Occurred for Buffer 9 flag
-#define MCAN_TX_OCCURED_BUFFER_10  (0x1u << 10) //!< Transmission Occurred for Buffer 10 flag
-#define MCAN_TX_OCCURED_BUFFER_11  (0x1u << 11) //!< Transmission Occurred for Buffer 11 flag
-#define MCAN_TX_OCCURED_BUFFER_12  (0x1u << 12) //!< Transmission Occurred for Buffer 12 flag
-#define MCAN_TX_OCCURED_BUFFER_13  (0x1u << 13) //!< Transmission Occurred for Buffer 13 flag
-#define MCAN_TX_OCCURED_BUFFER_14  (0x1u << 14) //!< Transmission Occurred for Buffer 14 flag
-#define MCAN_TX_OCCURED_BUFFER_15  (0x1u << 15) //!< Transmission Occurred for Buffer 15 flag
-#define MCAN_TX_OCCURED_BUFFER_16  (0x1u << 16) //!< Transmission Occurred for Buffer 16 flag
-#define MCAN_TX_OCCURED_BUFFER_17  (0x1u << 17) //!< Transmission Occurred for Buffer 17 flag
-#define MCAN_TX_OCCURED_BUFFER_18  (0x1u << 18) //!< Transmission Occurred for Buffer 18 flag
-#define MCAN_TX_OCCURED_BUFFER_19  (0x1u << 19) //!< Transmission Occurred for Buffer 19 flag
-#define MCAN_TX_OCCURED_BUFFER_20  (0x1u << 20) //!< Transmission Occurred for Buffer 20 flag
-#define MCAN_TX_OCCURED_BUFFER_21  (0x1u << 21) //!< Transmission Occurred for Buffer 21 flag
-#define MCAN_TX_OCCURED_BUFFER_22  (0x1u << 22) //!< Transmission Occurred for Buffer 22 flag
-#define MCAN_TX_OCCURED_BUFFER_23  (0x1u << 23) //!< Transmission Occurred for Buffer 23 flag
-#define MCAN_TX_OCCURED_BUFFER_24  (0x1u << 24) //!< Transmission Occurred for Buffer 24 flag
-#define MCAN_TX_OCCURED_BUFFER_25  (0x1u << 25) //!< Transmission Occurred for Buffer 25 flag
-#define MCAN_TX_OCCURED_BUFFER_26  (0x1u << 26) //!< Transmission Occurred for Buffer 26 flag
-#define MCAN_TX_OCCURED_BUFFER_27  (0x1u << 27) //!< Transmission Occurred for Buffer 27 flag
-#define MCAN_TX_OCCURED_BUFFER_28  (0x1u << 28) //!< Transmission Occurred for Buffer 28 flag
-#define MCAN_TX_OCCURED_BUFFER_29  (0x1u << 29) //!< Transmission Occurred for Buffer 29 flag
-#define MCAN_TX_OCCURED_BUFFER_30  (0x1u << 30) //!< Transmission Occurred for Buffer 30 flag
-#define MCAN_TX_OCCURED_BUFFER_31  (0x1u << 31) //!< Transmission Occurred for Buffer 31 flag
+#define MCAN_TX_OCCURED_BUFFER_0   (0x1ul <<  0) //!< Transmission Occurred for Buffer 0 flag
+#define MCAN_TX_OCCURED_BUFFER_1   (0x1ul <<  1) //!< Transmission Occurred for Buffer 1 flag
+#define MCAN_TX_OCCURED_BUFFER_2   (0x1ul <<  2) //!< Transmission Occurred for Buffer 2 flag
+#define MCAN_TX_OCCURED_BUFFER_3   (0x1ul <<  3) //!< Transmission Occurred for Buffer 3 flag
+#define MCAN_TX_OCCURED_BUFFER_4   (0x1ul <<  4) //!< Transmission Occurred for Buffer 4 flag
+#define MCAN_TX_OCCURED_BUFFER_5   (0x1ul <<  5) //!< Transmission Occurred for Buffer 5 flag
+#define MCAN_TX_OCCURED_BUFFER_6   (0x1ul <<  6) //!< Transmission Occurred for Buffer 6 flag
+#define MCAN_TX_OCCURED_BUFFER_7   (0x1ul <<  7) //!< Transmission Occurred for Buffer 7 flag
+#define MCAN_TX_OCCURED_BUFFER_8   (0x1ul <<  8) //!< Transmission Occurred for Buffer 8 flag
+#define MCAN_TX_OCCURED_BUFFER_9   (0x1ul <<  9) //!< Transmission Occurred for Buffer 9 flag
+#define MCAN_TX_OCCURED_BUFFER_10  (0x1ul << 10) //!< Transmission Occurred for Buffer 10 flag
+#define MCAN_TX_OCCURED_BUFFER_11  (0x1ul << 11) //!< Transmission Occurred for Buffer 11 flag
+#define MCAN_TX_OCCURED_BUFFER_12  (0x1ul << 12) //!< Transmission Occurred for Buffer 12 flag
+#define MCAN_TX_OCCURED_BUFFER_13  (0x1ul << 13) //!< Transmission Occurred for Buffer 13 flag
+#define MCAN_TX_OCCURED_BUFFER_14  (0x1ul << 14) //!< Transmission Occurred for Buffer 14 flag
+#define MCAN_TX_OCCURED_BUFFER_15  (0x1ul << 15) //!< Transmission Occurred for Buffer 15 flag
+#define MCAN_TX_OCCURED_BUFFER_16  (0x1ul << 16) //!< Transmission Occurred for Buffer 16 flag
+#define MCAN_TX_OCCURED_BUFFER_17  (0x1ul << 17) //!< Transmission Occurred for Buffer 17 flag
+#define MCAN_TX_OCCURED_BUFFER_18  (0x1ul << 18) //!< Transmission Occurred for Buffer 18 flag
+#define MCAN_TX_OCCURED_BUFFER_19  (0x1ul << 19) //!< Transmission Occurred for Buffer 19 flag
+#define MCAN_TX_OCCURED_BUFFER_20  (0x1ul << 20) //!< Transmission Occurred for Buffer 20 flag
+#define MCAN_TX_OCCURED_BUFFER_21  (0x1ul << 21) //!< Transmission Occurred for Buffer 21 flag
+#define MCAN_TX_OCCURED_BUFFER_22  (0x1ul << 22) //!< Transmission Occurred for Buffer 22 flag
+#define MCAN_TX_OCCURED_BUFFER_23  (0x1ul << 23) //!< Transmission Occurred for Buffer 23 flag
+#define MCAN_TX_OCCURED_BUFFER_24  (0x1ul << 24) //!< Transmission Occurred for Buffer 24 flag
+#define MCAN_TX_OCCURED_BUFFER_25  (0x1ul << 25) //!< Transmission Occurred for Buffer 25 flag
+#define MCAN_TX_OCCURED_BUFFER_26  (0x1ul << 26) //!< Transmission Occurred for Buffer 26 flag
+#define MCAN_TX_OCCURED_BUFFER_27  (0x1ul << 27) //!< Transmission Occurred for Buffer 27 flag
+#define MCAN_TX_OCCURED_BUFFER_28  (0x1ul << 28) //!< Transmission Occurred for Buffer 28 flag
+#define MCAN_TX_OCCURED_BUFFER_29  (0x1ul << 29) //!< Transmission Occurred for Buffer 29 flag
+#define MCAN_TX_OCCURED_BUFFER_30  (0x1ul << 30) //!< Transmission Occurred for Buffer 30 flag
+#define MCAN_TX_OCCURED_BUFFER_31  (0x1ul << 31) //!< Transmission Occurred for Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -3070,38 +3075,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBCF_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBCF_Register, 4);
 
-#define MCAN_CANCEL_FINISH_TX_BUFFER_0   (0x1u <<  0) //!< Cancellation Finished for Transmit Buffer 0 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_1   (0x1u <<  1) //!< Cancellation Finished for Transmit Buffer 1 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_2   (0x1u <<  2) //!< Cancellation Finished for Transmit Buffer 2 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_3   (0x1u <<  3) //!< Cancellation Finished for Transmit Buffer 3 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_4   (0x1u <<  4) //!< Cancellation Finished for Transmit Buffer 4 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_5   (0x1u <<  5) //!< Cancellation Finished for Transmit Buffer 5 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_6   (0x1u <<  6) //!< Cancellation Finished for Transmit Buffer 6 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_7   (0x1u <<  7) //!< Cancellation Finished for Transmit Buffer 7 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_8   (0x1u <<  8) //!< Cancellation Finished for Transmit Buffer 8 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_9   (0x1u <<  9) //!< Cancellation Finished for Transmit Buffer 9 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_10  (0x1u << 10) //!< Cancellation Finished for Transmit Buffer 10 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_11  (0x1u << 11) //!< Cancellation Finished for Transmit Buffer 11 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_12  (0x1u << 12) //!< Cancellation Finished for Transmit Buffer 12 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_13  (0x1u << 13) //!< Cancellation Finished for Transmit Buffer 13 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_14  (0x1u << 14) //!< Cancellation Finished for Transmit Buffer 14 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_15  (0x1u << 15) //!< Cancellation Finished for Transmit Buffer 15 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_16  (0x1u << 16) //!< Cancellation Finished for Transmit Buffer 16 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_17  (0x1u << 17) //!< Cancellation Finished for Transmit Buffer 17 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_18  (0x1u << 18) //!< Cancellation Finished for Transmit Buffer 18 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_19  (0x1u << 19) //!< Cancellation Finished for Transmit Buffer 19 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_20  (0x1u << 20) //!< Cancellation Finished for Transmit Buffer 20 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_21  (0x1u << 21) //!< Cancellation Finished for Transmit Buffer 21 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_22  (0x1u << 22) //!< Cancellation Finished for Transmit Buffer 22 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_23  (0x1u << 23) //!< Cancellation Finished for Transmit Buffer 23 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_24  (0x1u << 24) //!< Cancellation Finished for Transmit Buffer 24 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_25  (0x1u << 25) //!< Cancellation Finished for Transmit Buffer 25 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_26  (0x1u << 26) //!< Cancellation Finished for Transmit Buffer 26 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_27  (0x1u << 27) //!< Cancellation Finished for Transmit Buffer 27 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_28  (0x1u << 28) //!< Cancellation Finished for Transmit Buffer 28 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_29  (0x1u << 29) //!< Cancellation Finished for Transmit Buffer 29 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_30  (0x1u << 30) //!< Cancellation Finished for Transmit Buffer 30 flag
-#define MCAN_CANCEL_FINISH_TX_BUFFER_31  (0x1u << 31) //!< Cancellation Finished for Transmit Buffer 31 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_0   (0x1ul <<  0) //!< Cancellation Finished for Transmit Buffer 0 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_1   (0x1ul <<  1) //!< Cancellation Finished for Transmit Buffer 1 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_2   (0x1ul <<  2) //!< Cancellation Finished for Transmit Buffer 2 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_3   (0x1ul <<  3) //!< Cancellation Finished for Transmit Buffer 3 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_4   (0x1ul <<  4) //!< Cancellation Finished for Transmit Buffer 4 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_5   (0x1ul <<  5) //!< Cancellation Finished for Transmit Buffer 5 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_6   (0x1ul <<  6) //!< Cancellation Finished for Transmit Buffer 6 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_7   (0x1ul <<  7) //!< Cancellation Finished for Transmit Buffer 7 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_8   (0x1ul <<  8) //!< Cancellation Finished for Transmit Buffer 8 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_9   (0x1ul <<  9) //!< Cancellation Finished for Transmit Buffer 9 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_10  (0x1ul << 10) //!< Cancellation Finished for Transmit Buffer 10 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_11  (0x1ul << 11) //!< Cancellation Finished for Transmit Buffer 11 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_12  (0x1ul << 12) //!< Cancellation Finished for Transmit Buffer 12 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_13  (0x1ul << 13) //!< Cancellation Finished for Transmit Buffer 13 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_14  (0x1ul << 14) //!< Cancellation Finished for Transmit Buffer 14 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_15  (0x1ul << 15) //!< Cancellation Finished for Transmit Buffer 15 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_16  (0x1ul << 16) //!< Cancellation Finished for Transmit Buffer 16 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_17  (0x1ul << 17) //!< Cancellation Finished for Transmit Buffer 17 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_18  (0x1ul << 18) //!< Cancellation Finished for Transmit Buffer 18 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_19  (0x1ul << 19) //!< Cancellation Finished for Transmit Buffer 19 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_20  (0x1ul << 20) //!< Cancellation Finished for Transmit Buffer 20 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_21  (0x1ul << 21) //!< Cancellation Finished for Transmit Buffer 21 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_22  (0x1ul << 22) //!< Cancellation Finished for Transmit Buffer 22 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_23  (0x1ul << 23) //!< Cancellation Finished for Transmit Buffer 23 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_24  (0x1ul << 24) //!< Cancellation Finished for Transmit Buffer 24 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_25  (0x1ul << 25) //!< Cancellation Finished for Transmit Buffer 25 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_26  (0x1ul << 26) //!< Cancellation Finished for Transmit Buffer 26 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_27  (0x1ul << 27) //!< Cancellation Finished for Transmit Buffer 27 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_28  (0x1ul << 28) //!< Cancellation Finished for Transmit Buffer 28 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_29  (0x1ul << 29) //!< Cancellation Finished for Transmit Buffer 29 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_30  (0x1ul << 30) //!< Cancellation Finished for Transmit Buffer 30 flag
+#define MCAN_CANCEL_FINISH_TX_BUFFER_31  (0x1ul << 31) //!< Cancellation Finished for Transmit Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -3152,38 +3157,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBTIE_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBTIE_Register, 4);
 
-#define MCAN_TX_INT_ENABLE_BUFFER_0   (0x1u <<  0) //!< Transmission Interrupt Enable for Buffer 0 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_1   (0x1u <<  1) //!< Transmission Interrupt Enable for Buffer 1 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_2   (0x1u <<  2) //!< Transmission Interrupt Enable for Buffer 2 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_3   (0x1u <<  3) //!< Transmission Interrupt Enable for Buffer 3 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_4   (0x1u <<  4) //!< Transmission Interrupt Enable for Buffer 4 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_5   (0x1u <<  5) //!< Transmission Interrupt Enable for Buffer 5 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_6   (0x1u <<  6) //!< Transmission Interrupt Enable for Buffer 6 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_7   (0x1u <<  7) //!< Transmission Interrupt Enable for Buffer 7 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_8   (0x1u <<  8) //!< Transmission Interrupt Enable for Buffer 8 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_9   (0x1u <<  9) //!< Transmission Interrupt Enable for Buffer 9 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_10  (0x1u << 10) //!< Transmission Interrupt Enable for Buffer 10 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_11  (0x1u << 11) //!< Transmission Interrupt Enable for Buffer 11 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_12  (0x1u << 12) //!< Transmission Interrupt Enable for Buffer 12 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_13  (0x1u << 13) //!< Transmission Interrupt Enable for Buffer 13 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_14  (0x1u << 14) //!< Transmission Interrupt Enable for Buffer 14 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_15  (0x1u << 15) //!< Transmission Interrupt Enable for Buffer 15 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_16  (0x1u << 16) //!< Transmission Interrupt Enable for Buffer 16 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_17  (0x1u << 17) //!< Transmission Interrupt Enable for Buffer 17 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_18  (0x1u << 18) //!< Transmission Interrupt Enable for Buffer 18 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_19  (0x1u << 19) //!< Transmission Interrupt Enable for Buffer 19 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_20  (0x1u << 20) //!< Transmission Interrupt Enable for Buffer 20 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_21  (0x1u << 21) //!< Transmission Interrupt Enable for Buffer 21 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_22  (0x1u << 22) //!< Transmission Interrupt Enable for Buffer 22 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_23  (0x1u << 23) //!< Transmission Interrupt Enable for Buffer 23 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_24  (0x1u << 24) //!< Transmission Interrupt Enable for Buffer 24 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_25  (0x1u << 25) //!< Transmission Interrupt Enable for Buffer 25 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_26  (0x1u << 26) //!< Transmission Interrupt Enable for Buffer 26 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_27  (0x1u << 27) //!< Transmission Interrupt Enable for Buffer 27 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_28  (0x1u << 28) //!< Transmission Interrupt Enable for Buffer 28 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_29  (0x1u << 29) //!< Transmission Interrupt Enable for Buffer 29 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_30  (0x1u << 30) //!< Transmission Interrupt Enable for Buffer 30 flag
-#define MCAN_TX_INT_ENABLE_BUFFER_31  (0x1u << 31) //!< Transmission Interrupt Enable for Buffer 31 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_0   (0x1ul <<  0) //!< Transmission Interrupt Enable for Buffer 0 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_1   (0x1ul <<  1) //!< Transmission Interrupt Enable for Buffer 1 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_2   (0x1ul <<  2) //!< Transmission Interrupt Enable for Buffer 2 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_3   (0x1ul <<  3) //!< Transmission Interrupt Enable for Buffer 3 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_4   (0x1ul <<  4) //!< Transmission Interrupt Enable for Buffer 4 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_5   (0x1ul <<  5) //!< Transmission Interrupt Enable for Buffer 5 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_6   (0x1ul <<  6) //!< Transmission Interrupt Enable for Buffer 6 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_7   (0x1ul <<  7) //!< Transmission Interrupt Enable for Buffer 7 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_8   (0x1ul <<  8) //!< Transmission Interrupt Enable for Buffer 8 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_9   (0x1ul <<  9) //!< Transmission Interrupt Enable for Buffer 9 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_10  (0x1ul << 10) //!< Transmission Interrupt Enable for Buffer 10 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_11  (0x1ul << 11) //!< Transmission Interrupt Enable for Buffer 11 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_12  (0x1ul << 12) //!< Transmission Interrupt Enable for Buffer 12 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_13  (0x1ul << 13) //!< Transmission Interrupt Enable for Buffer 13 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_14  (0x1ul << 14) //!< Transmission Interrupt Enable for Buffer 14 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_15  (0x1ul << 15) //!< Transmission Interrupt Enable for Buffer 15 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_16  (0x1ul << 16) //!< Transmission Interrupt Enable for Buffer 16 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_17  (0x1ul << 17) //!< Transmission Interrupt Enable for Buffer 17 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_18  (0x1ul << 18) //!< Transmission Interrupt Enable for Buffer 18 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_19  (0x1ul << 19) //!< Transmission Interrupt Enable for Buffer 19 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_20  (0x1ul << 20) //!< Transmission Interrupt Enable for Buffer 20 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_21  (0x1ul << 21) //!< Transmission Interrupt Enable for Buffer 21 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_22  (0x1ul << 22) //!< Transmission Interrupt Enable for Buffer 22 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_23  (0x1ul << 23) //!< Transmission Interrupt Enable for Buffer 23 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_24  (0x1ul << 24) //!< Transmission Interrupt Enable for Buffer 24 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_25  (0x1ul << 25) //!< Transmission Interrupt Enable for Buffer 25 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_26  (0x1ul << 26) //!< Transmission Interrupt Enable for Buffer 26 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_27  (0x1ul << 27) //!< Transmission Interrupt Enable for Buffer 27 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_28  (0x1ul << 28) //!< Transmission Interrupt Enable for Buffer 28 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_29  (0x1ul << 29) //!< Transmission Interrupt Enable for Buffer 29 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_30  (0x1ul << 30) //!< Transmission Interrupt Enable for Buffer 30 flag
+#define MCAN_TX_INT_ENABLE_BUFFER_31  (0x1ul << 31) //!< Transmission Interrupt Enable for Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -3234,38 +3239,38 @@ typedef union __MCAN_PACKED__ MCAN_TXBCIE_Register
 MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXBCIE_Register, 4);
 
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_0   (0x1u <<  0) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 0 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_1   (0x1u <<  1) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 1 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_2   (0x1u <<  2) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 2 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_3   (0x1u <<  3) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 3 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_4   (0x1u <<  4) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 4 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_5   (0x1u <<  5) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 5 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_6   (0x1u <<  6) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 6 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_7   (0x1u <<  7) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 7 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_8   (0x1u <<  8) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 8 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_9   (0x1u <<  9) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 9 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_10  (0x1u << 10) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 10 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_11  (0x1u << 11) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 11 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_12  (0x1u << 12) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 12 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_13  (0x1u << 13) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 13 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_14  (0x1u << 14) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 14 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_15  (0x1u << 15) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 15 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_16  (0x1u << 16) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 16 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_17  (0x1u << 17) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 17 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_18  (0x1u << 18) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 18 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_19  (0x1u << 19) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 19 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_20  (0x1u << 20) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 20 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_21  (0x1u << 21) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 21 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_22  (0x1u << 22) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 22 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_23  (0x1u << 23) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 23 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_24  (0x1u << 24) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 24 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_25  (0x1u << 25) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 25 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_26  (0x1u << 26) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 26 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_27  (0x1u << 27) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 27 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_28  (0x1u << 28) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 28 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_29  (0x1u << 29) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 29 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_30  (0x1u << 30) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 30 flag
-#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_31  (0x1u << 31) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 31 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_0   (0x1ul <<  0) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 0 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_1   (0x1ul <<  1) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 1 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_2   (0x1ul <<  2) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 2 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_3   (0x1ul <<  3) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 3 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_4   (0x1ul <<  4) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 4 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_5   (0x1ul <<  5) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 5 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_6   (0x1ul <<  6) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 6 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_7   (0x1ul <<  7) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 7 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_8   (0x1ul <<  8) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 8 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_9   (0x1ul <<  9) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 9 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_10  (0x1ul << 10) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 10 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_11  (0x1ul << 11) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 11 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_12  (0x1ul << 12) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 12 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_13  (0x1ul << 13) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 13 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_14  (0x1ul << 14) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 14 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_15  (0x1ul << 15) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 15 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_16  (0x1ul << 16) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 16 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_17  (0x1ul << 17) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 17 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_18  (0x1ul << 18) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 18 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_19  (0x1ul << 19) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 19 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_20  (0x1ul << 20) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 20 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_21  (0x1ul << 21) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 21 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_22  (0x1ul << 22) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 22 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_23  (0x1ul << 23) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 23 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_24  (0x1ul << 24) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 24 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_25  (0x1ul << 25) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 25 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_26  (0x1ul << 26) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 26 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_27  (0x1ul << 27) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 27 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_28  (0x1ul << 28) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 28 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_29  (0x1ul << 29) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 29 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_30  (0x1ul << 30) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 30 flag
+#define MCAN_CANCEL_FINISH_TX_INT_BUFFER_31  (0x1ul << 31) //!< Cancellation Finished Interrupt Enable for Transmit Buffer 31 flag
 
 //-----------------------------------------------------------------------------
 
@@ -3291,15 +3296,15 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXEFC_Register, 4);
 
 #define MCAN_TXEFC_EVENT_FIFO_SA_Pos                0
-#define MCAN_TXEFC_EVENT_FIFO_SA_Mask               (0xFFFCu << MCAN_TXEFC_EVENT_FIFO_SA_Pos)
+#define MCAN_TXEFC_EVENT_FIFO_SA_Mask               (0xFFFCul << MCAN_TXEFC_EVENT_FIFO_SA_Pos)
 #define MCAN_TXEFC_EVENT_FIFO_SA_GET(value)         ((uint32_t)(value) & MCAN_TXEFC_EVENT_FIFO_SA_Mask) //!< Get Event FIFO Start Address
 #define MCAN_TXEFC_EVENT_FIFO_SA_SET(value)         ((uint32_t)(value) & MCAN_TXEFC_EVENT_FIFO_SA_Mask) //!< Set Event FIFO Start Address
 #define MCAN_TXEFC_EVENT_FIFO_SIZE_Pos              16
-#define MCAN_TXEFC_EVENT_FIFO_SIZE_Mask             (0x3Fu << MCAN_TXEFC_EVENT_FIFO_SIZE_Pos)
+#define MCAN_TXEFC_EVENT_FIFO_SIZE_Mask             (0x3Ful << MCAN_TXEFC_EVENT_FIFO_SIZE_Pos)
 #define MCAN_TXEFC_EVENT_FIFO_SIZE_GET(value)       (((uint32_t)(value) & MCAN_TXEFC_EVENT_FIFO_SIZE_Mask) >> MCAN_TXEFC_EVENT_FIFO_SIZE_Pos) //!< Get Event FIFO Size
 #define MCAN_TXEFC_EVENT_FIFO_SIZE_SET(value)       (((uint32_t)(value) << MCAN_TXEFC_EVENT_FIFO_SIZE_Pos) & MCAN_TXEFC_EVENT_FIFO_SIZE_Mask) //!< Set Event FIFO Size
 #define MCAN_TXEFC_EVENT_FIFO_WATERMARK_Pos         24
-#define MCAN_TXEFC_EVENT_FIFO_WATERMARK_Mask        (0x3Fu << MCAN_TXEFC_EVENT_FIFO_WATERMARK_Pos)
+#define MCAN_TXEFC_EVENT_FIFO_WATERMARK_Mask        (0x3Ful << MCAN_TXEFC_EVENT_FIFO_WATERMARK_Pos)
 #define MCAN_TXEFC_EVENT_FIFO_WATERMARK_GET(value)  (((uint32_t)(value) & MCAN_TXEFC_EVENT_FIFO_WATERMARK_Mask) >> MCAN_TXEFC_EVENT_FIFO_WATERMARK_Pos) //!< Get Event FIFO Watermark
 #define MCAN_TXEFC_EVENT_FIFO_WATERMARK_SET(value)  (((uint32_t)(value) << MCAN_TXEFC_EVENT_FIFO_WATERMARK_Pos) & MCAN_TXEFC_EVENT_FIFO_WATERMARK_Mask) //!< Set Event FIFO Watermark
 
@@ -3328,18 +3333,18 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXEFS_Register, 4);
 
 #define MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Pos         0
-#define MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Mask        (0x3Fu << MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Pos)
+#define MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Mask        (0x3Ful << MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Pos)
 #define MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_GET(value)  (((uint32_t)(value) & MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Mask) >> MCAN_TXFQS_EVENT_FIFO_FILL_LEVEL_Pos) //!< Get Event FIFO Fill Level
 #define MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Pos          8
-#define MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Mask         (0x1Fu << MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Pos)
+#define MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Mask         (0x1Ful << MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Pos)
 #define MCAN_TXFQS_EVENT_FIFO_GET_INDEX_GET(value)   (((uint32_t)(value) & MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Mask) >> MCAN_TXFQS_EVENT_FIFO_GET_INDEX_Pos) //!< Get Event FIFO Get Index
 #define MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Pos          16
-#define MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Mask         (0x1Fu << MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Pos)
+#define MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Mask         (0x1Ful << MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Pos)
 #define MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_GET(value)   (((uint32_t)(value) & MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Mask) >> MCAN_TXFQS_EVENT_FIFO_PUT_INDEX_Pos) //!< Get Event FIFO Put Index
-#define MCAN_TXFQS_EVENT_FIFO_FULL                   (0x1u << 24) //!< Tx Event FIFO full
-#define MCAN_TXFQS_EVENT_FIFO_NOT_FULL               (0x0u << 24) //!< Tx Event FIFO not full
-#define MCAN_TXFQS_EVENT_FIFO_ELEMENT_LOST           (0x1u << 25) //!< Tx Event FIFO element lost
-#define MCAN_TXFQS_NO_EVENT_FIFO_ELEMENT_LOST        (0x0u << 25) //!< No Tx Event FIFO element lost
+#define MCAN_TXFQS_EVENT_FIFO_FULL                   (0x1ul << 24) //!< Tx Event FIFO full
+#define MCAN_TXFQS_EVENT_FIFO_NOT_FULL               (0x0ul << 24) //!< Tx Event FIFO not full
+#define MCAN_TXFQS_EVENT_FIFO_ELEMENT_LOST           (0x1ul << 25) //!< Tx Event FIFO element lost
+#define MCAN_TXFQS_NO_EVENT_FIFO_ELEMENT_LOST        (0x0ul << 25) //!< No Tx Event FIFO element lost
 
 //-----------------------------------------------------------------------------
 
@@ -3362,7 +3367,7 @@ MCAN_UNPACKITEM;
 MCAN_CONTROL_ITEM_SIZE(MCAN_TXEFA_Register, 4);
 
 #define MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Pos         0
-#define MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Mask        (0x1Fu << MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Pos)
+#define MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Mask        (0x1Ful << MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Pos)
 #define MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_GET(value)  (((uint32_t)(value) & MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Mask) >> MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Pos) //!< Get Event FIFO Acknowledge Index
 #define MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_SET(value)  (((uint32_t)(value) << MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Pos) & MCAN_TXEFA_EVENT_FIFO_ACK_INDEX_Mask) //!< Set Event FIFO Acknowledge Index
 
@@ -3406,7 +3411,7 @@ typedef enum
   MCAN_RX_DEBUG_MESSAGE_MSG_ABC = 0x80, //!< Debug Message: debug messages A, B, C received, DMA request is set
 } eMCAN_FIFObufferstatus;
 
-typedef eMCAN_FIFObufferstatus setMCAN_FIFObufferstatus; //! Set of Transmit and Receive FIFO/Buffer status (can be OR'ed)
+typedef eMCAN_FIFObufferstatus setMCAN_FIFObufferstatus; //!< Set of Transmit and Receive FIFO/Buffer status (can be OR'ed)
 
 
 //! Transmit Event FIFO status
@@ -3419,7 +3424,7 @@ typedef enum
   MCAN_TEF_FIFO_MESSAGE_LOST = 0x08, //!< TEF message lost (overflow)
 } eMCAN_TEFstatus;
 
-typedef eMCAN_TEFstatus setMCAN_TEFstatus; //! Set of Transmit Event FIFO status (can be OR'ed)
+typedef eMCAN_TEFstatus setMCAN_TEFstatus; //!< Set of Transmit Event FIFO status (can be OR'ed)
 
 //-----------------------------------------------------------------------------
 
@@ -3527,7 +3532,7 @@ typedef enum
   MCAN_CAN_EXTERNAL_TIMESTAMPING_BY_TSU     = 0x80, //!< External time stamping by TSU, the 16-bit Wide Message Markers are also enabled regardless of MCAN_CAN_WIDE_MESSAGE_MARKER_8BIT
 } eMCAN_CANCtrlFlags;
 
-typedef eMCAN_CANCtrlFlags setMCAN_CANCtrlFlags; //! Set of CAN control configuration flags (can be OR'ed)
+typedef eMCAN_CANCtrlFlags setMCAN_CANCtrlFlags; //!< Set of CAN control configuration flags (can be OR'ed)
 
 #define MCAN_WIDE_MESSAGE_MARKER  ( MCAN_CAN_WIDE_MESSAGE_MARKER_16BIT | MCAN_CAN_EXTERNAL_TIMESTAMPING_BY_TSU ) //!< Wide message marker flags mask
 
@@ -3705,7 +3710,7 @@ typedef enum
 
 //-----------------------------------------------------------------------------
 
-#define MCAN_FILTER_ACCEPT_ALL_MESSAGES  ( 0x00000000u ) //!< Indicate that the filter will accept all messages
+#define MCAN_FILTER_ACCEPT_ALL_MESSAGES  ( 0x00000000ul ) //!< Indicate that the filter will accept all messages
 
 //-----------------------------------------------------------------------------
 
@@ -3780,35 +3785,35 @@ typedef struct MCAN_Filter
 // MCAN Driver API
 //********************************************************************************************************************
 
-#define MCAN_FILTERS_CONFIG_FLAG           ( 0x1u << 0 ) // Filter flag for Driver Internal data flags
+#define MCAN_FILTERS_CONFIG_FLAG           ( 0x1ul << 0 ) // Filter flag for Driver Internal data flags
 #define MCAN_FILTERS_CONFIGURED(val)       ( ((val) & MCAN_FILTERS_CONFIG_FLAG) > 0 ) // Are filters configured?
-#define MCAN_FIFOS_BUFF_CONFIG_FLAG        ( 0x1u << 1 ) // FIFOs/Buffers flag for Driver Internal data flags
+#define MCAN_FIFOS_BUFF_CONFIG_FLAG        ( 0x1ul << 1 ) // FIFOs/Buffers flag for Driver Internal data flags
 #define MCAN_FIFOS_BUFF_CONFIGURED(val)    ( ((val) & MCAN_FIFOS_BUFF_CONFIG_FLAG) > 0 ) // Are FIFOs/Buffers configured?
 #define MCAN_RX_BUFFERS_SIZE_Pos           2
-#define MCAN_RX_BUFFERS_SIZE_Mask          (0x7Fu << MCAN_RX_BUFFERS_SIZE_Pos)
+#define MCAN_RX_BUFFERS_SIZE_Mask          (0x7Ful << MCAN_RX_BUFFERS_SIZE_Pos)
 #define MCAN_RX_BUFFERS_SIZE_GET(value)    (((uint32_t)(value) & MCAN_RX_BUFFERS_SIZE_Mask) >> MCAN_RX_BUFFERS_SIZE_Pos) // Get Rx buffer size in the driver's InternalConfig
 #define MCAN_RX_BUFFERS_SIZE_SET(value)    (((uint32_t)(value) << MCAN_RX_BUFFERS_SIZE_Pos) & MCAN_RX_BUFFERS_SIZE_Mask) // Set Rx buffer size in the driver's InternalConfig
 #define MCAN_RX_BUFFERS_SIZE_CLEAR(value)  (value) &= ~MCAN_RX_BUFFERS_SIZE_Mask // Clear the Rx buffer position
 #define MCAN_FILTER_SID_SIZE_Pos           9
-#define MCAN_FILTER_SID_SIZE_Mask          (0xFFu << MCAN_FILTER_SID_SIZE_Pos)
+#define MCAN_FILTER_SID_SIZE_Mask          (0xFFul << MCAN_FILTER_SID_SIZE_Pos)
 #define MCAN_FILTER_SID_SIZE_GET(value)    (((uint32_t)(value) & MCAN_FILTER_SID_SIZE_Mask) >> MCAN_FILTER_SID_SIZE_Pos) // Get SID filters size in the driver's InternalConfig
 #define MCAN_FILTER_SID_SIZE_SET(value)    (((uint32_t)(value) << MCAN_FILTER_SID_SIZE_Pos) & MCAN_FILTER_SID_SIZE_Mask) // Set SID filters size in the driver's InternalConfig
 #define MCAN_FILTER_SID_SIZE_CLEAR(value)  (value) &= ~MCAN_FILTER_SID_SIZE_Mask // Clear the SID filters position
 #define MCAN_FILTER_EID_SIZE_Pos           17
-#define MCAN_FILTER_EID_SIZE_Mask          (0x7Fu << MCAN_FILTER_EID_SIZE_Pos)
+#define MCAN_FILTER_EID_SIZE_Mask          (0x7Ful << MCAN_FILTER_EID_SIZE_Pos)
 #define MCAN_FILTER_EID_SIZE_GET(value)    (((uint32_t)(value) & MCAN_FILTER_EID_SIZE_Mask) >> MCAN_FILTER_EID_SIZE_Pos) // Get EID filters size in the driver's InternalConfig
 #define MCAN_FILTER_EID_SIZE_SET(value)    (((uint32_t)(value) << MCAN_FILTER_EID_SIZE_Pos) & MCAN_FILTER_EID_SIZE_Mask) // Set EID filters size in the driver's InternalConfig
 #define MCAN_FILTER_EID_SIZE_CLEAR(value)  (value) &= ~MCAN_FILTER_EID_SIZE_Mask // Clear the EID filters position
 #define MCAN_DEV_PS_Pos                    27
-#define MCAN_DEV_PS_Mask                   (0x3u << MCAN_DEV_PS_Pos)
+#define MCAN_DEV_PS_Mask                   (0x3ul << MCAN_DEV_PS_Pos)
 #define MCAN_DEV_PS_SET(value)             (((uint32_t)(value) << MCAN_DEV_PS_Pos) & MCAN_DEV_PS_Mask)                    // Set Device Power State
 #define MCAN_DEV_PS_GET(value)             (eMCAN_PowerStates)(((uint32_t)(value) & MCAN_DEV_PS_Mask) >> MCAN_DEV_PS_Pos) // Get Device Power State
 #define MCAN_CHANGE_ENDIANNESS_Pos         29
-#define MCAN_CHANGE_ENDIANNESS_Mask        ( 0x1u << MCAN_CHANGE_ENDIANNESS_Pos ) //!< Endianness have to be change
-#define MCAN_CHANGE_ENDIANNESS_SET         ( MCAN_CHANGE_ENDIANNESS_Mask )        // Set the indication that endianness have to be change
+#define MCAN_CHANGE_ENDIANNESS_Mask        ( 0x1ul << MCAN_CHANGE_ENDIANNESS_Pos ) //!< Endianness have to be change
+#define MCAN_CHANGE_ENDIANNESS_SET         ( MCAN_CHANGE_ENDIANNESS_Mask )         // Set the indication that endianness have to be change
 #define MCAN_IS_CHANGE_ENDIANNESS(pComp)   ((((pComp)->InternalConfig) & (1u << MCAN_CHANGE_ENDIANNESS_Pos)) > 0) //!< Is CPU and device/peripheral does not have matched endianness?
-#define MCAN_16BIT_MM_ENABLED              ( 1 << 30 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the Wide Message Marker is configured
-#define MCAN_CANFD_ENABLED                 ( 1 << 31 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the CANFD is configured
+#define MCAN_16BIT_MM_ENABLED              ( 1ul << 30 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the Wide Message Marker is configured
+#define MCAN_CANFD_ENABLED                 ( 1ul << 31 ) // This value is used inside the driver (MCAN.InternalConfig) to indicate if the CANFD is configured
 
 #define MCAN_GetSIDfilterElementCount(pComp)  ( MCAN_FILTER_SID_SIZE_GET((pComp)->InternalConfig) ) //!< Get the SID filter elements count configured for the pComp
 #define MCAN_GetEIDfilterElementCount(pComp)  ( MCAN_FILTER_EID_SIZE_GET((pComp)->InternalConfig) ) //!< Get the EID filter elements count configured for the pComp

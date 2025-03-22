@@ -1,8 +1,8 @@
 /*!*****************************************************************************
  * @file    TCAN455X.c
  * @author  Fabien 'Emandhal' MAILLY
- * @version 1.0.4
- * @date    15/07/2023
+ * @version 1.0.1
+ * @date    22/03/2025
  * @brief   TCAN4550 and TCAN4551 driver
  * @details
  * The TCAN4550/TCAN4551 component is a CAN-bus controller supporting CAN2.0A, CAN2.0B
